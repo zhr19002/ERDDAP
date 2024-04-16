@@ -1,23 +1,18 @@
 function res = GetDEEPWQClimatology(astn, ZT, ZB)
 % 
-% Get all the pH data from astn in the depth range ZT to ZB
-% and return the stats.
-%
-% Note that this checks to see if there is an existing MAT file 
-% to speed developement.
-% The Timeout parameter for websave might need to be extended.
+% Get all the pH data from astn in the depth range ZT to ZB and return the stats
 % 
-% Could be generalized to any variable. 
+% Called from Proc2021_pH_data.m
 % 
 
-%astn = 'E1'; ZT = 20; ZB = 30;
+% astn = 'E1'; ZT = 20; ZB = 30;
 
 if ~ischar(ZT) | ~ischar(ZB)
     disp('Depth range should be characters');
     ZT = num2str(ZT); ZB = num2str(ZB);
 end
 
-% form ERDDAP request
+% Form ERDDAP request
 aurl0 = ['http://merlin.dms.uconn.edu:8080/erddap/tabledap/DEEP_WQ.mat?' ...
          'cruise_name%2Cstation_name%2Ctime%2Cdepth%2CpH%2CStart_Date&' ...
 	     'station_name=~%22XX%22&time%3E=2000-12-17T00%3A00%3A00Z&time%3C=2022-12-17T00%3A00%3A00Z&' ...
@@ -47,7 +42,7 @@ end
 
 daten = d.DEEP_WQ.Start_Date/(24*3600) + datetime(1970,1,1,0,0,0);
 
-%average by month
+% Average by month
 [~, mnth, ~] = datevec(daten);
 for nm = 1:12
     iu = find(mnth==nm);

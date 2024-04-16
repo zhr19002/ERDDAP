@@ -1,12 +1,13 @@
 function d = ImplementPresIntvTestQAQC(din, Para, ainst)
-%
-%  Apply IOOS QARTOD gaptest on data level
 % 
-%  find anomalous pressure out of range
-%  set 1 for pass, 4 for fail and 3 for suspious
-%
-%  Called from PlotARTG_2018_20_summary.m
-%
+% Apply IOOS QARTOD gap test on data level
+% 
+% Find anomalous pressure out of range
+% Set 1 for pass, 4 for fail and 3 for suspious
+% 
+% Called from MakeDataArchive.m
+% 
+
 if contains(ainst, 'btm')
     ptop = Para.PresIntvTest(2,1);
     pbot = Para.PresIntvTest(2,2);
@@ -15,8 +16,8 @@ else
     pbot = Para.PresIntvTest(1,2);
 end
 
-d = ones(size(din));                  % set QAQC code to 1
-ifail = find(din<ptop | din>pbot);    % find anomalous time spacing
+d = ones(size(din));                  % Set QAQC code to 1
+ifail = find(din<ptop | din>pbot);    % Find anomalous time spacing
 
 if ~isempty(ifail)
     d(ifail) = 4;

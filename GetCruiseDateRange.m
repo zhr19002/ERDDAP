@@ -1,10 +1,9 @@
 function [Daten, CruiseNames] = GetCruiseDateRange(d)
 % 
-% enquire from ERRDAP what the cruisedate range is
+% Enquire from ERDDAP what the cruise date range is
 % 
-
-% d = load('DEEP_Nutrient.mat');
-% d = d.DEEP_Nutrient;
+% Called from GetCTDEEPDataForComps.m
+% 
 
 AllCruiseNames = d.cruise;
 CruiseNames = unique(AllCruiseNames, 'rows');
@@ -18,20 +17,20 @@ wopts.Timeout = 60;
 Daten = cell(size(CruiseNames,1), 1);
 
 for nn = 1:size(CruiseNames,1)
-    % for each cruise name make a request for the dates
-    % there should only be one line of data returned
+    % For each cruise name make a request for the dates
+    % There should only be one line of data returned
     CruiseName = upper(deblank(CruiseNames(nn,:)));
     aURL = strrep(aURLp, 'CCCC', CruiseName);
     
     try
         tmp = webread(aURL, wopts);
         
-        % locate data in output str
+        % Locate data in output str
         idata = strfind(tmp, CruiseName);
         adata = tmp(idata+length(CruiseName)+2 : end);
         tt = sscanf(adata, '%f, %f');
         
-        %convert to datenum and put the middle date in element 3
+        % Convert to datenum and put the middle date in element 3
         Daten{nn} = tt/(24*3600) + datetime(1970,1,1);
         Daten{nn}(3) = mean(Daten{nn}(1:2));
     catch

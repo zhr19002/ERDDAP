@@ -1,6 +1,5 @@
-function [dd] = GetCTDEEP_WQDataForComps(Ast, Ayear, Nmth)
+function [dd, CruiseDay, CruiseNames] = GetCTDEEP_WQDataForComps(Ast, Ayear, Nmth)
 % 
-% [dd, CruiseNames, CruiseDay] = GetCTDEEP_WQDataForComps(Ast, Ayear, Nmth)
 % Gets station data from CTDEEP ERDDAP site.
 % 
 % Modified from GetCTDEEPDataForComps to access the WQ archive and return
@@ -9,6 +8,7 @@ function [dd] = GetCTDEEP_WQDataForComps(Ast, Ayear, Nmth)
 % Note that Nmth may be a range e.g. [1:3], then dd{1:3} is returned.
 % Since there may be more than 1 cruise per month, then 
 % dd{3}{1}.DEEP_WQ and dd{3}{2}.DEEP_WQ etc contain the data.
+% 
 % Returned variables are extensive
 % 
 %                      cruise_name
@@ -38,10 +38,10 @@ function [dd] = GetCTDEEP_WQDataForComps(Ast, Ayear, Nmth)
 %                  Time_ON_Station
 %                 Time_OFF_Station
 % 
-% Inputs
-% for station Ast,
-% year Ayear 
-% month Nmth
+% Inputs: Ast (for station), Ayear (year), Nmth (month)
+% 
+% Calls GetCruiseNamesInIntv.m
+% Called from GetCTDEEP_WQDataForComps_demo.m
 % 
 
 wopts = weboptions;
@@ -66,7 +66,7 @@ CruiseDay = cell(size(Nmth,2), 1);
 CruiseNames = cell(size(Nmth,2), 1);
 dd = cell(size(Nmth,2), 1);
 
-% step through months and get the data from the ERDDAP server
+% Step through months and get the data from the ERDDAP server
 for nn = Nmth
     if nn < 10
         ann = sprintf('0%i', nn);
@@ -76,10 +76,10 @@ for nn = Nmth
     
     aURL = strrep(aURL0, 'MM', ann);
     
-    % get the list of cruises in the interval
+    % Get the list of cruises in the interval
     [CruiseDay{nn}, CruiseNames{nn}] = GetCruiseNamesInIntv(Ayear, ann);
     
-    % now request the data from each cruise
+    % Now request the data from each cruise
     for nc = 1:length(CruiseNames{nn})
         Acrus = CruiseNames{nn}{nc};
         afile = ['DEEPWQ_' Ast '_' Acrus '.mat'];
@@ -98,7 +98,7 @@ for nn = Nmth
                 dd{nn} = [];
             end
         else
-            % need to fix this to load all the files for a summer month
+            % Need to fix this to load all the files for a summer month
             disp(['Loading local ' afile]);
             dirsz = dir(afile);
             if ~isempty(dirsz) & dirsz.bytes>0

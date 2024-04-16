@@ -4,8 +4,14 @@ function [ut, res] = GetDEEPStationSurfaceData(Astn)
 % Make time sereis figures and then a mean annual cycle.
 % Save the results for later use in a mat file.
 % 
+% Calls:
+%   EstimateBeta.m
+%   ComputeMonthlyAverages.m
+% 
+% Called from VisualizeDEEPStationSurfaceData.m
+% 
 
-FigsOn = 0; % set >0 for graphs
+FigsOn = 0; % Set >0 for graphs
 
 wopt = weboptions;
 wopt.Timeout = 300;
@@ -13,7 +19,7 @@ wopt.Timeout = 300;
 % Get the surface data from top 3 m of all profiles at Astn
 Atop = num2str(0); Abot = num2str(3);
 
-% define URL pattern
+% Define URL pattern
 aurl0 = ['http://merlin.dms.uconn.edu:8080/erddap/tabledap/DEEP_WQ.mat?'...
         'cruise_name%2Cstation_name%2Ctime%2Clatitude%2Clongitude%2C'...
         'sea_water_temperature%2CPAR%2CChlorophyll%2CCorrected_Chlorophyll%2C'...
@@ -34,7 +40,7 @@ end
 
 daten = d.DEEP_WQ.Start_Date/(24*3600) + datetime(1970,1,1);
 
-% find the unique times and profiles
+% Find the unique times and profiles
 ut = unique(daten);
 lut = length(ut);
 
@@ -50,7 +56,7 @@ Salavg = zeros(lut,1); Salmax = zeros(lut,1); Salmin = zeros(lut,1);
 CHLAavg = zeros(lut,1); CHLAMax = zeros(lut,1); CHLAMin = zeros(lut,1);
 CHLA_Coravg = zeros(lut,1); CHLA_CorMax = zeros(lut,1); CHLA_CorMin = zeros(lut,1);
 
-% process to get the max PAR and mean of other stuff
+% Process to get the max PAR and mean of other stuff
 for nt = 1:lut
     iu = find(daten==ut(nt));
     % PAR measured from the ship is subject to shading error 
@@ -86,7 +92,7 @@ for nt = 1:lut
     CHLA_CorMin(nt) = mean(tmp(~isnan(tmp)));
 end
 
-% plot the RAW time series of the raw T&S data
+% Plot the RAW time series of the raw T&S data
 figure;
 subplot(2,1,1)
     plot(daten,d.DEEP_WQ.sea_water_temperature,'b.'); hold on;
@@ -104,15 +110,15 @@ subplot(2,1,2);
     xtickformat('yy');
 
 % Explore the relationship between the max measured PAR and the extrpolated 
-% surface value assuming that the extinction coeff is uniform.
+% surface value assuming that the extinction coeff is uniform
 
 figure;
 plot(PARmx,PAR0,'r+'); hold on;
 iu=find(ParCorr>0.8);
 errorbar(PARmx(iu), PAR0(iu), PAR0upper(iu), PAR0lower(iu));
 
-% plot the PAR timeseries of the raw data & max 
-% and the extrapolated and Extinction coeff.
+% Plot the PAR timeseries of the raw data & max 
+% and the extrapolated and Extinction coeff
 figure;
 subplot(2,1,1)
     plot(daten,d.DEEP_WQ.PAR,'b.'); hold on; 
@@ -145,7 +151,7 @@ res.PAR0 = ComputeMonthlyAverages(ut, PAR0);
 res.PARmx = ComputeMonthlyAverages(ut, PARmx);
 res.beta = ComputeMonthlyAverages(ut, beta);
 
-% Save the results fdisor use elsewhere.
+% Save the results fdisor use elsewhere
 disp(['Saving: ' 'ARTG_SurfaceData' Astn '.mat']);
 save(['ARTG_SurfaceData' Astn '.mat'], 'res', 'Astn', 'Atop', 'Abot');
 

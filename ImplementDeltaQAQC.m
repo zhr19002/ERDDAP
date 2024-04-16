@@ -1,12 +1,13 @@
 function d = ImplementDeltaQAQC(din, Para)
 % 
-% Implement sample to sample difference test.
+% Implement sample to sample difference test
 % 
-% Called from PlotARTG_2018_20_summary.m
+% Called from MakeDataArchive.m
 % 
+
 d = ones(size(din));
-dd = abs(diff(din));                     % Note that the first and second
-dd = dd([1 1:end]);                      % are treated the same
+dd = abs(diff(din));  % The first and second are treated the same
+dd = dd([1 1:end]);
 
 inan = find(dd > Para.Delta(1));
 if ~isempty(inan)

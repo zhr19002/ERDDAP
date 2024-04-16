@@ -1,8 +1,12 @@
 % Run a demo
+% Calls GetCTDEEP_WQDataForComps.m
+
 Ast = 'A4'; Ayear = '2022'; Nmth = 7;
-% get data for the year and month
-[dd] = GetCTDEEP_WQDataForComps(Ast, Ayear, Nmth);
-% there may be more than 1 cruise fo plot the temp profile for each
+
+% Get data for the year and month
+[dd, ~, ~] = GetCTDEEP_WQDataForComps(Ast, Ayear, Nmth);
+
+% There may be more than 1 cruise to plot the temperature profile
 if size(dd{Nmth},2) > 0
     figure;
     aleg = cell(size(dd{Nmth},2), 1);

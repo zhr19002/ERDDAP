@@ -1,17 +1,19 @@
 function [ds, db, CruiseNames] = GetCTDEEPDataForComps(Ast, Ayear, Nmth)
 % 
-% Gets station data from CTDEEP ERDDAP site.
+% Gets station data from CTDEEP ERDDAP site
+% Inputs: Ast (for station), Ayear (year), Nmth (month)
 % 
-% Inputs
-% for station Ast,
-% year Ayear
-% month Nmth
+% Calls:
+%   GetCruiseDateRange.m
+%   seperate_DEEP_Nut_data.m
+% 
+% Called from Proc2021_pH_data.m
 % 
 
 wopts = weboptions;
 wopts.Timeout = 60;
 
-%Ast = 'A4'; Ayear = '2019'; Nmth = 08:09;
+% Ast = 'A4'; Ayear = '2019'; Nmth = 08:09;
 
 aURLpat = ['http://merlin.dms.uconn.edu:8080/erddap/tabledap/DEEP_Nutrient.mat?' ...
         'cruise%2CLab_ID%2CStation_Name%2CDepth_Code%2CDetection_Limit%2CDilution_Factor' ...
@@ -30,7 +32,7 @@ dd = cell(size(Nmth,2), 1);
 ds = cell(size(Nmth,2), 1);
 db = cell(size(Nmth,2), 1);
 
-% step through months and get the data from the ERDDAP server
+% Step through months and get the data from the ERDDAP server
 for nn = Nmth
     if nn < 10
         ann = sprintf('0%i', nn);
@@ -63,8 +65,8 @@ end
 % Now extract the required data for the surface and bottom. 
 % Get both S and SDUP etc.
 for nn = Nmth
-    % get the date range for the cruise since the database doesn't have that 
-    % note there may be more than one cruise per month.
+    % Get the date range for the cruise since the database doesn't have that 
+    % Note there may be more than one cruise per month.
     if ~isempty(dd{nn})
         [CruiseDay{nn}, CruiseNames{nn}] = GetCruiseDateRange(dd{nn}.DEEP_Nutrient);
         [ds{nn}, db{nn}] = seperate_DEEP_Nut_data(dd{nn}.DEEP_Nutrient, CruiseDay{nn});

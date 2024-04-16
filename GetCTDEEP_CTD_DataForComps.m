@@ -1,8 +1,11 @@
 function d = GetCTDEEP_CTD_DataForComps(Astn, CruiseNames, DepRang, BdepLayer)
 % 
 % Get the CTD profile data from the CTDEEP ERDDAP archive by CruiseName
+% 
 % CruiseNames is a structure with an element for each month. There may be 
-% multiple cruises in each month need to put them into a single series
+% multiple cruises in each month need to put them into a single series.
+% 
+% Calls GetCTDEEP_stationdataThredds.m
 % 
 
 % Astn = 'C2';

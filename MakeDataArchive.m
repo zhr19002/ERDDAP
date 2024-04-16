@@ -1,40 +1,52 @@
 function ARTG = MakeDataArchive(avar, av, ac, IplotDOY)
+% 
+% Calls:
+%   "artg_sbe37_2013-2021_tablesrev.mat"
+%   CheckMatFileVarNames.m
+%   ImplementDeltaQAQC.m
+%   ImplementGapTestQAQC.m
+%   ImplementThresoldQAQC.m
+%   ImplementPresIntvTestQAQC.m
+%   ImplementSpikeTestQAQC.m
+% 
+% Called from PlotARTG_2018_21_S_T_DO_summary
+% 
 
-% set the QAQC parameters
+% Set the QAQC parameters
 switch avar
     case 'tv290C'
-        QAQC.Thesholds = [0 30];   % only data in this range is acceptable
-        QAQC.Delta = [2 2];            % only time changes smaller than this are allowed
+        QAQC.Thesholds = [0 30];   % Only data in this range is acceptable
+        QAQC.Delta = [2 2];            % Only time changes smaller than this are allowed
         QAQC.THRSHLD = [1 1.9; 0.6 2];
     
     case 'sal00'
-        QAQC.Thesholds = [25 30];  % only data in this range is acceptable
-        QAQC.Delta = [0.75 0.75];         % only time changes smaller than this are allowed
+        QAQC.Thesholds = [25 30];  % Only data in this range is acceptable
+        QAQC.Delta = [0.75 0.75];         % Only time changes smaller than this are allowed
         QAQC.THRSHLD = [0.6 5; 0.3 1];    % [surface high & Low ; bottom high and low]
     
     case 'sbeopoxMg'
-        QAQC.Thesholds = [0 13];   % only data in this range is acceptable 
-        QAQC.Delta = [1.25 1.25];         % only time changes smaller than this are allowed
+        QAQC.Thesholds = [0 13];   % Only data in this range is acceptable 
+        QAQC.Delta = [1.25 1.25];         % Only time changes smaller than this are allowed
         QAQC.THRSHLD = [0.5 5; 0.5 1];
     
     case 'prdM'
-        QAQC.Thesholds = [0 30];   % only data in this range is acceptable 
-        QAQC.Delta = [3 3];            % only time changes smaller than this are allowed
+        QAQC.Thesholds = [0 30];   % Only data in this range is acceptable 
+        QAQC.Delta = [3 3];            % Only time changes smaller than this are allowed
         QAQC.THRSHLD = [0.18 0.28; 0.6 1.17];
     
     case 'cond0mS'
-        QAQC.Thesholds = [24 50];  % only data in this range is acceptable 
-        QAQC.Delta = [0.2 0.2];          % only time changes smaller than this are allowed    
+        QAQC.Thesholds = [24 50];  % Only data in this range is acceptable 
+        QAQC.Delta = [0.2 0.2];          % Only time changes smaller than this are allowed    
         QAQC.THRSHLD = [0.96 6; 0.5 1.5];
     
     case 'rho'
-        QAQC.Thesholds = [24 50];  % only data in this range is acceptable 
-        QAQC.Delta = [0.2 0.2];          % only time changes smaller than this are allowed    
+        QAQC.Thesholds = [24 50];  % Only data in this range is acceptable 
+        QAQC.Delta = [0.2 0.2];          % Only time changes smaller than this are allowed    
         QAQC.THRSHLD = [0.96 6; 0.5 1.5];
         
     case 'pH'
-        QAQC.Thesholds = [6 8];    % only data in this range is acceptable 
-        QAQC.Delta = [0.04 0.04];         % only time changes smaller than this are allowed    
+        QAQC.Thesholds = [6 8];    % Only data in this range is acceptable 
+        QAQC.Delta = [0.04 0.04];         % Only time changes smaller than this are allowed    
         QAQC.THRSHLD = [0.03 0.06; 0.03 0.06];
     
     otherwise
@@ -42,23 +54,22 @@ switch avar
         return
 end
 
-QAQC.ExpectedTimeIncr = 0.25/24;     % expected data sample period (days)
-QAQC.TolExpectedTimeIncr = 0.25/48;  % tolerance in sample period  (days)
-QAQC.PresIntvTest = [0 3; 20 30];    % expected pressure range (dBar) for
-                                     % surface and bottom
+QAQC.ExpectedTimeIncr = 0.25/24;     % Expected data sample period (days)
+QAQC.TolExpectedTimeIncr = 0.25/48;  % Tolerance in sample period  (days)
+QAQC.PresIntvTest = [0 3; 20 30];    % Expected pressure range (dBar) for surface and bottom
 
-% this file was created from artg_sbe37_2013-2021_tablesrev.mat
+% This file was created from "artg_sbe37_2013-2021_tablesrev.mat"
 NyMax = 21;
 d = load('artg_sbe37_2013-2021_tablesrev.mat'); d = d.d;
 
 % 
-% check for the required data
+% Check for the required data
 % 
 
-% field names
+% Field names
 vnames = {'prdM','tv290C','cond0mS','sal00','sbeopoxMg','EST','pH'};
 
-% if one is missing, fill with NaN
+% If one is missing, fill with NaN
 for nv = 1:length(av)
     for nn = 13:NyMax
         af = [av{nv} num2str(nn)];
@@ -131,7 +142,7 @@ for nv = 1:length(av)                           % for each sensor
             end
         end
 
-        if isfield(T, avar)                         % create output arrays
+        if isfield(T, avar)                         % Create output arrays
             dataout = cat(1, dataout, T.(avar)(:)); % raw data
             timeout = cat(1, timeout, T.EST(:));    % data times
             QAQCout1 = cat(1, QAQCout1, T.(avar1)(:));

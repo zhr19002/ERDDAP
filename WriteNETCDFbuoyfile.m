@@ -1,10 +1,9 @@
 function WriteNETCDFbuoyfile(anm, av, latlon, sd, S, T, DO, P, C, pH)
-
 % 
 % Create a NETCDF file with buoy data
 % 
 % Calls WriteNC_BuoyfilesV2.m
-% Called from PlotARTG_2018_21_S_T_DO_summary
+% Called from PlotARTG_2018_21_S_T_DO_summary.m
 % 
 
 ncfile = anm;
@@ -24,7 +23,6 @@ meta.time_zone = 'EST';
 
 % Convert to the format expected
 % Assume all the data times are the same
-
 for nlev = 1:length(av)
     aObslev = av{nlev};
     d.EST        = S.(aObslev).EST;

@@ -6,6 +6,8 @@ function [ds, db] = seperate_DEEP_Nut_data(d, CruiseDates)
 % 
 % CruiseDates should have the start end and middle data in datenum
 % 
+% Called from GetCTDEEPDataForComps.m
+% 
 
 vars = {'BIOSI-LC',...
         'CHLA'    ,...
@@ -21,7 +23,7 @@ vars = {'BIOSI-LC',...
         'TDP'     ,...
         'TSS'};
 
-% make these suitable for variable names
+% Make these suitable for variable names
 for ii = 1:length(vars)
     vars{ii} = strrep(vars{ii}, '-', '_');
     vars{ii} = strrep(vars{ii}, '#', '_');
@@ -53,7 +55,7 @@ fields = {'cruise'          ,...
           'S_Sample_Depth'  ,...
           'NB_Sample_Depth' };
 
-% sort the data by level first
+% Sort the data by level first
 nsurf = 0; nbot = 0;
 for nn = 1:length(d.time)
     if contains(d.Depth_Code(nn,:), 'S')
@@ -71,10 +73,10 @@ for nn = 1:length(d.time)
 end
 
 % 
-% now need to sort the surf and bottom structures by parameter
+% Now need to sort the surf and bottom structures by parameter
 % 
 
-% search for records with data for variable vars(nl) at surface level
+% Search for records with data for variable vars(nl) at surface level
 if exist('dsurf', 'var')
     for nl = 1:length(cvars)
         nVct = 0;
@@ -88,13 +90,13 @@ if exist('dsurf', 'var')
                 ds.(cvars{nl}).depth(nVct,:) = str2double(dsurf.S_Sample_Depth(nn,:));
                 ds.(cvars{nl}).time(nVct,:) = seconds((CruiseDates{1}(3)-datetime(1970,1,1))*86400);
                                                            
-                % convert CRUISE Start_Date to EST
-                %startCruiseday = dsurf.Start_Date(nn)/86400 + datetime(1970,1,1);
-                %startCruiseday = datetime(startCruiseday,'Format','yyyy-MM-dd');
-                % convert time to EST (the Day Station started )
+                % % Convert CRUISE Start_Date to EST
+                % startCruiseday = dsurf.Start_Date(nn)/86400 + datetime(1970,1,1);
+                % startCruiseday = datetime(startCruiseday,'Format','yyyy-MM-dd');
+                % % Convert time to EST (the Day Station started )
                 astartStationday = dsurf.time(nn)/86400 + datetime(1970,1,1);
                 astartStationday = datetime(astartStationday,'Format','yyyy-MM-dd');
-                % convert Time_ON_Station
+                % Convert Time_ON_Station
                 % Check incase there is no time
                 if isempty(deblank(dsurf.Time_ON_Station(nn,:)))
                     startStationtime = ...
@@ -111,7 +113,7 @@ else
     ds = [];
 end
 
-% search for records with data for variable vars(nl) at Bottom level
+% Search for records with data for variable vars(nl) at Bottom level
 if exist('dbot', 'var')
     for nl = 1:length(cvars)
         nVct = 0; 
@@ -124,13 +126,13 @@ if exist('dbot', 'var')
                 db.(cvars{nl}).Conc(nVct,:) = str2double(dbot.Result(nn,:));
                 db.(cvars{nl}).depth(nVct,:) = str2double(dbot.B_Sample_Depth(nn,:));
                 db.(cvars{nl}).time(nVct,:) = seconds((CruiseDates{1}(3)-datetime(1970,1,1))*86400);                                          
-                % convert CRUISE Start_Date to EST
-                %startCruiseday = dbot.Start_Date(nn)/86400 + datetime(1970,1,1);
-                %startCruiseday = datetime(startCruiseday,'Format','yyyy-MM-dd');
-                % convert time to EST (the Day Station started)
+                % % Convert CRUISE Start_Date to EST
+                % startCruiseday = dbot.Start_Date(nn)/86400 + datetime(1970,1,1);
+                % startCruiseday = datetime(startCruiseday,'Format','yyyy-MM-dd');
+                % % Convert time to EST (the Day Station started)
                 astartStationday = dbot.time(nn)/86400 + datetime(1970,1,1);
                 astartStationday = datetime(astartStationday,'Format','yyyy-MM-dd'); 
-                % convert Time_ON_Station
+                % Convert Time_ON_Station
                 if isempty(deblank(dbot.Time_ON_Station(nn,:)))
                     startStationtime = ...
                     datetime(append(string(astartStationday),' ','11:59:59 AM'),'Format','yyyy-MM-dd HH:mm:ss');

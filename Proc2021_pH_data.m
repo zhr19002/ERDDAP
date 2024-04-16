@@ -1,9 +1,14 @@
-% 
 % This script reads and plot the data from ARTG in 2021.
-% It also get the CTD profile data Kay acquired and the CTDEEP 
-% data and plot it as well.
+% It also get the CTD profile data and the CTDEEP data and plot it as well.
 % 
-% Implmented the spike detection
+% Calls:
+%   "artg_oct2021_recovery.mat"
+%   ImplementQAQC.m
+%   GetUCONNDataForComps.m
+%   GetCTDEEPDataForComps.m
+%   GetDEEPWQClimatology.m
+%   MakeBuoyMetaData.m
+%   OutputARTG2022_pH_NCFILE.m
 % 
 
 % SUNA QAQC parameters
@@ -34,10 +39,10 @@ NmPh = fieldnames(hcpH);
 
 % Get the ship samples but suppress data plot
 NoFig = 0;
-% get data from CESE spreadsheet
+% Get data from CESE spreadsheet
 dUC = GetUCONNDataForComps('ARTG', NoFig);
 
-% which should be mg/l
+% Which should be mg/l
 [dsE1, dbE1, CruiseNamesE1] = GetCTDEEPDataForComps('E1', Ayear, Nmth);
 [dsF2, dbF2, CruiseNamesF2] = GetCTDEEPDataForComps('F2', Ayear, Nmth);
 [dsH2, dbH2, CruiseNamesH2] = GetCTDEEPDataForComps('H2', Ayear, Nmth);
@@ -105,7 +110,7 @@ subplot(4,1,4)
 % --------------Get the E1 climatology---------------------------
 E1_pH_clim = GetDEEPWQClimatology('E1','20','30');
 
-%put the climatology patch on the CHL graph
+% Put the climatology patch on the CHL graph
 t1 = datetime(nyear, 1:12, 15);
 y1 = E1_pH_clim.upper; y2 = E1_pH_clim.lower;
 
@@ -124,7 +129,7 @@ plot(t1, E1_pH_clim.bd50, 'r--'); hold on;
 ylabel('pH'); grid on;
 title('ARTG 2022 pH and Climatology at E1 (Data from CTDEEP)');
 
-% % put 2021 data on plot
+% % Put 2021 data on plot
 % plot(datetime(hcpH.DateTimeUTC0500),hcpH.pHpH,'b+'); hold on;
 % for nn = 1:length(dCTD_E1)
 %     if ~isempty(dCTD_E1{nn})
@@ -148,23 +153,23 @@ Anotes = 'The estimates of pH are from a SeaBird HydrocatT pH sensor.';
 % subplot(4,1,2)
 % plot(datetime(hcpH.DateTimeUTC0500(rng)),smthpH(rng),'r-','linewidth',2); hold on;
 
-%figure; hist(abs(diff(hcpH.pHpH)),100);
-%set(gca,'YSCale','log'); hold on;
+% figure; hist(abs(diff(hcpH.pHpH)),100);
+% set(gca,'YSCale','log'); hold on;
 
 % Seabird HydrocatL QAQC options
-QAQC.Thesholds = [6.5 8.5];         % only data (micro g/l) in this range are acceptable
-QAQC.Delta = [0.075 0.1];           % only time changes smaller than this are allowed
+QAQC.Thesholds = [6.5 8.5];         % Only data (micro g/l) in this range are acceptable
+QAQC.Delta = [0.075 0.1];           % Only time changes smaller than this are allowed
 QAQC.THRSHLD = [0.06 0.1; 0.06 0.1];
-QAQC.ExpectedTimeIncr = 0.25/24;    % expected data sample period (days)
-QAQC.TolExpectedTimeIncr = 0.25/48; % tolerance in sample period  (days)
-QAQC.PresIntvTest = [0 3; 20 30];   % expected pressure range (dBar) for surface and bottom
+QAQC.ExpectedTimeIncr = 0.25/24;    % Expected data sample period (days)
+QAQC.TolExpectedTimeIncr = 0.25/48; % Tolerance in sample period  (days)
+QAQC.PresIntvTest = [0 3; 20 30];   % Expected pressure range (dBar) for surface and bottom
 
-hcpH.EST = datetime(hcpH.DateTimeUTC0500);       % the QAQC routine expect these fields
-hcpH.TIMESTAMP = datetime(hcpH.DateTimeUTC0500); % the QAQC routine expect these fields
+hcpH.EST = datetime(hcpH.DateTimeUTC0500);       % The QAQC routine expect these fields
+hcpH.TIMESTAMP = datetime(hcpH.DateTimeUTC0500); % The QAQC routine expect these fields
 hcpH.prdM = hcpH.PressureDecibar;
 
-dout = ImplementSpikeTestQAQC(hcpH.pHpH, QAQC, 'btm'); % run a simple Spike QAQC test
+dout = ImplementSpikeTestQAQC(hcpH.pHpH, QAQC, 'btm'); % Run a simple Spike QAQC test
 hcpH.pHpHQAQC = dout;
 
-%meta = MakeBuoyMetaData('hcpH', Anotes, 1);
-%dd = OutputARTG2022_pH_NCFILE('ARTG_Bottom_pH.nc', hcpH, meta, rng);
+% meta = MakeBuoyMetaData('hcpH', Anotes, 1);
+% dd = OutputARTG2022_pH_NCFILE('ARTG_Bottom_pH.nc', hcpH, meta, rng);

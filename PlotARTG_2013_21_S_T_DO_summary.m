@@ -1,22 +1,12 @@
-%function [ARTG] = PlotARTG_2013_21_S_T_DO_summary
+% Plot the summary DO, S and T for the EPA LISS ARTG 2021 Report
 % 
-% PlotARTG_2013_21_S_T_DO_summary.m
-% 
-% Plot the summary DO, S and T for the EPA LISS ARTG 2021 Report.
-% 
-% Requires:
+% Calls:
 %   MakeDataArchive.m
-%       artg_sbe37_2013-2021_tablesrev.mat
-%       CheckMatFileVarNames.m
-%       ImplementDeltaQAQC.m
-%       ImplementGapTestQAQC.m
-%       ImplementThresoldQAQC.m
-%       ImplementPresIntvTestQAQC
-%       ImplementSpikeTestQAQC
 %   GetSpikeStats.m
+%   WriteNETCDFbuoyfile.m
 % 
 
-% define the names of the variables in the input data
+% Define the names of the variables in the input data
 av = {'artgbtm1_', 'artgbtm2_', 'artgsfc_'};
 ac = 'gkm';
 IplotDOY = 0;           % = 1 makes plots relative to Day of year
@@ -47,16 +37,15 @@ avar = 'pH';
 pH = MakeDataArchive(avar, av, ac, IplotDOY);
 [prcpH] = GetSpikeStats(pH, avar, av);
 
-% output file created
+% Output file created
 save('ARTG_2013-2021.mat','S','T','DO','P','C','pH');
 
 % 
-% Save all the data plotted in a structure that can be exported
-% to NETCDF and to ERDDAP
+% Save all the data plotted in a structure that can be exported to NETCDF and to ERDDAP
 % 
 
 latlon = 41 + 0.60/60 - (73 + 17.29/60);
 stnDep = 30;
 
-% pass all the screened data from the buoy at each level to output nc file
+% Pass all the screened data from the buoy at each level to output nc file
 WriteNETCDFbuoyfile('ARTG', av, latlon, stnDep, S, T, DO, P, C, pH);

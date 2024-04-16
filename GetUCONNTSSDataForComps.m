@@ -1,18 +1,19 @@
 function d = GetUCONNTSSDataForComps(aBuoy, NoFig)
 % 
 % Get the TSS sample data from the XLS file
+% Calls "smc2021Data.xlsx"
 % 
 
-%aBuoy = 'ARTG'; NoFig = 1;
+% aBuoy = 'ARTG'; NoFig = 1;
 
 aBuoy = upper(aBuoy);
 opts = detectImportOptions('smc2021Data.xlsx');
 opts = setvaropts(opts,1,'InputFormat','MM/dd/uuuu');
 T = readtable('smc2021Data.xlsx', opts);
 
-% columnNames: {'TIMESTAMP_EST','STATION','DEPTH_M','SampleID','smc_mgL'}
+% ColumnNames: {'TIMESTAMP_EST','STATION','DEPTH_M','SampleID','smc_mgL'}
 % Units all mg/L
-% find the rows with the ARTG data
+% Find the rows with the ARTG data
 iBuoy = strfind(upper(T.STATION), aBuoy);
 nBuoy = zeros(size(T.STATION));
 for nn = 1:size(T.STATION,1)
@@ -22,7 +23,7 @@ for nn = 1:size(T.STATION,1)
 end
 inBuoy = find(nBuoy==1);
 
-% now get the date of the water samples and the value of NO3
+% Now get the date of the water samples and the value of NO3
 d.daten = datetime(T.TIMESTAMP_EST(inBuoy));
 d.TSSmean = T.smc_mgL(inBuoy);
 

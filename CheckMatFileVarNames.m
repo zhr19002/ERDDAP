@@ -1,16 +1,17 @@
 function VarBad = CheckMatFileVarNames(T, vnames)
 % 
-% function to check the variable names in Kay' Tables
-% called from FixKaysMatFile.m
+% Function to check the variable names
+% 
+% Called from MakeDataArchive.m
 % 
 
-% set variable names required
+% Set variable names required
 VarBad = zeros(length(vnames), 1);
-% get names in Tables
+% Get names in tables
 Cnames = T.Properties.VariableNames;
 
-for nv = 1:length(vnames)                      % look for the required 
-    chkname = strfind(Cnames, vnames(nv));     % variables in each year
+for nv = 1:length(vnames)   % Look for the required variables in each year
+    chkname = strfind(Cnames, vnames(nv));
     nameOK = cellfun(@(x) any(x), chkname);
     nameOK = double(nameOK);
     if sum(nameOK) == 0                        % VarBad=0 => missing

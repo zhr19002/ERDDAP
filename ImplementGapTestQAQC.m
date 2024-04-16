@@ -1,19 +1,20 @@
 function d = ImplementGapTestQAQC(din, Para)
-%
-%  Apply IOOS QARTOD gaptest on data time.
 % 
-%  find anomalous time seperations
-%  set 1 for pass, 4 for fail and 3 for suspious
-%
-%  Called from PlotARTG_2018_20_summary.m
-%
+% Apply IOOS QARTOD gap test on data time
+% 
+% Find anomalous time seperations
+% Set 1 for pass, 4 for fail and 3 for suspious
+% 
+% Called from MakeDataArchive.m
+% 
+
 TINC = Para.ExpectedTimeIncr;
 rngTINC = Para.TolExpectedTimeIncr;
 
-d = ones(size(din));        % set QAQC code to 1
-dt = diff(din);             % find anomalous time spacing
-dt = dt([1 1:end]);         % assume first poitn is the same
-adt = abs(dt);              % as the second to keep arrays even
+d = ones(size(din));  % Set QAQC code to 1
+dt = diff(din);       % Find anomalous time spacing
+dt = dt([1 1:end]);   % Assume first point is the same as the second to keep arrays even
+adt = abs(dt);             
 
 ifail = find(dt<0 | adt>TINC+rngTINC);
 

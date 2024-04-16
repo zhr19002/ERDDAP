@@ -3,16 +3,16 @@ function d = GetCTDEEP_stationdataThredds(Anm, Acrs)
 % Go get the data from station Anm on cruise Acrs from the lisicos Thredds
 % server and return a structure with the salinity temperature and density
 % 
-% Called from MakeStationTimeSereis.m
+% Called from GetCTDEEP_CTD_DataForComps.m
 % 
 
 wopts = weboptions;
 wopts.Timeout = 100;
 
-%Anm = 'C2'; Acrs = 'WQOCT18';
-%Anm = 'F2'; Acrs = 'HYJUL21';
+% Anm = 'C2'; Acrs = 'WQOCT18';
+% Anm = 'F2'; Acrs = 'HYJUL21';
 
-% define the URL template
+% Define the URL template
 a1 = ['http://merlin.dms.uconn.edu:8080/erddap/tabledap/DEEP_WQ.mat?' ...
     'cruise_name%2Cstation_name%2Ctime%2Clatitude%2Clongitude%2Cdepth_code%2Cdepth%2C' ...
     'sea_water_pressure%2Csea_water_electrical_conductivity%2Csea_water_temperature%2C' ...
@@ -52,7 +52,7 @@ for nn = 1:size(dt,2)
         end
         d.(columnNames{nn}) = tmp;
     
-    % parse times correctly
+    % Parse times correctly
     elseif strcmp(columnNames{nn}, 'time') | ...
            strcmp(columnNames{nn}, 'Start_Date') | ...
            strcmp(columnNames{nn}, 'End_Date')

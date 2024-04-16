@@ -1,6 +1,8 @@
 function res = ComputeMonthlyAverages(daten, d)
 % 
-% average by month and return the mean and anomalies
+% Average by month and return the mean and anomalies
+% 
+% Called from GetDEEPStationSurfaceData.m
 % 
 
 [~,mnth,~] = datevec(daten);
@@ -18,13 +20,13 @@ for nm = 1:12
     res.bd26(nm) = prctile(d(iu),26);
     res.bd50(nm) = prctile(d(iu),50);
     res.bd84(nm) = prctile(d(iu),84);
-    % compute the deviation from mean and the residual sddev
+    % Compute the deviation from mean and the residual sddev
     res.anom(iu) = d(iu)-res.mn(nm);
     tmp = d(iu)-res.mn(nm);
     res.residual_sd(nm) = std(tmp(~isnan(tmp)));
 end
 
-% replace any nans with noise
+% Replace any nans with noise
 noise = std(res.anom(~isnan(res.anom)));
 inan = find(isnan(res.anom));
 
@@ -40,7 +42,7 @@ inan = find(isnan(res.anom));
 
 res.anom(inan) = noise*rand(size(inan));
 
-NF = 48;    % this should have a 24 month cut off. 
+NF = 48;    % This should have a 24 month cut off. 
 res.fltanom = filter2(ones(NF,1)/NF, res.anom, 'same');
 
 end

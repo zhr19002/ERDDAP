@@ -1,7 +1,9 @@
+% Calls GetDEEPStationSurfaceData.m
+
 Astn = 'E1';
 [ut, res] = GetDEEPStationSurfaceData(Astn);
 
-% PLot the mean monthly variation
+% Plot the mean monthly variation
 figure;
 subplot(5,1,1)
     title(['CTDEEP Station ' Astn ' Surface Climatology']);
@@ -39,8 +41,7 @@ subplot(5,1,5)
     xticks(datetime(0,1:12,1)); grid on;
     xtickformat('MMM'); ylabel('PAR (\mu E m^{-2} s^{-1})');
 
-% plot the residual series to examine interannual variability
-% and the low pass filtered values
+% Plot the residual series to examine interannual variability and the low pass filtered values
 figure;
 subplot(2,1,1)
     plot(ut,res.Temp.anom,'b.'); hold on;
@@ -84,7 +85,7 @@ subplot(2,1,1);
     xtickformat('yy');
     title(['Near surface data: Station ' Astn]);    
 
-% plot the filtered anomalies on the same graph scaled by the sd
+% Plot the filtered anomalies on the same graph scaled by the sd
 % These aren't very enlightening at E1
 figure;
 plot(ut,res.Temp.fltanom./std(res.Temp.fltanom(~isnan(res.Temp.fltanom))),'b-','linewidth',2); hold on;

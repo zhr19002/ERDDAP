@@ -1,6 +1,5 @@
-% 
 % Plot the time sereis for the 2023 ARTG data
-% 
+% (temperature, salinity, dissolved oxygen)
 
 % Plot the temperature series
 figure;

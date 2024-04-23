@@ -37,7 +37,7 @@ if NoFig == 1
     plot(d.daten, d.NO2, 'r+', d.daten, d.NO3, 'b+', d.daten, d.Phos, 'g*'); 
     ylabel('Mg/l');
     legend({'NO_2','NO_3','Phos'});
-    xtickformat('yy/MM');
+    xtickformat('MMM-yy');
     title(aBuoy);
 end
 

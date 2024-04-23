@@ -40,7 +40,7 @@ end
 % pH: [19120×1 single]
 % Start_Date: [19120×1 double]
 
-daten = d.DEEP_WQ.Start_Date/(24*3600) + datetime(1970,1,1,0,0,0);
+daten = d.DEEP_WQ.Start_Date/(24*3600) + datetime(1970,1,1);
 
 % Average by month
 [~, mnth, ~] = datevec(daten);

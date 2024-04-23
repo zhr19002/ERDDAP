@@ -9,7 +9,7 @@
 % Define the names of the variables in the input data
 av = {'artgbtm1_', 'artgbtm2_', 'artgsfc_'};
 ac = 'gkm';
-IplotDOY = 0;           % = 1 makes plots relative to Day of year
+IplotDOY = 1;           % = 1 makes plots relative to Day of year
 
 % Variable that are options
 % {'sal00','sbeopoxMg','tv290C','prdM','cond0mS','pH'}
@@ -36,7 +36,7 @@ C = MakeDataArchive(avar, av, ac, IplotDOY);
 avar = 'pH';
 pH = MakeDataArchive(avar, av, ac, IplotDOY);
 [prcpH] = GetSpikeStats(pH, avar, av);
-
+%%
 % Output file created
 save('ARTG_2013-2021.mat','S','T','DO','P','C','pH');
 

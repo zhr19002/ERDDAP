@@ -14,7 +14,7 @@
 % SUNA QAQC parameters
 % Select SPIKE thresholds for the surface
 % Specify what DEEP data CTDEEP data from ERDDAP
-Ast = 'F2'; Ayear = '2021'; Nmth = 4:10;
+Ast = 'E1'; Ayear = '2021'; Nmth = 4:10;
 % Specify the surface range of the data from the DEEP CTDs that need to be used
 SrfDepRng = [0 3];
 % Specify the Layer above the max dep to average the bottom values
@@ -44,10 +44,6 @@ dUC = GetUCONNDataForComps('ARTG', NoFig);
 
 % Which should be mg/l
 [dsE1, dbE1, CruiseNamesE1] = GetCTDEEPDataForComps('E1', Ayear, Nmth);
-[dsF2, dbF2, CruiseNamesF2] = GetCTDEEPDataForComps('F2', Ayear, Nmth);
-[dsH2, dbH2, CruiseNamesH2] = GetCTDEEPDataForComps('H2', Ayear, Nmth);
-[dsD3, dbD3, CruiseNamesD3] = GetCTDEEPDataForComps('D3', Ayear, Nmth);
-[ds15, db15, CruiseNames15] = GetCTDEEPDataForComps('15', Ayear, Nmth);
 
 % Process the pH from ARTG
 figure;
@@ -63,50 +59,37 @@ subplot(4,1,2)
 subplot(4,1,3)
     plot(datetime(hcpH.DateTimeUTC0500), hcpH.Salinitypsu, 'b+');
     hold on; grid on;
-    ylabel('Sal');
+    ylabel('Salinity');
 subplot(4,1,4)
     plot(datetime(hcpH.DateTimeUTC0500), hcpH.TemperatureCelsius, 'b+');
     hold on; grid on;
-    ylabel('Celcius');
+    ylabel('Temperature');
+%%
+% Get the CTDEEP data for the 2021 cruises
+dCTD_E1 = GetCTDEEP_CTD_DataForComps('E1', CruiseNamesE1, SrfDepRng, BdepLayer);
 
-% % Get the CTDEEP data for the 2021 cruises
-% dCTD_E1 = GetCTDEEP_CTD_DataForComps('E1', CruiseNamesE1, SrfDepRng, BdepLayer);
-% dCTD_F2 = GetCTDEEP_CTD_DataForComps('F2', CruiseNamesF2, SrfDepRng, BdepLayer);
-% % plot the CTDEEP data
-% for nn = 1:length(dCTD_E1)
-%     if ~isempty(dCTD_E1{nn})
-%         subplot(4,1,1)
-%             plot(dCTD_E1{nn}.BmnTime,dCTD_E1{nn}.BmnDepth,'gs','MarkerFaceColor','g');
-%             hold on;
-%         subplot(4,1,2)
-%             plot(dCTD_E1{nn}.BmnTime,dCTD_E1{nn}.BmnPH,'gs','MarkerFaceColor','g');
-%             hold on;
-%         subplot(4,1,3)
-%             plot(dCTD_E1{nn}.BmnTime,dCTD_E1{nn}.BmnSal,'gs','MarkerFaceColor','g');
-%             hold on;
-%         subplot(4,1,4)
-%             plot(dCTD_E1{nn}.BmnTime,dCTD_E1{nn}.BmnTemp,'gs','MarkerFaceColor','g');
-%             hold on;
-%     end
-% end
-% 
-% for nn = 1:length(dCTD_F2)
-%     if ~isempty(dCTD_F2{nn})
-%         subplot(4,1,1)
-%             plot(dCTD_F2{nn}.BmnTime,dCTD_F2{nn}.BmnDepth,'rs','MarkerFaceColor','r');
-%             hold on;
-%         subplot(4,1,2)
-%             plot(dCTD_F2{nn}.BmnTime,dCTD_F2{nn}.BmnPH,'rs','MarkerFaceColor','r');
-%             hold on;
-%         subplot(4,1,3)
-%             plot(dCTD_F2{nn}.BmnTime,dCTD_F2{nn}.BmnSal,'rs','MarkerFaceColor','r');
-%             hold on;
-%         subplot(4,1,4)
-%             plot(dCTD_F2{nn}.BmnTime,dCTD_F2{nn}.BmnTemp,'rs','MarkerFaceColor','r');
-%             hold on;
-%     end
-% end
-
+% Plot the CTDEEP data
+for nn = 1:length(dCTD_E1)
+    if ~isempty(dCTD_E1{nn})
+        subplot(4,1,1)
+            plot(dCTD_E1{nn}.BmnTime,dCTD_E1{nn}.BmnDepth,'gs','MarkerFaceColor','g');
+            hold on; grid on;
+            ylabel('Depth');
+        subplot(4,1,2)
+            plot(dCTD_E1{nn}.BmnTime,dCTD_E1{nn}.BmnPH,'gs','MarkerFaceColor','g');
+            hold on; grid on;
+            ylabel('pH');
+        subplot(4,1,3)
+            plot(dCTD_E1{nn}.BmnTime,dCTD_E1{nn}.BmnSal,'gs','MarkerFaceColor','g');
+            hold on; grid on;
+            ylabel('Salinity');
+        subplot(4,1,4)
+            plot(dCTD_E1{nn}.BmnTime,dCTD_E1{nn}.BmnTemp,'gs','MarkerFaceColor','g');
+            hold on; grid on;
+            ylabel('Temperature');
+    end
+end
+%%
 % --------------Get the E1 climatology---------------------------
 E1_pH_clim = GetDEEPWQClimatology('E1','20','30');
 
@@ -127,21 +110,17 @@ plot(t1, E1_pH_clim.bd26, 'r--'); hold on;
 plot(t1, E1_pH_clim.bd84, 'r--'); hold on;
 plot(t1, E1_pH_clim.bd50, 'r--'); hold on;
 ylabel('pH'); grid on;
-title('ARTG 2022 pH and Climatology at E1 (Data from CTDEEP)');
+title('ARTG 2021 pH and Climatology at E1 (from CTDEEP)');
 
-% % Put 2021 data on plot
-% plot(datetime(hcpH.DateTimeUTC0500),hcpH.pHpH,'b+'); hold on;
-% for nn = 1:length(dCTD_E1)
-%     if ~isempty(dCTD_E1{nn})
-%         plot(dCTD_E1{nn}.BmnTime,dCTD_E1{nn}.BmnPH,'gs','MarkerFaceColor','g');
-%     end
-% end
-% for nn = 1:length(dCTD_F2)
-%     if ~isempty(dCTD_F2{nn})
-%         plot(dCTD_F2{nn}.BmnTime,dCTD_F2{nn}.BmnSal,'rs','MarkerFaceColor','r');
-%     end
-% end
+% Put 2021 data on plot
+plot(datetime(hcpH.DateTimeUTC0500),hcpH.pHpH,'b+'); hold on;
+for nn = 1:length(dCTD_E1)
+    if ~isempty(dCTD_E1{nn})
+        plot(dCTD_E1{nn}.BmnTime,dCTD_E1{nn}.BmnPH,'gs','MarkerFaceColor','g');
+    end
+end
 
+%%
 %------------------------- Write NETCDF----------------------------------%
 Anotes = 'The estimates of pH are from a SeaBird HydrocatT pH sensor.';
 

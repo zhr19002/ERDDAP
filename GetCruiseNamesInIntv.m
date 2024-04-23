@@ -5,7 +5,7 @@ function [CruiseDay, CruiseNames] = GetCruiseNamesInIntv(Ayear, ann)
 % Called from GetCTDEEP_WQDataForComps.m
 % 
 
-% Ayear = '2021'; ann = '06';
+% Ayear = '2021'; ann = '03';
 
 aURLpat = ['http://merlin.dms.uconn.edu:8080/erddap/tabledap/DEEP_Cruise_Info.json?'...
            'cruise_name%2CStart_Date%2CEnd_Date&Start_Date%3E=YYYY-MM-01T00%3A00%3A00Z'...

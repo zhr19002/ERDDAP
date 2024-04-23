@@ -9,22 +9,32 @@ function d = GetCTDEEP_CTD_DataForComps(Astn, CruiseNames, DepRang, BdepLayer)
 % 
 
 % Astn = 'C2';
-% CruiseNames = {["WQOCT18";"WQJUN21"], "HYJUL21"};
+% CruiseNames = {'WQJUN21';['HYJUL21';'WQJUL21'];['HYAUG21';'WQAUG21'];[];'WQOCT21'};
 % DepRang = [0 30];
 % BdepLayer = 30;
 
-nct = 0;
-for nn = 1:length(CruiseNames)
+cellnum = 0;
+for nn = 1:size(CruiseNames,1)
     if ~isempty(CruiseNames{nn})
-        for nc = 1:length(CruiseNames{nn})
-            nct = nct + 1;
-            CN{nct} = CruiseNames{nn}(nc);
+        for nc = 1:size(CruiseNames{nn},1)
+            cellnum = cellnum + 1;
         end
     end
 end
 
-d = cell(nct,1);
-for nn = 1:nct
+nct = 0;
+CN = cell(cellnum,1);
+for nn = 1:size(CruiseNames,1)
+    if ~isempty(CruiseNames{nn})
+        for nc = 1:size(CruiseNames{nn},1)
+            nct = nct + 1;
+            CN{nct} = CruiseNames{nn}(nc,:);
+        end
+    end
+end
+
+d = cell(cellnum,1);
+for nn = 1:cellnum
     d{nn} = GetCTDEEP_stationdataThredds(Astn, CN{nn});
     if isfield(d{nn}, 'depth')
         % Average properties in the depth Range speced

@@ -32,6 +32,6 @@ if NoFig == 1
     plot(d.daten, d.TSSmean, 'r+');
     ylabel('mg/l');
     legend({'Tss'});
-    xtickformat('yy/MM');
+    xtickformat('MMM-yy');
     title(aBuoy);
 end

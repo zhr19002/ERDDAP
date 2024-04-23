@@ -96,9 +96,9 @@ avar4 = [avar 'QAQCTest4'];
 avar5 = [avar 'QAQCTest5'];
 avarT = [avar 'QAQCTestCount'];
 
-figure; hold on;
-
 for nv = 1:length(av)                           % for each sensor
+    
+    figure; hold on;
     
     dataout = []; timeout = [];
     QAQCout1 = []; QAQCout2 = [];
@@ -111,7 +111,7 @@ for nv = 1:length(av)                           % for each sensor
             T = table2struct(d.(af), 'ToScalar', true);
             
             if isfield(T, avar)
-                T.(avarT) = zeros(size(T.(avar)));  % Zero Counter for number of tests
+                T.(avarT) = zeros(size(T.(avar)));  % Zero counter for number of tests
                                                     % Do tests and increment counter
                 T.(avar1) = ImplementThresoldQAQC(T.(avar), T.EST, QAQC);
                 T.(avarT) = T.(avarT) + 1;
@@ -135,9 +135,10 @@ for nv = 1:length(av)                           % for each sensor
                 if IplotDOY == 1
                     [yr, ~, ~] = datevec(T.EST);
                     duration = days(datetime(tmp) - datetime(min(yr),1,1));
-                    plot(duration, T.(avar)(iu), '-');
+                    plot(duration,T.(avar)(iu),'-','DisplayName',['20',num2str(nn)]);
+                    legend;
                 else
-                    plot(datetime(tmp), T.(avar)(iu), [ac(nv) '.']);
+                    plot(datetime(tmp),T.(avar)(iu),[ac(nv) '.']);
                 end
             end
         end
@@ -161,6 +162,10 @@ for nv = 1:length(av)                           % for each sensor
             [QAQCout1 QAQCout2 QAQCout3 QAQCout4 QAQCout5];
         ARTG.(av{nv}).(avar).QAQC(:,10) = QAQCtest;
     end
+
+    grid on; box on;
+    ylabel(avar);
+    title(av{nv}(1:end-1));
 end
 
 % QAQC will be implemented once the data is in ERDDAP.
@@ -191,9 +196,5 @@ end
 % F. Excessive spatial gradient or pattern check (“bullseyes”) 
 % G. Below detection limit of method
 % 
-
-grid on; box on;
-ylabel(avar);
-title('ARTG-Near Bottom & Near Surface');
 
 end

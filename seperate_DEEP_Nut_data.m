@@ -89,15 +89,16 @@ if exist('dsurf', 'var')
                 ds.(cvars{nl}).Conc(nVct,:) = str2double(dsurf.Result(nn,:));
                 ds.(cvars{nl}).depth(nVct,:) = str2double(dsurf.S_Sample_Depth(nn,:));
                 ds.(cvars{nl}).time(nVct,:) = seconds((CruiseDates{1}(3)-datetime(1970,1,1))*86400);
-                                                           
-                % % Convert CRUISE Start_Date to EST
+                
+                % Convert CRUISE Start_Date to EST
                 % startCruiseday = dsurf.Start_Date(nn)/86400 + datetime(1970,1,1);
                 % startCruiseday = datetime(startCruiseday,'Format','yyyy-MM-dd');
-                % % Convert time to EST (the Day Station started )
+                
+                % Convert time to EST (the Day Station started)
                 astartStationday = dsurf.time(nn)/86400 + datetime(1970,1,1);
                 astartStationday = datetime(astartStationday,'Format','yyyy-MM-dd');
+                
                 % Convert Time_ON_Station
-                % Check incase there is no time
                 if isempty(deblank(dsurf.Time_ON_Station(nn,:)))
                     startStationtime = ...
                     datetime(append(string(astartStationday),' ','11:59:59 AM'),'Format','yyyy-MM-dd HH:mm:ss');
@@ -125,13 +126,16 @@ if exist('dbot', 'var')
                 end
                 db.(cvars{nl}).Conc(nVct,:) = str2double(dbot.Result(nn,:));
                 db.(cvars{nl}).depth(nVct,:) = str2double(dbot.B_Sample_Depth(nn,:));
-                db.(cvars{nl}).time(nVct,:) = seconds((CruiseDates{1}(3)-datetime(1970,1,1))*86400);                                          
-                % % Convert CRUISE Start_Date to EST
+                db.(cvars{nl}).time(nVct,:) = seconds((CruiseDates{1}(3)-datetime(1970,1,1))*86400);
+
+                % Convert CRUISE Start_Date to EST
                 % startCruiseday = dbot.Start_Date(nn)/86400 + datetime(1970,1,1);
                 % startCruiseday = datetime(startCruiseday,'Format','yyyy-MM-dd');
-                % % Convert time to EST (the Day Station started)
+                
+                % Convert time to EST (the Day Station started)
                 astartStationday = dbot.time(nn)/86400 + datetime(1970,1,1);
-                astartStationday = datetime(astartStationday,'Format','yyyy-MM-dd'); 
+                astartStationday = datetime(astartStationday,'Format','yyyy-MM-dd');
+                
                 % Convert Time_ON_Station
                 if isempty(deblank(dbot.Time_ON_Station(nn,:)))
                     startStationtime = ...

@@ -92,14 +92,14 @@ for nt = 1:lut
     CHLA_CorMin(nt) = mean(tmp(~isnan(tmp)));
 end
 
-% Plot the RAW time series of the raw T&S data
+% Plot time series of the raw T&S data
 figure;
 subplot(2,1,1)
     plot(daten,d.DEEP_WQ.sea_water_temperature,'b.'); hold on;
     plot(ut,Tempavg,'rs'); hold on;
     ylabel('Temperature (C)');
     xticks(datetime(1992:2023,1,1)); grid on;
-    xtickformat('yy');
+    xtickformat('yyyy');
     title(['Near surface data: Station ' Astn]);
     
 subplot(2,1,2); 
@@ -107,41 +107,40 @@ subplot(2,1,2);
     plot(ut,Salavg,'rs'); hold on;
     ylabel('Practical Salinity');
     xticks(datetime(1992:2023,1,1)); grid on;
-    xtickformat('yy');
+    xtickformat('yyyy');
+    ylim([23 30]); % Set up y-axis limits
 
 % Explore the relationship between the max measured PAR and the extrpolated 
 % surface value assuming that the extinction coeff is uniform
-
 figure;
-plot(PARmx,PAR0,'r+'); hold on;
-iu=find(ParCorr>0.8);
-errorbar(PARmx(iu), PAR0(iu), PAR0upper(iu), PAR0lower(iu));
+plot(PARmx,PAR0,'b.'); hold on;
+iu = find(ParCorr>0.8);
+errorbar(PARmx(iu),PAR0(iu),PAR0(iu)-PAR0lower(iu),PAR0upper(iu)-PAR0(iu),'vertical','r+');
+xlabel('PARmx'); ylabel('PAR0');
 
-% Plot the PAR timeseries of the raw data & max 
-% and the extrapolated and Extinction coeff
+% Plot time series of the raw PAR, CHLA, and extinction coeff data
 figure;
-subplot(2,1,1)
+subplot(3,1,1)
     plot(daten,d.DEEP_WQ.PAR,'b.'); hold on; 
     plot(ut,PARmx,'gs'); hold on;  
     plot(ut,PAR0,'rs'); hold on;
-    ylabel('PAR (\mu E m^{-2}s^{-1} )');
+    ylabel('PAR (\muEm^{-2}s^{-1})');
     xticks(datetime(1992:2023,1,1)); grid on;
-    xtickformat('yy');
+    xtickformat('yyyy');
     title(['Near surface data: Station ' Astn]);
     
-subplot(2,1,2)
+subplot(3,1,2)
     plot(daten,d.DEEP_WQ.Corrected_Chlorophyll,'b.'); hold on;
     plot(ut,CHLA_Coravg,'rs'); hold on;
-    ylabel('CHLA(corrected) (\mu g/l)');
+    ylabel('CHLA (corrected) (\mug/l)');
     xticks(datetime(1992:2023,1,1)); grid on;
-    xtickformat('yy');
+    xtickformat('yyyy');
 
-figure;
-subplot(2,1,1); 
+subplot(3,1,3)
     plot(ut,beta,'rs'); hold on;
     ylabel('Extinction, \beta (m^{-1})');
     xticks(datetime(1992:2023,1,1)); grid on;
-    xtickformat('yy');
+    xtickformat('yyyy');
 
 % Make the monthly averages
 res.Temp = ComputeMonthlyAverages(ut, Tempavg);

@@ -1,7 +1,8 @@
-function d = OutputARTG2022_pH_NCFILE(ncfile, d, meta, gb_range)
+function d = OutputARTG2021_pH_NCFILE(ncfile, d, meta, gb_range)
 % 
-% Make NCFILE of the pH data from ArtG 2021
+% Make NCFILE of the pH data from ARTG 2021
 % 
+% Calls MakeBuoyMetaData.m
 % Called from Proc2021_pH_data.m
 % 
 
@@ -12,7 +13,6 @@ QAQCnote = ['QAQC tests: (1) Threshold, (2) first difference, (3)time gap, '...
 ncid = netcdf.create(ncfile,'64BIT_OFFSET');
 d.UCT = datetime(d.TIMESTAMP) - datetime(1970,1,1); % Convert to UCT
 
-% Check ens3 range
 if isempty(gb_range)
     gb_range=[1 length(d.UCT)];
 end
@@ -36,32 +36,32 @@ netcdf.putAtt(ncid,varid,'water_depth_units','m');
 netcdf.putAtt(ncid,varid,'water_depth_method',meta.depth_source);
 netcdf.putAtt(ncid,varid,'PI',meta.PI);
 netcdf.putAtt(ncid,varid,'processed_by',meta.processed_by);
-ad = string(datetime(datetime('now'), 'Format', 'yyyy/MM/dd HH:mm:SS'));
+ad = string(datetime(datetime('now'), 'Format', 'yyyy-MM-dd HH:mm:ss'));
 netcdf.putAtt(ncid,varid,'CreationDate',ad);
 netcdf.putAtt(ncid,varid,'institution','UConn, Marine Sciences');
 netcdf.putAtt(ncid,varid,'source','LISICOS-NERACOOS Observations');
 % netcdf.putAtt(ncid,varid,'title',meta.lab);
 
 % DEFINE VARIABLES
-timeid = netcdf.defVar(ncid,'time','double',burstid);
+timeid = netcdf.defVar(ncid,'time','NC_DOUBLE',burstid);
 netcdf.putAtt(ncid,timeid,'standard_name','time');
 netcdf.putAtt(ncid,timeid,'units','days since midnight January 1, 1970');
 netcdf.putAtt(ncid,timeid,'calendar','julian');
 netcdf.putAtt(ncid,timeid,'time_zone',meta.time_zone);
 netcdf.putAtt(ncid,timeid,'axis','T');
 
-pHid = netcdf.defVar(ncid,'pHpH','float',burstid);
+pHid = netcdf.defVar(ncid,'pHpH','NC_FLOAT',burstid);
 netcdf.putAtt(ncid,pHid,'units','none');
 netcdf.putAtt(ncid,pHid,'long_name','pH');
 
-pHQid = netcdf.defVar(ncid,'pHpHQAQC','byte',[burstid,QAQCid]); 
+pHQid = netcdf.defVar(ncid,'pHpHQAQC','NC_BYTE',[burstid,QAQCid]); 
 netcdf.putAtt(ncid,pHQid,'long_name','pHpHQAQC_status_flag');
 netcdf.putAtt(ncid,pHQid,'note',QAQCnote); 
  
 netcdf.endDef(ncid);
 
 % Put into data mode
-data = d.UCT(gb_range(1):gb_range(2)) - datetime(1970,1,1);
+data = days(d.UCT(gb_range(1):gb_range(2)));
 netcdf.putVar(ncid,timeid,data);
 
 data = d.pHpH(gb_range(1):gb_range(2));

@@ -31,7 +31,7 @@ for nlev = 1:length(av)
     d.prdMq      = P.(aObslev).prdM.data;
     d.sbeopoxMgq = DO.(aObslev).sbeopoxMg.data;
     d.rhoq       = sw_dens(d.sal00q, d.tv290Cq, d.prdMq) - 1000;
-    sat          = o2sat(d.sal00q, d.tv290Cq)*32/1000; % Weiss, converted to mg/l
+    sat          = o2sat(d.sal00q, d.tv290Cq)*32/1000; % Converted to mg/l
     d.DOsatq     = 100*d.sbeopoxMgq./sat;
     
     d.tv290CQAQC    = T.(aObslev).tv290C.QAQC;
@@ -44,7 +44,7 @@ for nlev = 1:length(av)
     d.pH     = pH.(aObslev).pH.data;
     d.pHQAQC = pH.(aObslev).pH.QAQC;
     
-    WriteNC_BuoyfilesV2([ncfile aObslev '.nc'], d , meta, []);
+    WriteNC_BuoyfilesV2([ncfile aObslev '.nc'], d, meta, []);
     clear d;
 end
 

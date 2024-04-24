@@ -122,7 +122,7 @@ end
 
 %%
 %------------------------- Write NETCDF----------------------------------%
-Anotes = 'The estimates of pH are from a SeaBird HydrocatT pH sensor.';
+Anotes = 'The estimates of pH are from a SeaBird HydrocatL pH sensor.';
 
 % smthpH = filter2(ones(2*Filterlength,1)/(2*Filterlength), hcpH.pHpH, 'same');
 % hcpH.smthpH = smthpH;
@@ -150,5 +150,5 @@ hcpH.prdM = hcpH.PressureDecibar;
 dout = ImplementSpikeTestQAQC(hcpH.pHpH, QAQC, 'btm'); % Run a simple Spike QAQC test
 hcpH.pHpHQAQC = dout;
 
-% meta = MakeBuoyMetaData('hcpH', Anotes, 1);
-% dd = OutputARTG2022_pH_NCFILE('ARTG_Bottom_pH.nc', hcpH, meta, rng);
+meta = MakeBuoyMetaData('hcpH', Anotes, 1);
+dd = OutputARTG2021_pH_NCFILE('ARTG_Bottom_pH.nc', hcpH, meta, []);

@@ -7,14 +7,15 @@ function d = OutputARTG2021_pH_NCFILE(ncfile, d, meta, gb_range)
 % 
 
 QAQCnote = ['QAQC tests: (1) Threshold, (2) first difference, (3)time gap, '...
-            '(4) pressure range (5) spike; 0= not applied/implemented; 1=pass; '...
+            '(4) pressure range (5) spike; 0=not applied/implemented; 1=pass; '...
             '3=questionable; 4=fail.Last column is number of tests applied.'];
 
+% Make nc file
 ncid = netcdf.create(ncfile,'64BIT_OFFSET');
 d.UCT = datetime(d.TIMESTAMP) - datetime(1970,1,1); % Convert to UCT
 
 if isempty(gb_range)
-    gb_range=[1 length(d.UCT)];
+    gb_range = [1 length(d.UCT)];
 end
 
 % DIMENSIONS (number of sample times and QAQC checks)
@@ -25,8 +26,8 @@ QAQCid = netcdf.defDim(ncid,'QAQC',size(d.pHpHQAQC,2));
 varid = netcdf.getConstant('NC_GLOBAL');
 netcdf.putAtt(ncid,varid,'Processing_Notes',meta.Processing_Notes);
 netcdf.putAtt(ncid,varid,'mooring_name',meta.mooring_name);
-% netcdf.putAtt(ncid,varid,'deployment_date',meta.depdate-day0);
-% netcdf.putAtt(ncid,varid,'recovery_date',meta.recdate-day0);
+% netcdf.putAtt(ncid,varid,'deployment_date',meta.depdate-datetime(1970,1,1));
+% netcdf.putAtt(ncid,varid,'recovery_date',meta.recdate-datetime(1970,1,1));
 netcdf.putAtt(ncid,varid,'latitude',meta.lat);
 netcdf.putAtt(ncid,varid,'longitude',meta.lon);
 netcdf.putAtt(ncid,varid,'latitude_units','decimal degrees');
@@ -61,7 +62,7 @@ netcdf.putAtt(ncid,pHQid,'note',QAQCnote);
 netcdf.endDef(ncid);
 
 % Put into data mode
-data = days(d.UCT(gb_range(1):gb_range(2)));
+data = days(d.UCT(gb_range(1):gb_range(2)) - d.UCT(gb_range(1)));
 netcdf.putVar(ncid,timeid,data);
 
 data = d.pHpH(gb_range(1):gb_range(2));

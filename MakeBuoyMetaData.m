@@ -7,8 +7,8 @@ function meta = MakeBuoyMetaData(atype, Anotes, nn)
 
 if strcmpi(atype,'SUNA') | strcmpi(atype,'SBE_ECO_NTUFL') | strcmpi(atype,'hcpH')
     meta.Processing_Notes = Anotes;
-    meta.PI = 'James O''Donnell, UConn Marine Sciences';
-    meta.processed_by = 'odonnell@uconn.edu';
+    meta.PI = 'James ODonnell, UCONN Marine Sciences & CIRCA';
+    meta.processed_by = 'James ODonnell odonnell@uconn.edu';
     meta.time_zone = 'UCT';
     
     if nn == 1

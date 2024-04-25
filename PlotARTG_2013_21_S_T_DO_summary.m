@@ -40,12 +40,8 @@ pH = MakeDataArchive(avar, av, ac, IplotDOY);
 % Output file created
 save('ARTG_2013-2021.mat','S','T','DO','P','C','pH');
 
-% 
 % Save all the data plotted in a structure that can be exported to NETCDF and to ERDDAP
-% 
-
-latlon = 41 + 0.60/60 - (73 + 17.29/60);
+latlon = [41 + 0.60/60, -(73 + 17.29/60)];
 stnDep = 30;
-
 % Pass all the screened data from the buoy at each level to output nc file
 WriteNETCDFbuoyfile('ARTG', av, latlon, stnDep, S, T, DO, P, C, pH);

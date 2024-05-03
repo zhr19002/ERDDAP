@@ -16,37 +16,37 @@ function ARTG = MakeDataArchive(avar, av, ac, IplotDOY)
 switch avar
     case 'tv290C'
         QAQC.Thesholds = [0 30];   % Only data in this range is acceptable
-        QAQC.Delta = [2 2];            % Only time changes smaller than this are allowed
+        QAQC.Delta = [0.3105 2];   % Only time changes smaller than this are allowed
         QAQC.THRSHLD = [1 1.9; 0.6 2];
     
     case 'sal00'
         QAQC.Thesholds = [25 30];  % Only data in this range is acceptable
-        QAQC.Delta = [0.75 0.75];         % Only time changes smaller than this are allowed
-        QAQC.THRSHLD = [0.6 5; 0.3 1];    % [surface high & Low ; bottom high and low]
+        QAQC.Delta = [0.75 0.75];  % Only time changes smaller than this are allowed
+        QAQC.THRSHLD = [0.6 5; 0.3 1];
     
     case 'sbeopoxMg'
         QAQC.Thesholds = [0 13];   % Only data in this range is acceptable 
-        QAQC.Delta = [1.25 1.25];         % Only time changes smaller than this are allowed
+        QAQC.Delta = [1.25 1.25];  % Only time changes smaller than this are allowed
         QAQC.THRSHLD = [0.5 5; 0.5 1];
     
     case 'prdM'
         QAQC.Thesholds = [0 30];   % Only data in this range is acceptable 
-        QAQC.Delta = [3 3];            % Only time changes smaller than this are allowed
+        QAQC.Delta = [3 3];        % Only time changes smaller than this are allowed
         QAQC.THRSHLD = [0.18 0.28; 0.6 1.17];
     
     case 'cond0mS'
         QAQC.Thesholds = [24 50];  % Only data in this range is acceptable 
-        QAQC.Delta = [0.2 0.2];          % Only time changes smaller than this are allowed    
+        QAQC.Delta = [0.2 0.2];    % Only time changes smaller than this are allowed    
         QAQC.THRSHLD = [0.96 6; 0.5 1.5];
     
     case 'rho'
         QAQC.Thesholds = [24 50];  % Only data in this range is acceptable 
-        QAQC.Delta = [0.2 0.2];          % Only time changes smaller than this are allowed    
+        QAQC.Delta = [0.2 0.2];    % Only time changes smaller than this are allowed    
         QAQC.THRSHLD = [0.96 6; 0.5 1.5];
         
     case 'pH'
         QAQC.Thesholds = [6 8];    % Only data in this range is acceptable 
-        QAQC.Delta = [0.04 0.04];         % Only time changes smaller than this are allowed    
+        QAQC.Delta = [0.04 0.04];  % Only time changes smaller than this are allowed    
         QAQC.THRSHLD = [0.03 0.06; 0.03 0.06];
     
     otherwise

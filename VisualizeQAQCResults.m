@@ -1,8 +1,8 @@
 % Set up parameters
-Ayear = 2023; Nmth = 4:10; Station = 'E1'; buoy = 'ARTG';
-info = 'DO'; % ["T", "S", "DO", "pH"]
-loc = 'btm1';
-% ylim([2 13]); saveas(gcf, [buoy loc ' ' num2str(Ayear) ' Climatology at ' Station ' (' info ').png']);
+Ayear = 2023; Nmth = 1:12; Station = 'E1'; buoy = 'ARTG';
+loc = 'sfc';
+info = 'T'; % ["T", "S", "DO", "pH"]
+% ylim([1.5 22]); saveas(gcf, [buoy '_' loc ' ' num2str(Ayear) ' Climatology at ' Station ' (' info ').png']);
 
 
 % Connect to the database
@@ -30,12 +30,12 @@ info_para = struct('T','degC', 'S','psu', 'DO','mg/L', 'pH','pH');
 
 % Plot the time sereis for a specific year buoy data
 figure;
-plot(buoy_loc_Ayear.TmStamp, buoy_loc_Ayear.(info_para.(info)), 'b.');
+plot(buoy_loc_Ayear.TmStamp,buoy_loc_Ayear.(info_para.(info)),'b.','DisplayName',buoy);
 hold on; grid on;
-xticks(datetime(Ayear, 1:12, 1)); grid on;
+xticks(datetime(Ayear, 1:12, 1));
 xtickformat('MMM/dd');
 ylabel([info,' (',info_para.(info),')']);
-title([buoy loc ' ' num2str(Ayear) ' Climatology at ' Station ' (' info ')']);
+title([buoy '\_' loc ' ' num2str(Ayear) ' Climatology at ' Station ' (' info ')']);
 
 %%
 switch contains(loc,'btm')
@@ -57,7 +57,21 @@ dCTD_Station = GetCTDEEP_CTD_DataForComps(Station, CruiseNames, SrfDepRng, BdepL
 % Plot the CTDEEP data
 for nn = 1:length(dCTD_Station)
     if ~isempty(dCTD_Station{nn})
-        plot(dCTD_Station{nn}.SmnTime,dCTD_Station{nn}.SmnTemp,'gs','MarkerFaceColor','g');
+        if nn == 1
+            switch isfield(dCTD_Station{nn}, 'SmnTime')
+                case 1
+                    plot(dCTD_Station{nn}.SmnTime,dCTD_Station{nn}.SmnTemp,'gs','MarkerFaceColor','g','DisplayName',Station);
+                case 0
+                    plot(dCTD_Station{nn}.BmnTime,dCTD_Station{nn}.BmnTemp,'gs','MarkerFaceColor','g','DisplayName',Station);
+            end
+        else
+            switch isfield(dCTD_Station{nn}, 'SmnTime')
+                case 1
+                    plot(dCTD_Station{nn}.SmnTime,dCTD_Station{nn}.SmnTemp,'gs','MarkerFaceColor','g','HandleVisibility','off');
+                case 0
+                    plot(dCTD_Station{nn}.BmnTime,dCTD_Station{nn}.BmnTemp,'gs','MarkerFaceColor','g','HandleVisibility','off');
+            end
+        end
     end
 end
 
@@ -70,15 +84,15 @@ t1 = datetime(Ayear, 1:12, 15);
 y1 = Station_info_clim.upper;
 y2 = Station_info_clim.lower;
 
-plot(t1, Station_info_clim.mninfo, 'k^-'); hold on;
+plot(t1,Station_info_clim.mninfo,'k-','DisplayName','Mean');
 pp = patch([t1(1) t1(1:end) t1(end) fliplr(t1(1:end))], ...
-           [y2(1) y1 y2(end) fliplr(y2)], 'b');
+           [y2(1) y1 y2(end) fliplr(y2)],'b','DisplayName','Max-Min boundary');
 pp.FaceAlpha = 0.2; pp.EdgeAlpha = 0.2;
 pp.FaceColor = [0.1 0.9 0.7]; pp.EdgeColor = [0.1 0.9 0.7];
 
-plot(t1, Station_info_clim.bd16, 'm--');
-plot(t1, Station_info_clim.bd50, 'm--');
-plot(t1, Station_info_clim.bd84, 'm--');
+plot(t1,Station_info_clim.bd16,'m--','DisplayName','68% boundary');
+plot(t1,Station_info_clim.bd50,'m-.','DisplayName','Median');
+plot(t1,Station_info_clim.bd84,'m--','HandleVisibility','off');
 
 %%
 %------------------------------ QAQC Checks ------------------------------%
@@ -125,16 +139,18 @@ T.(avarT) = T.(avarT) + 1;
 
 % Plot outliers through QAQC checks
 iu1 = find(T.(avar1) ~= 1);
-plot(T.TmStamp(iu1), T.(info_para.(info))(iu1), 'rd');
+plot(T.TmStamp(iu1),T.(info_para.(info))(iu1),'rd','DisplayName','Threshold test');
 
 iu2 = find(T.(avar2) ~= 1);
-plot(T.TmStamp(iu2), T.(info_para.(info))(iu2), 'ro');
+plot(T.TmStamp(iu2),T.(info_para.(info))(iu2),'ro','DisplayName','Jump limit test');
 
 iu3 = find(T.(avar3) ~= 1);
-plot(T.TmStamp(iu3), T.(info_para.(info))(iu3), 'rs');
+plot(T.TmStamp(iu3),T.(info_para.(info))(iu3),'rs','DisplayName','Gap test');
 
 iu4 = find(T.(avar4) ~= 1);
-plot(T.TmStamp(iu4), T.(info_para.(info))(iu4), 'gd');
+plot(T.TmStamp(iu4),T.(info_para.(info))(iu4),'rp','DisplayName','Pressure range test');
 
 iu5 = find(T.(avar5) ~= 1);
-plot(T.TmStamp(iu5), T.(info_para.(info))(iu5), 'go');
+plot(T.TmStamp(iu5),T.(info_para.(info))(iu5),'r^','DisplayName','Spike test');
+
+legend('Location','eastoutside');

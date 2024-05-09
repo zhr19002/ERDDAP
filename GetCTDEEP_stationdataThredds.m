@@ -33,10 +33,17 @@ if ~exist(afile, 'file')
         dt = load(af);
     catch
         disp('No response from ERDDAP, and no mat file');
+        d = [];
         return
     end
 else
-    dt = load(afile);
+    dirsz = dir(afile);
+    if ~isempty(dirsz) & dirsz.bytes>0
+        dt = load(afile);
+    else
+        d = [];
+        return
+    end
 end
 
 dt = struct2table(dt.DEEP_WQ);

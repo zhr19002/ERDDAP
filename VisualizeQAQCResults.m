@@ -1,8 +1,8 @@
 % Set up parameters
 Ayear = 2023; Nmth = 1:12; Station = 'E1'; buoy = 'ARTG';
-loc = 'sfc';
+loc = 'btm1';
 info = 'T'; % ["T", "S", "DO", "pH"]
-% ylim([1.5 22]); saveas(gcf, [buoy '_' loc ' ' num2str(Ayear) ' Climatology at ' Station ' (' info ').png']);
+% ylim([0 30]); saveas(gcf, [buoy '_' loc ' ' num2str(Ayear) ' Climatology at ' Station ' (' info ').png']);
 
 
 % Connect to the database
@@ -26,18 +26,20 @@ buoy_loc_Ayear = sortrows(buoy_loc(buoy_loc_rf, :), 'TmStamp');
 close(conn);
 
 %%
-info_para = struct('T','degC', 'S','psu', 'DO','mg/L', 'pH','pH');
+info_para1 = struct('T','degC', 'S','psu', 'DO','mg/L', 'pH','pH');
 
 % Plot the time sereis for a specific year buoy data
 figure;
-plot(buoy_loc_Ayear.TmStamp,buoy_loc_Ayear.(info_para.(info)),'b.','DisplayName',buoy);
+plot(buoy_loc_Ayear.TmStamp,buoy_loc_Ayear.(info_para1.(info)),'b.','DisplayName',[buoy ' (' info ')']);
 hold on; grid on;
 xticks(datetime(Ayear, 1:12, 1));
 xtickformat('MMM/dd');
-ylabel([info,' (',info_para.(info),')']);
+ylabel([info,' (',info_para1.(info),')']);
 title([buoy '\_' loc ' ' num2str(Ayear) ' Climatology at ' Station ' (' info ')']);
 
 %%
+info_para2 = struct('T','mnTemp', 'S','mnSal', 'DO','mnDO', 'pH','mnPH');
+
 switch contains(loc,'btm')
     case 0
         ZT = 0; ZB = 3;
@@ -48,29 +50,25 @@ end
 % Get the CTDEEP data for the 2021 cruises
 [~, ~, CruiseNames] = GetCTDEEPDataForComps(Station, num2str(Ayear), Nmth);
 % Specify the surface range of the data from the DEEP CTDs that need to be used
-SrfDepRng = [ZT ZB];
-% Specify the Layer above the max dep to average the bottom values
-BdepLayer = 3;
+DepRng = [ZT ZB];
 
-dCTD_Station = GetCTDEEP_CTD_DataForComps(Station, CruiseNames, SrfDepRng, BdepLayer);
+dCTD_Station = GetCTDEEP_CTD_DataForComps(Station, CruiseNames, DepRng);
 
 % Plot the CTDEEP data
 for nn = 1:length(dCTD_Station)
     if ~isempty(dCTD_Station{nn})
-        if nn == 1
-            switch isfield(dCTD_Station{nn}, 'SmnTime')
-                case 1
-                    plot(dCTD_Station{nn}.SmnTime,dCTD_Station{nn}.SmnTemp,'gs','MarkerFaceColor','g','DisplayName',Station);
-                case 0
-                    plot(dCTD_Station{nn}.BmnTime,dCTD_Station{nn}.BmnTemp,'gs','MarkerFaceColor','g','DisplayName',Station);
-            end
+        break
+    end
+end
+
+for n = 1:length(dCTD_Station)
+    if ~isempty(dCTD_Station{n})
+        if n == nn
+            plot(dCTD_Station{n}.mnTime,dCTD_Station{n}.(info_para2.(info)), ...
+                 'gs','MarkerFaceColor','g','DisplayName',[Station ' (' info ')']);
         else
-            switch isfield(dCTD_Station{nn}, 'SmnTime')
-                case 1
-                    plot(dCTD_Station{nn}.SmnTime,dCTD_Station{nn}.SmnTemp,'gs','MarkerFaceColor','g','HandleVisibility','off');
-                case 0
-                    plot(dCTD_Station{nn}.BmnTime,dCTD_Station{nn}.BmnTemp,'gs','MarkerFaceColor','g','HandleVisibility','off');
-            end
+            plot(dCTD_Station{n}.mnTime,dCTD_Station{n}.(info_para2.(info)), ...
+                 'gs','MarkerFaceColor','g','HandleVisibility','off');
         end
     end
 end
@@ -97,7 +95,7 @@ plot(t1,Station_info_clim.bd84,'m--','HandleVisibility','off');
 %%
 %------------------------------ QAQC Checks ------------------------------%
 % QAQC parameters
-din = buoy_loc.(info_para.(info));
+din = buoy_loc.(info_para1.(info));
 dd = abs(diff(din)); dd = dd([1 1:end]);
 SPK_REF = (din(1:end-2) + din(3:end))/2;
 SPK_REF = SPK_REF([1 1:end end]);
@@ -120,12 +118,12 @@ avar5 = [info 'QAQCT5'];
 avarT = [info 'QAQCTC'];
 
 T = buoy_loc_Ayear;
-T.(avarT) = zeros(size(T.(info_para.(info))));
+T.(avarT) = zeros(size(T.(info_para1.(info))));
 
-T.(avar1) = ImplementThresoldQAQC(T.(info_para.(info)), T.TmStamp, QAQC);
+T.(avar1) = ImplementThresoldQAQC(T.(info_para1.(info)), T.TmStamp, QAQC);
 T.(avarT) = T.(avarT) + 1;
 
-T.(avar2) = ImplementDeltaQAQC(T.(info_para.(info)), QAQC);
+T.(avar2) = ImplementDeltaQAQC(T.(info_para1.(info)), QAQC);
 T.(avarT) = T.(avarT) + 1;
 
 T.(avar3) = ImplementGapTestQAQC(T.TmStamp, QAQC);
@@ -134,23 +132,23 @@ T.(avarT) = T.(avarT) + 1;
 T.(avar4) = ImplementPresIntvTestQAQC(T.depth, QAQC, loc);
 T.(avarT) = T.(avarT) + 1;
 
-T.(avar5) = ImplementSpikeTestQAQC(T.(info_para.(info)), QAQC, loc);
+T.(avar5) = ImplementSpikeTestQAQC(T.(info_para1.(info)), QAQC, loc);
 T.(avarT) = T.(avarT) + 1;
 
 % Plot outliers through QAQC checks
 iu1 = find(T.(avar1) ~= 1);
-plot(T.TmStamp(iu1),T.(info_para.(info))(iu1),'rd','DisplayName','Threshold test');
+plot(T.TmStamp(iu1),T.(info_para1.(info))(iu1),'rd','DisplayName','Threshold test');
 
 iu2 = find(T.(avar2) ~= 1);
-plot(T.TmStamp(iu2),T.(info_para.(info))(iu2),'ro','DisplayName','Jump limit test');
+plot(T.TmStamp(iu2),T.(info_para1.(info))(iu2),'ro','DisplayName','Jump limit test');
 
 iu3 = find(T.(avar3) ~= 1);
-plot(T.TmStamp(iu3),T.(info_para.(info))(iu3),'rs','DisplayName','Gap test');
+plot(T.TmStamp(iu3),T.(info_para1.(info))(iu3),'rs','DisplayName','Gap test');
 
 iu4 = find(T.(avar4) ~= 1);
-plot(T.TmStamp(iu4),T.(info_para.(info))(iu4),'rp','DisplayName','Pressure range test');
+plot(T.TmStamp(iu4),T.(info_para1.(info))(iu4),'rp','DisplayName','Pressure range test');
 
 iu5 = find(T.(avar5) ~= 1);
-plot(T.TmStamp(iu5),T.(info_para.(info))(iu5),'r^','DisplayName','Spike test');
+plot(T.TmStamp(iu5),T.(info_para1.(info))(iu5),'r^','DisplayName','Spike test');
 
 legend('Location','eastoutside');

@@ -11,7 +11,7 @@ function res = GetDEEPWQClimatology(astn, ZT, ZB, info)
 % Form ERDDAP request
 aurl0 = ['http://merlin.dms.uconn.edu:8080/erddap/tabledap/DEEP_WQ.mat?' ...
          'cruise_name%2Cstation_name%2Ctime%2Cdepth%2Csea_water_temperature%2CpH%2Csea_water_salinity%2Coxygen_concentration_in_sea_water%2CStart_Date&' ...
-	     'station_name=%22XX%22&time%3E=2000-12-17&time%3C=2022-12-17&' ...
+	     'station_name=%22XX%22&time%3E=2002-01-01&time%3C=2023-12-31&' ...
 	     'depth%3E=ZT&depth%3C=ZB'];
 aurl = strrep(aurl0, 'XX', astn);
 aurl = strrep(aurl, 'ZT', num2str(ZT));
@@ -43,11 +43,17 @@ for nm = 1:12
     res.mninfo(nm) = mean(tmp(~isnan(tmp)));
     tmp = d.DEEP_WQ.(info_struct.(info))(iu);
     res.sdinfo(nm) = std(tmp(~isnan(tmp)));
-    res.upper(nm) = mean(max(d.DEEP_WQ.(info_struct.(info))(iu)));
-    res.lower(nm) = mean(min(d.DEEP_WQ.(info_struct.(info))(iu)));
+    res.upper(nm) = prctile(d.DEEP_WQ.(info_struct.(info))(iu),2.5);
+    res.lower(nm) = prctile(d.DEEP_WQ.(info_struct.(info))(iu),97.5);
     res.bd16(nm) = prctile(d.DEEP_WQ.(info_struct.(info))(iu),16);
     res.bd50(nm) = prctile(d.DEEP_WQ.(info_struct.(info))(iu),50);
     res.bd84(nm) = prctile(d.DEEP_WQ.(info_struct.(info))(iu),84);
+end
+
+res.data = NaN(max(res.nu), 12);
+for nm = 1:12
+    iu = find(mnth==nm);
+    res.data(1:length(iu),nm) = d.DEEP_WQ.(info_struct.(info))(iu);
 end
 
 end

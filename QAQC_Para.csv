@@ -1,0 +1,9 @@
+﻿,T,S,DO,pH
+Max_Value,30,30,13,8
+Min_Value,0,25,0,6
+Max_Jump,2,1,1.25,1
+Min_Jump,1,0.75,1,0.04
+SPK_sfc_top,1.9,5,5,0.06
+SPK_sfc_bot,1,0.6,0.5,0.03
+SPK_btm_top,2,1,1,0.06
+SPK_btm_bot,0.6,0.3,0.5,0.03

@@ -1,6 +1,6 @@
 function VarBad = CheckMatFileVarNames(T, vnames)
 % 
-% Function to check the variable names
+% Function to check variable names
 % 
 % Called from MakeDataArchive.m
 % 
@@ -10,7 +10,7 @@ VarBad = zeros(length(vnames), 1);
 % Get names in tables
 Cnames = T.Properties.VariableNames;
 
-for nv = 1:length(vnames)   % Look for the required variables in each year
+for nv = 1:length(vnames)   % Look for required variables
     chkname = strfind(Cnames, vnames(nv));
     nameOK = cellfun(@(x) any(x), chkname);
     nameOK = double(nameOK);

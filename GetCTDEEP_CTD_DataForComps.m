@@ -47,12 +47,16 @@ for nn = 1:cellnum
         d{nn}.mnTemp = mean(tmp(~isnan(tmp)));
         tmp = cell2mat(d{nn}.sea_water_salinity(iuse));
         d{nn}.mnSal = mean(tmp(~isnan(tmp)));
-        tmp = cell2mat(d{nn}.sea_water_density(iuse));
-        d{nn}.mnRho = mean(tmp(~isnan(tmp)));
-        tmp = cell2mat(d{nn}.pH(iuse));
-        d{nn}.mnPH = mean(tmp(~isnan(tmp)));
         tmp = cell2mat(d{nn}.oxygen_concentration_in_sea_wat(iuse));
         d{nn}.mnDO = mean(tmp(~isnan(tmp)));
+        tmp = cell2mat(d{nn}.sea_water_pressure(iuse));
+        d{nn}.mnPres = mean(tmp(~isnan(tmp)));
+        tmp = cell2mat(d{nn}.sea_water_electrical_conductivity(iuse));
+        d{nn}.mnCond = mean(tmp(~isnan(tmp)));
+        tmp = cell2mat(d{nn}.pH(iuse));
+        d{nn}.mnPH = mean(tmp(~isnan(tmp)));
+        tmp = cell2mat(d{nn}.sea_water_density(iuse));
+        d{nn}.mnRho = mean(tmp(~isnan(tmp)));
         tmp = cell2table(d{nn}.Start_Date(iuse)).Var1;
         d{nn}.mnTime = mean(tmp);
         tmp = cell2mat(d{nn}.PAR(iuse));
@@ -61,6 +65,10 @@ for nn = 1:cellnum
         d{nn}.mnCHL = mean(tmp(~isnan(tmp)));
         tmp = cell2mat(d{nn}.Corrected_Chlorophyll(iuse));
         d{nn}.mnCorCHL = mean(tmp(~isnan(tmp)));
+        tmp = cell2mat(d{nn}.percent_saturation(iuse));
+        d{nn}.mnDOsat = mean(tmp(~isnan(tmp)));
+        %sat = sw_satO2(d{nn}.mnSal, d{nn}.mnTemp)*32/1000;
+        %d{nn}.mnDOsat = 100*d{nn}.mnDO./sat;
     end
 end
 

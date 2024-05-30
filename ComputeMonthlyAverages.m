@@ -17,7 +17,7 @@ for nm = 1:12
     res.sd(nm) = std(tmp(~isnan(tmp)));
     res.upper(nm) = mean(max(d(iu)));
     res.lower(nm) = mean(min(d(iu)));
-    res.bd26(nm) = prctile(d(iu),26);
+    res.bd16(nm) = prctile(d(iu),16);
     res.bd50(nm) = prctile(d(iu),50);
     res.bd84(nm) = prctile(d(iu),84);
     % Compute the deviation from mean and the residual sddev

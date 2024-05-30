@@ -20,7 +20,7 @@ meta.time_zone = 'EST';
 % Convert to the expected format
 for loc = locs
     d = buoy_QAQC.(loc{1});
-    WriteNC_Buoyfiles([buoy loc{1} '.nc'], d, meta);
+    WriteNC_Buoyfiles([buoy '_' loc{1} '.nc'], d, meta);
     clear d;
 end
 

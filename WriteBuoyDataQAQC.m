@@ -5,7 +5,7 @@ buoy = 'ARTG'; locs = {'btm1', 'btm2', 'sfc'};
 for loc = locs
     % Fixed parameters
     avar_buoy = struct('T','degC','S','psu','DO','mg/L','P','dBars','C','S/m', ...
-                       'pH','pH','rho','kg/m^3','DOsat','sat_mg/L');
+                       'pH','none','rho','kg/m^3','DOsat','percent');
     buoy_station = struct('ARTG','E1','CLIS','C1','EXRX','A4');
     
     switch contains(loc{1},'btm')
@@ -30,8 +30,8 @@ for loc = locs
 
     % Calculate rho and DOsat
     buoy_loc.('kg/m^3') = sw_dens(buoy_loc.('psu'),buoy_loc.('degC'),buoy_loc.('dBars'))-1000;
-    sat = sw_satO2(buoy_loc.('psu'),buoy_loc.('degC'))*32/1000; % Converted to mg/L
-    buoy_loc.('sat_mg/L') = 100*buoy_loc.('mg/L')./sat;
+    sat = sw_satO2(buoy_loc.('psu'),buoy_loc.('degC'))*1.33; % Converted to mg/L
+    buoy_loc.('percent') = 100*buoy_loc.('mg/L')./sat;
     
     close(conn);
     
@@ -40,13 +40,14 @@ for loc = locs
         tbvars = categorical(buoy_loc.Properties.VariableNames);
         if iscategory(tbvars, avar_buoy.(avar{1}))
             % Get station climatology data
-            station_clim = GetDEEPWQClimatology(buoy_station.(buoy),ZT,ZB,avar{1});
+            clim_stats = GetDEEPWQClimStats(buoy_station.(buoy),ZT,ZB,avar{1});
             % Buoy data cleaning
-            para = mean(station_clim.bd84 - station_clim.bd16);
+            para = mean(clim_stats.bd84 - clim_stats.bd16);
             buoydata = CleanBuoyData(buoy_loc,avar{1},para);
             % QAQC checks
             [~,buoydataQAQC] = CheckBuoyDataQAQC(buoydata,loc{1},avar{1},avar_buoy);
             buoy_QAQC.(loc{1}).(avar{1}) = buoydataQAQC;
+            save([buoy '_' loc{1} '_QAQC.mat'], 'buoydataQAQC');
         end
     end
 end

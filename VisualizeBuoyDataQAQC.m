@@ -2,11 +2,11 @@ clc; clear;
 
 % Set up parameters
 Ayear = 2021; buoy = 'ARTG'; loc = 'sfc';
-avar = 'DO'; % {'T','S','DO','P','C','pH','rho','DOsat'}
+avar = 'T'; % {'T','S','DO','P','C','pH','rho','DOsat'}
 
 % Fixed parameters
 avar_buoy = struct('T','degC','S','psu','DO','mg/L','P','dBars','C','S/m', ...
-                   'pH','pH','rho','kg/m^3','DOsat','sat_mg/L');
+                   'pH','none','rho','kg/m^3','DOsat','percent');
 avar_station = struct('T','mnTemp','S','mnSal','DO','mnDO','P','mnPres', ...
                       'C','mnCond','pH','mnPH','rho','mnRho','DOsat','mnDOsat');
 buoy_station = struct('ARTG','E1','CLIS','C1','EXRX','A4');
@@ -40,8 +40,8 @@ buoy_loc = sortrows(buoy_loc(buoy_loc_rf,:),'TmStamp');
 
 % Calculate rho and DOsat
 buoy_loc.('kg/m^3') = sw_dens(buoy_loc.('psu'),buoy_loc.('degC'),buoy_loc.('dBars'))-1000;
-sat = sw_satO2(buoy_loc.('psu'),buoy_loc.('degC'))*32/1000; % Converted to mg/L
-buoy_loc.('sat_mg/L') = 100*buoy_loc.('mg/L')./sat;
+sat = sw_satO2(buoy_loc.('psu'),buoy_loc.('degC'))*1.33; % Converted to mg/L
+buoy_loc.('percent') = 100*buoy_loc.('mg/L')./sat;
 
 close(conn);
 
@@ -73,32 +73,32 @@ end
 
 %%
 % Get station climatology data
-station_clim = GetDEEPWQClimatology(buoy_station.(buoy),ZT,ZB,avar);
+clim_stats = GetDEEPWQClimStats(buoy_station.(buoy),ZT,ZB,avar);
 
 % Put the station climatology patch on the graph
-t1 = datetime(Ayear,1:12,15);
-y1 = station_clim.upper;
-y2 = station_clim.lower;
+t = datetime(Ayear,1:12,15);
+y1 = clim_stats.bd95lower;
+y2 = clim_stats.bd95upper;
 
 % Plot station raw data
-plot(t1,station_clim.data(1,:),'.','Color',[0.5,0.5,0.5], ...
+plot(t,clim_stats.data(1,:),'.','Color',[0.5,0.5,0.5], ...
      'DisplayName',[buoy_station.(buoy) ' (' avar ')']);
-plot(t1,station_clim.data(2:end,:),'.','Color',[0.5,0.5,0.5], ...
+plot(t,clim_stats.data(2:end,:),'.','Color',[0.5,0.5,0.5], ...
      'HandleVisibility','off');
 
 % Plot station stats
-plot(t1,station_clim.mninfo,'k-','DisplayName','Mean');
-plot(t1,station_clim.bd50,'m-.','DisplayName','Median');
-plot(t1,station_clim.bd16,'m--','DisplayName','68% boundary');
-plot(t1,station_clim.bd84,'m--','HandleVisibility','off');
-pp = patch([t1(1) t1(1:end) t1(end) fliplr(t1(1:end))], ...
-           [y2(1) y1 y2(end) fliplr(y2)],'b','DisplayName','95% boundary');
+plot(t,clim_stats.mninfo,'k-','DisplayName','Mean');
+plot(t,clim_stats.bd50,'m-.','DisplayName','Median');
+plot(t,clim_stats.bd16,'m--','DisplayName','68% boundary');
+plot(t,clim_stats.bd84,'m--','HandleVisibility','off');
+pp = patch([t(1) t t(end) fliplr(t(1:end))], ...
+           [y1(1) y1 y1(end) fliplr(y2)],'b','DisplayName','95% boundary');
 pp.FaceAlpha = 0.2; pp.EdgeAlpha = 0.2;
 pp.FaceColor = [0.1 0.9 0.7]; pp.EdgeColor = [0.1 0.9 0.7];
 
 %%
 % Buoy data cleaning
-para = mean(station_clim.bd84 - station_clim.bd16);
+para = mean(clim_stats.bd84 - clim_stats.bd16);
 buoydata = CleanBuoyData(buoy_loc,avar,para);
 
 % Plot time series for buoy data in a specific year
@@ -116,19 +116,19 @@ legend('Location','eastoutside');
 [QAQC,buoydataQAQC] = CheckBuoyDataQAQC(buoydata,loc,avar,avar_buoy);
 
 % Plot outliers through QAQC checks
-iu1 = find(buoydataQAQC.QAQCTest1 ~= 1);
+iu1 = find(floor(buoydataQAQC.QAQCTests/10000) ~= 1);
 plot(buoydataQAQC.TmStamp(iu1),buoydataQAQC.(avar_buoy.(avar))(iu1), ...
      'rd','DisplayName','Threshold test');
-iu2 = find(buoydataQAQC.QAQCTest2 ~= 1);
+iu2 = find(mod(floor(buoydataQAQC.QAQCTests/1000),10) ~= 1);
 plot(buoydataQAQC.TmStamp(iu2),buoydataQAQC.(avar_buoy.(avar))(iu2), ...
      'ro','DisplayName','Jump limit test');
-iu3 = find(buoydataQAQC.QAQCTest3 ~= 1);
+iu3 = find(mod(floor(buoydataQAQC.QAQCTests/100),10) ~= 1);
 plot(buoydataQAQC.TmStamp(iu3),buoydataQAQC.(avar_buoy.(avar))(iu3), ...
      'rs','DisplayName','Gap test');
-iu4 = find(buoydataQAQC.QAQCTest4 ~= 1);
+iu4 = find(mod(floor(buoydataQAQC.QAQCTests/10),10) ~= 1);
 plot(buoydataQAQC.TmStamp(iu4),buoydataQAQC.(avar_buoy.(avar))(iu4), ...
      'rp','DisplayName','Pressure range test');
-iu5 = find(buoydataQAQC.QAQCTest5 ~= 1);
+iu5 = find(mod(buoydataQAQC.QAQCTests,10) ~= 1);
 plot(buoydataQAQC.TmStamp(iu5),buoydataQAQC.(avar_buoy.(avar))(iu5), ...
      'r^','DisplayName','Spike test');
 

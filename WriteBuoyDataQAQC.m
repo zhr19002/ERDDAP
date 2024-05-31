@@ -34,11 +34,22 @@ for loc = locs
     dbname = append(buoy,"_pb2_sbe37",loc{1});
     buoy_loc = sqlread(conn,append('"',dbname,'"'));
     buoy_loc = sortrows(buoy_loc,'TmStamp');
-
+    
     % Calculate rho and DOsat
     buoy_loc.('kg/m^3') = sw_dens(buoy_loc.('psu'),buoy_loc.('degC'),buoy_loc.('dBars'))-1000;
     sat = sw_satO2(buoy_loc.('psu'),buoy_loc.('degC'))*1.33; % Converted to mg/L
     buoy_loc.('percent') = 100*buoy_loc.('mg/L')./sat;
+    
+    % Add the pH column
+    switch strcmp([buoy '_' loc{1}], 'ARTG_btm1')
+        case 0
+            buoy_loc.none(:) = NaN;
+        case 1
+            buoy_loc.none(:) = NaN;
+            d = load('artg_sbe37_2013-2021_tablesrev.mat'); 
+            d = d.d.artgbtm2_21; d = sortrows(d,'EST');
+            buoy_loc.none(year(buoy_loc.TmStamp)==2021) = [d.pH; d.pH(end)];
+    end
     
     close(conn);
     

@@ -48,7 +48,7 @@ tempid = netcdf.defVar(ncid,'temp','NC_FLOAT',burstid);
 netcdf.putAtt(ncid,tempid,'units','degC');
 netcdf.putAtt(ncid,tempid,'long_name','sea_water_temperature');
 
-tempQid = netcdf.defVar(ncid,'temp_status','NC_BYTE',[burstid,QAQCid]);
+tempQid = netcdf.defVar(ncid,'temp_status','NC_INT',[burstid,QAQCid]);
 netcdf.putAtt(ncid,tempQid,'long_name','temperature_status_flag');
 netcdf.putAtt(ncid,tempQid,'note',QAQCnote);
 
@@ -58,7 +58,7 @@ netcdf.putAtt(ncid,saltid,'units','psu');
 netcdf.putAtt(ncid,saltid,'long_name','sea_water_salinity');
 netcdf.putAtt(ncid,saltid,'note','constant used, not measured');
 
-saltQid = netcdf.defVar(ncid,'salt_status','NC_BYTE',[burstid,QAQCid]);
+saltQid = netcdf.defVar(ncid,'salt_status','NC_INT',[burstid,QAQCid]);
 netcdf.putAtt(ncid,saltQid,'long_name','salinity_status_flag');
 netcdf.putAtt(ncid,saltQid,'note',QAQCnote);
 
@@ -67,7 +67,7 @@ DOid = netcdf.defVar(ncid,'DO','NC_FLOAT',burstid);
 netcdf.putAtt(ncid,DOid,'units','mg/L');
 netcdf.putAtt(ncid,DOid,'long_name','oxygen_concentration_in_sea_water');
 
-DOQid = netcdf.defVar(ncid,'DO_status','NC_BYTE',[burstid,QAQCid]);
+DOQid = netcdf.defVar(ncid,'DO_status','NC_INT',[burstid,QAQCid]);
 netcdf.putAtt(ncid,DOQid,'long_name','DO_status_flag');
 netcdf.putAtt(ncid,DOQid,'note',QAQCnote);
 
@@ -77,7 +77,7 @@ netcdf.putAtt(ncid,presid,'units','dbar');
 netcdf.putAtt(ncid,presid,'long_name','sea_water_pressure');
 netcdf.putAtt(ncid,presid,'note','pressure at transducer, relative to 1 atm.');
 
-presQid = netcdf.defVar(ncid,'pres_status','NC_BYTE',[burstid,QAQCid]);
+presQid = netcdf.defVar(ncid,'pres_status','NC_INT',[burstid,QAQCid]);
 netcdf.putAtt(ncid,presQid,'long_name','sea_water_pressure_status_flag');
 netcdf.putAtt(ncid,presQid,'note',QAQCnote);
 
@@ -86,7 +86,7 @@ condid = netcdf.defVar(ncid,'cond','NC_FLOAT',burstid);
 netcdf.putAtt(ncid,condid,'units','S/m');
 netcdf.putAtt(ncid,condid,'long_name','sea_water_electrical_conductivity');
 
-condQid = netcdf.defVar(ncid,'cond_status','NC_BYTE',[burstid,QAQCid]);
+condQid = netcdf.defVar(ncid,'cond_status','NC_INT',[burstid,QAQCid]);
 netcdf.putAtt(ncid,condQid,'long_name','sea_water_conductivity_status_flag');
 netcdf.putAtt(ncid,condQid,'note',QAQCnote);
 
@@ -96,7 +96,7 @@ netcdf.putAtt(ncid,rhoid,'units','kg/m^3');
 netcdf.putAtt(ncid,rhoid,'long_name','sea_water_density');
 netcdf.putAtt(ncid,rhoid,'note','computed from salinity and temp');
 
-rhoQid = netcdf.defVar(ncid,'rho_status','NC_BYTE',[burstid,QAQCid]);
+rhoQid = netcdf.defVar(ncid,'rho_status','NC_INT',[burstid,QAQCid]);
 netcdf.putAtt(ncid,rhoQid,'long_name','sea_water_density_status_flag');
 netcdf.putAtt(ncid,rhoQid,'note',QAQCnote);
 
@@ -105,7 +105,7 @@ DOsatid = netcdf.defVar(ncid,'DOsat','NC_FLOAT',burstid);
 netcdf.putAtt(ncid,DOsatid,'units','none (%)');
 netcdf.putAtt(ncid,DOsatid,'long_name','fractional_saturation_of_oxygen_in_sea_water');
 
-DOsatQid = netcdf.defVar(ncid,'DOsat_status','NC_BYTE',[burstid,QAQCid]);
+DOsatQid = netcdf.defVar(ncid,'DOsat_status','NC_INT',[burstid,QAQCid]);
 netcdf.putAtt(ncid,DOsatQid,'long_name','DO_sat_status_flag');
 netcdf.putAtt(ncid,DOsatQid,'note',QAQCnote);
 
@@ -115,7 +115,7 @@ if isfield(d,'pH')
     netcdf.putAtt(ncid,pHid,'units','none');
     netcdf.putAtt(ncid,pHid,'long_name','pH - acidity');
     
-    pHQid = netcdf.defVar(ncid,'pH_status','NC_BYTE',[burstid,QAQCid]);
+    pHQid = netcdf.defVar(ncid,'pH_status','NC_INT',[burstid,QAQCid]);
     netcdf.putAtt(ncid,pHQid,'long_name','pH_status_flag');
     netcdf.putAtt(ncid,pHQid,'note',QAQCnote);
 end

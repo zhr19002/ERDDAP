@@ -8,8 +8,8 @@
 
 clc; clear;
 % Set up parameters
-Ayear = 2021; buoy = 'ARTG'; loc = 'sfc';
-avar = 'T'; % {'T','S','DO','P','C','pH','rho','DOsat'}
+Ayear = 2021; buoy = 'ARTG'; loc = 'btm1';
+avar = 'pH'; % {'T','S','DO','P','C','pH','rho','DOsat'}
 
 % Fixed parameters
 avar_buoy = struct('T','degC','S','psu','DO','mg/L','P','dBars','C','S/m', ...
@@ -49,6 +49,16 @@ buoy_loc = sortrows(buoy_loc(buoy_loc_rf,:),'TmStamp');
 buoy_loc.('kg/m^3') = sw_dens(buoy_loc.('psu'),buoy_loc.('degC'),buoy_loc.('dBars'))-1000;
 sat = sw_satO2(buoy_loc.('psu'),buoy_loc.('degC'))*1.33; % Converted to mg/L
 buoy_loc.('percent') = 100*buoy_loc.('mg/L')./sat;
+
+% Add the pH column
+switch strcmp([num2str(Ayear) '_' buoy '_' loc], '2021_ARTG_btm1')
+    case 0
+        buoy_loc.none(:) = NaN;
+    case 1
+        d = load('artg_sbe37_2013-2021_tablesrev.mat'); 
+        d = d.d.artgbtm2_21; d = sortrows(d,'EST');
+        buoy_loc.none = [d.pH; d.pH(end)];
+end
 
 close(conn);
 

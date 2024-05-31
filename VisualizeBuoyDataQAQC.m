@@ -1,5 +1,12 @@
-clc; clear;
+% 
+% Calls GetCTDEEPDataForComps.m
+% Calls GetCTDEEP_CTD_DataForComps.m
+% Calls GetDEEPWQClimStats.m
+% Calls CleanBuoyData.m
+% Calls CheckBuoyDataQAQC.m
+% 
 
+clc; clear;
 % Set up parameters
 Ayear = 2021; buoy = 'ARTG'; loc = 'sfc';
 avar = 'T'; % {'T','S','DO','P','C','pH','rho','DOsat'}
@@ -47,9 +54,9 @@ close(conn);
 
 %%
 % Get cruise names from CTDEEP data in a specific year
-[~,~,CruiseNames] = GetCTDEEPDataForComps(buoy_station.(buoy),num2str(Ayear),1:12);
+[~,~,CruiseNames] = GetCTDEEPDataForComps(buoy_station.(buoy),Ayear,1:12);
 % Get CTDEEP ship survey data
-dCTD_Station = GetCTDEEP_CTD_DataForComps(buoy_station.(buoy),CruiseNames,[ZT ZB]);
+dCTD_Station = GetCTDEEP_CTD_DataForComps(buoy_station.(buoy),CruiseNames,ZT,ZB);
 
 % Plot CTDEEP ship survey data
 for nn = 1:length(dCTD_Station)

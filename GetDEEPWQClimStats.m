@@ -1,15 +1,15 @@
-function res = GetDEEPWQClimStats(astn, ZT, ZB, avar)
+function res = GetDEEPWQClimStats(Astn, ZT, ZB, avar)
 % 
 % Return the stats of station climatology data
 % avar = {'T','S','DO','P','C','pH','rho','DOsat'}
 % 
 % Calls GetDEEPWQClimData.m
-% Called from Proc2021_pH_data.m
+% Called from CheckStationDataQAQC.m
 % 
 
 % astn = 'E1'; ZT = 0; ZB = 3; avar = 'T';
 
-d = GetDEEPWQClimData(astn, ZT, ZB);
+d = GetDEEPWQClimData(Astn, ZT, ZB);
 daten = d.Start_Date/(24*3600) + datetime(1970,1,1);
 
 % Average by month

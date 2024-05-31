@@ -1,4 +1,15 @@
 function [QAQC, buoydataQAQC] = CheckBuoyDataQAQC(d, loc, avar, avar_buoy)
+% 
+% Identify and flag failed QAQC tests of buoy data
+% 
+% Calls ImplementThresoldQAQC.m
+% Calls ImplementDeltaQAQC.m
+% Calls ImplementGapTestQAQC.m
+% Calls ImplementPresIntvTestQAQC.m
+% Calls ImplementSpikeTestQAQC.m
+% 
+% Called from WriteBuoyDataQAQC.m
+% 
 
 % Read QAQC parameters
 QAQC_para = readtable('QAQC_Para.csv', ReadRowNames=true);

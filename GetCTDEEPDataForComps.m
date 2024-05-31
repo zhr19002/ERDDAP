@@ -1,19 +1,15 @@
-function [ds, db, CruiseNames] = GetCTDEEPDataForComps(Ast, Ayear, Nmth)
+function [ds, db, CruiseNames] = GetCTDEEPDataForComps(Astn, Ayear, Nmth)
 % 
 % Gets station data from CTDEEP ERDDAP site
-% Inputs: Ast (for station), Ayear (year), Nmth (month)
 % 
-% Calls:
-%   GetCruiseDateRange.m
-%   seperate_DEEP_Nut_data.m
+% Calls GetCruiseDateRange.m
+% Calls seperate_DEEP_Nut_data.m
 % 
-% Called from Proc2021_pH_data.m
+% Called from VisualizeBuoyDataQAQC.m
+% Called from CheckShipSurveyDataQAQC.m
 % 
 
-wopts = weboptions;
-wopts.Timeout = 60;
-
-% Ast = 'A4'; Ayear = '2019'; Nmth = 08:09;
+Ayear = num2str(Ayear); wopts = weboptions; wopts.Timeout = 60;
 
 aURLpat = ['http://merlin.dms.uconn.edu:8080/erddap/tabledap/DEEP_Nutrient.mat?' ...
         'cruise%2CLab_ID%2CStation_Name%2CDepth_Code%2CDetection_Limit%2CDilution_Factor' ...
@@ -22,9 +18,8 @@ aURLpat = ['http://merlin.dms.uconn.edu:8080/erddap/tabledap/DEEP_Nutrient.mat?'
         '%2CB_Sample_Depth%2CM_Sample_Depth%2CS_Sample_Depth%2CNB_Sample_Depth&' ...
         'Station_Name=~%22XX%22&time%3E=YYYY-MM-01T00%3A00%3A00Z&time%3C=YYYY-MM-31T00' ...
         '%3A00%3A00Z'];
-
 aURL0 = strrep(aURLpat, 'YYYY', Ayear);
-aURL0 = strrep(aURL0, 'XX', Ast);
+aURL0 = strrep(aURL0, 'XX', Astn);
 
 CruiseDay = cell(size(Nmth,2), 1);
 CruiseNames = cell(size(Nmth,2), 1);
@@ -41,9 +36,9 @@ for nn = Nmth
     end
     
     aURL = strrep(aURL0, 'MM', ann);
-    afile = append('DEEP_', Ast, '_', Ayear, '_', ann, '.mat');
+    afile = ['DEEP_' Astn '_' Ayear '_' ann '.mat'];
     if ~exist(afile, 'file')
-        disp(['Getting data from ERDDAP at ' Ast ' in ' Ayear '-' ann]);
+        disp(['Getting data from ERDDAP at ' Astn ' in ' Ayear '-' ann]);
         try
             af = websave(afile, aURL, wopts);
             dd{nn} = load(af);

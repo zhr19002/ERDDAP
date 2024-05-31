@@ -2,7 +2,7 @@ function d = ImplementDeltaQAQC(din, Para)
 % 
 % Implement sample to sample difference test
 % 
-% Called from MakeDataArchive.m
+% Called from CheckBuoyDataQAQC.m
 % 
 
 d = ones(size(din));

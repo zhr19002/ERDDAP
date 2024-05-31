@@ -1,3 +1,10 @@
+% 
+% Calls GetDEEPWQClimStats.m
+% Calls CleanBuoyData.m
+% Calls CheckBuoyDataQAQC.m
+% Calls WriteNETCDFbuoyfile.m
+% 
+
 clc; clear;
 buoy = 'ARTG'; locs = {'btm1', 'btm2', 'sfc'};
 

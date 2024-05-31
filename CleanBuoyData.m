@@ -3,6 +3,7 @@ function d_clean = CleanBuoyData(d, avar, para)
 % Identify and remove outliers near the start/end date
 % 
 % Called from VisualizeQAQCResults.m
+% Called from WriteBuoyDataQAQC.m
 % 
 
 [YY, MM, DD] = datevec(d.TmStamp);

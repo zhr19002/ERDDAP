@@ -1,4 +1,4 @@
-function d = GetCTDEEP_stationdataThredds(Anm, Acrs)
+function d = GetCTDEEP_stationdataThredds(Astn, Acrs)
 % 
 % Go get the data from station Anm on cruise Acrs from the lisicos Thredds
 % server and return a structure with the salinity temperature and density
@@ -6,11 +6,9 @@ function d = GetCTDEEP_stationdataThredds(Anm, Acrs)
 % Called from GetCTDEEP_CTD_DataForComps.m
 % 
 
-wopts = weboptions;
-wopts.Timeout = 100;
+% Astn = 'C2'; Acrs = 'WQOCT18';
 
-% Anm = 'C2'; Acrs = 'WQOCT18';
-% Anm = 'F2'; Acrs = 'HYJUL21';
+wopts = weboptions; wopts.Timeout = 100;
 
 % Define the URL template
 a1 = ['http://merlin.dms.uconn.edu:8080/erddap/tabledap/DEEP_WQ.mat?' ...
@@ -22,8 +20,8 @@ a1 = ['http://merlin.dms.uconn.edu:8080/erddap/tabledap/DEEP_WQ.mat?' ...
     'Time_OFF_Station&cruise_name=%22XX%22&station_name=%22YY%22'];
 
 aurl = strrep(a1, 'XX', Acrs);
-aurl = strrep(aurl, 'YY', Anm);
-afile = append('CTDEEP_CTDprofile_', Acrs, '_', Anm, '.mat');
+aurl = strrep(aurl, 'YY', Astn);
+afile = ['CTDEEP_CTDprofile_' Acrs '_' Astn '.mat'];
 
 if ~exist(afile, 'file')
     disp('Getting data from ERDAPP... wait');

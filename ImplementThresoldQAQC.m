@@ -6,7 +6,7 @@ function d = ImplementThresoldQAQC(din, daten, Para)
 % to that in the data. eg. for the SUNA, the unit is  muM/g but the 
 % CTDEEP use mg/l so Scale Factor = 1000/14 is required.
 % 
-% Called from MakeDataArchive.m
+% Called from CheckBuoyDataQAQC.m
 % 
 
 ScaleFactor = 1000/14;

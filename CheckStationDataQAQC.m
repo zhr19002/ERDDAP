@@ -1,4 +1,4 @@
-% function d_clean = CleanStationData(astn, ZT_max)
+function stationdataQAQC = CheckStationDataQAQC(Astn, ZT_max)
 % 
 % Identify and flag station climatology data outliers
 % (1 = pass; 3 = beyond 99% data range; 4 = beyond max-min range)
@@ -6,9 +6,6 @@
 % Calls GetDEEPWQClimData.m
 % Calls GetDEEPWQClimStats.m
 % 
-
-clc; clear;
-astn = 'E1'; ZT_max = 0;
 
 avar_station = struct('T','sea_water_temperature','S','sea_water_salinity', ...
                       'DO','oxygen_concentration_in_sea_wat','pH','pH', ...
@@ -21,12 +18,12 @@ station_para = readtable('Station_Para.csv', ReadRowNames=true);
 for ZT = 0:2:ZT_max
     ZB = ZT+2;
     % Get station climatology dataset
-    clim_d = GetDEEPWQClimData(astn, ZT, ZB);
+    clim_d = GetDEEPWQClimData(Astn, ZT, ZB);
     clim = struct2table(clim_d);
     
     % Check Lon/Lat columns
-    clim.latitude = mode(clim.latitude)*ones(size(clim,1), 1);
-    clim.longitude = mode(clim.longitude)*ones(size(clim,1), 1);
+    clim.latitude(:) = mode(clim.latitude);
+    clim.longitude(:) = mode(clim.longitude);
     % clim = clim(clim.latitude == mode(clim.latitude), :);
     % clim = clim(clim.longitude == mode(clim.longitude), :);
     daten = clim.Start_Date/(24*3600) + datetime(1970,1,1);
@@ -44,7 +41,7 @@ for ZT = 0:2:ZT_max
                 clim.([avar{1} '_Check'])(iu1) = 4;
             end
             % Get station climatology statistics
-            clim_stats = GetDEEPWQClimStats(astn, ZT, ZB, avar{1});
+            clim_stats = GetDEEPWQClimStats(Astn, ZT, ZB, avar{1});
             % check the specific month climatology data
             for MM = 1:12
                 tmp = clim.(avar_station.(avar{1}))(clim.mnth == MM);
@@ -57,5 +54,6 @@ for ZT = 0:2:ZT_max
         end
     end
     clim.mnth = [];
-    save(['CTDEEP_' astn '_' num2str(ZT) '_' num2str(ZB) '_QAQC.mat'], 'clim');
+    stationdataQAQC = clim;
+    save(['CTDEEP_' Astn '_' num2str(ZT) '_' num2str(ZB) '_QAQC.mat'], 'clim');
 end

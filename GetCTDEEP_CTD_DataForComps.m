@@ -1,4 +1,4 @@
-function d = GetCTDEEP_CTD_DataForComps(Astn, CruiseNames, DepRng)
+function d = GetCTDEEP_CTD_DataForComps(Astn, CruiseNames, ZT, ZB)
 % 
 % Get the CTD profile data from the CTDEEP ERDDAP archive by CruiseName
 % 
@@ -7,10 +7,11 @@ function d = GetCTDEEP_CTD_DataForComps(Astn, CruiseNames, DepRng)
 % 
 % Calls GetCTDEEP_stationdataThredds.m
 % 
+% Called from VisualizeBuoyDataQAQC.m
+% Called from CheckShipSurveyDataQAQC.m
+% 
 
-% Astn = 'C1';
 % CruiseNames = {'WQJUN19';['HYJUL19';'WQJUL19'];['HYAUG19';'WQAUG19'];[];'WQOCT19'};
-% DepRang = [0 3];
 
 cellnum = 0;
 for nn = 1:size(CruiseNames,1)
@@ -37,35 +38,35 @@ for nn = 1:cellnum
     d{nn} = GetCTDEEP_stationdataThredds(Astn, CN{nn});
     if isfield(d{nn}, 'depth')
         % Average properties in the depth range specified
-        iuse = find(cell2mat(d{nn}.depth)>=DepRng(1) & cell2mat(d{nn}.depth)<=DepRng(2));
-        if isempty(iuse)
-            iuse = find(cell2mat(d{nn}.depth)>=0 & cell2mat(d{nn}.depth)<=max(cell2mat(d{nn}.depth)));
+        iu = find(cell2mat(d{nn}.depth)>=ZT & cell2mat(d{nn}.depth)<=ZB);
+        if isempty(iu)
+            iu = find(cell2mat(d{nn}.depth)>=0 & cell2mat(d{nn}.depth)<=max(cell2mat(d{nn}.depth)));
         end
-        tmp = cell2mat(d{nn}.depth(iuse));
+        tmp = cell2mat(d{nn}.depth(iu));
         d{nn}.mnDepth = mean(tmp(~isnan(tmp)));
-        tmp = cell2mat(d{nn}.sea_water_temperature(iuse));
+        tmp = cell2mat(d{nn}.sea_water_temperature(iu));
         d{nn}.mnTemp = mean(tmp(~isnan(tmp)));
-        tmp = cell2mat(d{nn}.sea_water_salinity(iuse));
+        tmp = cell2mat(d{nn}.sea_water_salinity(iu));
         d{nn}.mnSal = mean(tmp(~isnan(tmp)));
-        tmp = cell2mat(d{nn}.oxygen_concentration_in_sea_wat(iuse));
+        tmp = cell2mat(d{nn}.oxygen_concentration_in_sea_wat(iu));
         d{nn}.mnDO = mean(tmp(~isnan(tmp)));
-        tmp = cell2mat(d{nn}.sea_water_pressure(iuse));
+        tmp = cell2mat(d{nn}.sea_water_pressure(iu));
         d{nn}.mnPres = mean(tmp(~isnan(tmp)));
-        tmp = cell2mat(d{nn}.sea_water_electrical_conductivi(iuse));
+        tmp = cell2mat(d{nn}.sea_water_electrical_conductivi(iu));
         d{nn}.mnCond = mean(tmp(~isnan(tmp)));
-        tmp = cell2mat(d{nn}.pH(iuse));
+        tmp = cell2mat(d{nn}.pH(iu));
         d{nn}.mnPH = mean(tmp(~isnan(tmp)));
-        tmp = cell2mat(d{nn}.sea_water_density(iuse));
+        tmp = cell2mat(d{nn}.sea_water_density(iu));
         d{nn}.mnRho = mean(tmp(~isnan(tmp)));
-        tmp = cell2table(d{nn}.Start_Date(iuse)).Var1;
+        tmp = cell2table(d{nn}.Start_Date(iu)).Var1;
         d{nn}.mnTime = mean(tmp);
-        tmp = cell2mat(d{nn}.PAR(iuse));
+        tmp = cell2mat(d{nn}.PAR(iu));
         d{nn}.mnPAR = mean(tmp(~isnan(tmp)));
-        tmp = cell2mat(d{nn}.Chlorophyll(iuse));
+        tmp = cell2mat(d{nn}.Chlorophyll(iu));
         d{nn}.mnCHL = mean(tmp(~isnan(tmp)));
-        tmp = cell2mat(d{nn}.Corrected_Chlorophyll(iuse));
+        tmp = cell2mat(d{nn}.Corrected_Chlorophyll(iu));
         d{nn}.mnCorCHL = mean(tmp(~isnan(tmp)));
-        tmp = cell2mat(d{nn}.percent_saturation(iuse));
+        tmp = cell2mat(d{nn}.percent_saturation(iu));
         d{nn}.mnDOsat = mean(tmp(~isnan(tmp)));
     end
 end

@@ -4,7 +4,7 @@ function d = ImplementSpikeTestQAQC(din, Para, ainst)
 % 
 % Set 1 for pass, 4 for fail and 3 for suspious
 % 
-% Called from MakeDataArchive.m
+% Called from CheckBuoyDataQAQC.m
 % 
 
 if contains(ainst, 'btm')

@@ -18,10 +18,12 @@ avar_station = struct('T','mnTemp','S','mnSal','DO','mnDO','P','mnPres', ...
                       'C','mnCond','pH','mnPH','rho','mnRho','DOsat','mnDOsat');
 buoy_station = struct('ARTG','E1','CLIS','C1','EXRX','A4');
 
-switch contains(loc,'btm')
-    case 0
+switch loc
+    case 'sfc'
         ZT = 0; ZB = 3;
-    case 1
+    case 'mid'
+        ZT = 5; ZB = 15;
+    case {'btm','btm1','btm2'}
         ZT = 20; ZB = 30;
 end
 

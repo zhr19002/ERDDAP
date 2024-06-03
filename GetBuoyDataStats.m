@@ -1,12 +1,5 @@
 clc; clear;
-buoy = 'ARTG'; loc = 'btm2'; avar = 'degC';
-
-switch contains(loc,'btm')
-    case 0
-        ZT = 0; ZB = 3;
-    case 1
-        ZT = 20; ZB = 30;
-end
+buoy = 'EXRX'; loc = 'mid'; avar = 'percent';
 
 % Connect to database
 username = 'lisicos';

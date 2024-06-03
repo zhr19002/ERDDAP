@@ -1,22 +1,23 @@
 function d = ImplementDeltaQAQC(din, Para)
 % 
 % Implement sample to sample difference test
+% Set 1 for pass, 4 for fail and 3 for suspicious
 % 
 % Called from CheckBuoyDataQAQC.m
 % 
 
-d = ones(size(din));
-dd = abs(diff(din));  % The first and second are treated the same
-dd = dd([1 1:end]);
+d = ones(size(din));  % Set QAQC code to 1
+dd = abs(diff(din));
+dd = dd([1 1:end]);   % The first and second are treated the same
 
-inan = find(dd > Para.Delta(1));
-if ~isempty(inan)
-    d(inan) = 3;
+isus = find(dd > Para.Delta(1));
+if ~isempty(isus)
+    d(isus) = 3;
 end
 
-inan = find(dd > Para.Delta(2));
-if ~isempty(inan)
-    d(inan) = 4;
+ifail = find(dd > Para.Delta(2) | isnan(din));
+if ~isempty(ifail)
+    d(ifail) = 4;
 end
 
 end

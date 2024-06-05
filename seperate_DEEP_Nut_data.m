@@ -1,12 +1,12 @@
-function [ds, db] = seperate_DEEP_Nut_data(d, CruiseDates)
+function [ds, db] = seperate_DEEP_Nut_data(d, CruiseDay)
 % 
-% Extract the data from the structure. All the data is from 
-% a single month and a single station. The need is to seperate
-% the records by level (S/B) and variable.
+% Extract data from the structure
+% All the data is from a single month and a single station
+% The need is to seperate records by level (S/B) and variable.
 % 
-% CruiseDates should have the start end and middle data in datenum
+% CruiseDay should have the start date, the end date, and the middle date
 % 
-% Called from GetCTDEEPDataForComps.m
+% Called from GetCTDEEP_NutDataForComps.m
 % 
 
 vars = {'BIOSI-LC',...
@@ -88,7 +88,7 @@ if exist('dsurf', 'var')
                 end
                 ds.(cvars{nl}).Conc(nVct,:) = str2double(dsurf.Result(nn,:));
                 ds.(cvars{nl}).depth(nVct,:) = str2double(dsurf.S_Sample_Depth(nn,:));
-                ds.(cvars{nl}).time(nVct,:) = seconds((CruiseDates{1}(3)-datetime(1970,1,1))*86400);
+                ds.(cvars{nl}).time(nVct,:) = seconds((CruiseDay{1}(3)-datetime(1970,1,1))*86400);
                 
                 % Convert CRUISE Start_Date to EST
                 % startCruiseday = dsurf.Start_Date(nn)/86400 + datetime(1970,1,1);
@@ -126,7 +126,7 @@ if exist('dbot', 'var')
                 end
                 db.(cvars{nl}).Conc(nVct,:) = str2double(dbot.Result(nn,:));
                 db.(cvars{nl}).depth(nVct,:) = str2double(dbot.B_Sample_Depth(nn,:));
-                db.(cvars{nl}).time(nVct,:) = seconds((CruiseDates{1}(3)-datetime(1970,1,1))*86400);
+                db.(cvars{nl}).time(nVct,:) = seconds((CruiseDay{1}(3)-datetime(1970,1,1))*86400);
 
                 % Convert CRUISE Start_Date to EST
                 % startCruiseday = dbot.Start_Date(nn)/86400 + datetime(1970,1,1);

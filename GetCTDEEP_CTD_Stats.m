@@ -1,11 +1,11 @@
-function d = GetCTDEEP_CTD_DataForComps(Astn, CruiseNames, ZT, ZB)
+function d = GetCTDEEP_CTD_Stats(Astn, CruiseNames, ZT, ZB)
 % 
 % Get the CTD profile data from the CTDEEP ERDDAP archive by CruiseName
 % 
 % CruiseNames is a structure with an element for each month. There may be 
 % multiple cruises in each month need to put them into a single series.
 % 
-% Calls GetCTDEEP_stationdataThredds.m
+% Calls GetCTDEEP_CTD_Data.m
 % 
 % Called from VisualizeBuoyDataQAQC.m
 % Called from CheckShipSurveyDataQAQC.m
@@ -35,7 +35,7 @@ end
 
 d = cell(cellnum,1);
 for nn = 1:cellnum
-    d{nn} = GetCTDEEP_stationdataThredds(Astn, CN{nn});
+    d{nn} = GetCTDEEP_CTD_Data(Astn, CN{nn});
     if isfield(d{nn}, 'depth')
         % Average properties in the depth range specified
         iu = find(cell2mat(d{nn}.depth)>=ZT & cell2mat(d{nn}.depth)<=ZB);

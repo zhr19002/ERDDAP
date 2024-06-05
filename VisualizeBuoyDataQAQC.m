@@ -1,6 +1,6 @@
 % 
-% Calls GetCTDEEPDataForComps.m
-% Calls GetCTDEEP_CTD_DataForComps.m
+% Calls GetCTDEEP_WQDataForComps.m
+% Calls GetCTDEEP_CTD_Stats.m
 % Calls GetDEEPWQClimStats.m
 % Calls CleanBuoyData.m
 % Calls CheckBuoyDataQAQC.m
@@ -66,9 +66,9 @@ close(conn);
 
 %%
 % Get cruise names from CTDEEP data in a specific year
-[~,~,CruiseNames] = GetCTDEEPDataForComps(buoy_station.(buoy),Ayear,1:12);
+[~,~,CruiseNames] = GetCTDEEP_WQDataForComps(buoy_station.(buoy),Ayear,1:12);
 % Get CTDEEP ship survey data
-dCTD_Station = GetCTDEEP_CTD_DataForComps(buoy_station.(buoy),CruiseNames,ZT,ZB);
+dCTD_Station = GetCTDEEP_CTD_Stats(buoy_station.(buoy),CruiseNames,ZT,ZB);
 
 % Plot CTDEEP ship survey data
 for nn = 1:length(dCTD_Station)

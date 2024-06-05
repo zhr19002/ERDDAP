@@ -5,7 +5,7 @@ function d = GetDEEPWQClimData(Astn, ZT, ZB)
 % Called from CheckStationDataQAQC.m
 % 
 
-% astn = 'E1'; ZT = 0; ZB = 3;
+wopts = weboptions; wopts.Timeout = 120;
 
 % Form ERDDAP request
 aurl0 = ['http://merlin.dms.uconn.edu:8080/erddap/tabledap/DEEP_WQ.mat?' ...
@@ -22,8 +22,6 @@ afile = ['CTDEEP_' Astn '_' num2str(ZT) '_' num2str(ZB) '.mat'];
 if exist(afile, 'file')
     d = load(afile);
 else
-    wopt = weboptions;
-    wopt.Timeout = 120;
     af = websave(afile, aurl, wopt);
     d = load(af);
 end

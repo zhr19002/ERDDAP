@@ -1,5 +1,5 @@
 clc; clear;
-buoy = 'EXRX'; loc = 'mid'; avar = 'percent';
+buoy = 'EXRX'; loc = 'mid'; av = 'percent';
 
 % Connect to database
 username = 'lisicos';
@@ -22,7 +22,7 @@ close(conn);
 %%
 % {'T','degC','S','psu','DO','mg/L','P','dBars','C','S/m'}
 % {'pH','none','rho','kg/m^3','DOsat','percent'}
-d = buoy_loc.(avar);
+d = buoy_loc.(av);
 para1 = 0.05; para2 = 0.25; para3 = 0.5; 
 para4 = 99.5; para5 = 99.75; para6 = 99.95;
 

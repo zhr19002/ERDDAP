@@ -9,14 +9,14 @@
 clc; clear;
 % Set up parameters
 Ayear = 2021; buoy = 'ARTG'; loc = 'btm1';
-avar = 'pH'; % {'T','S','DO','P','C','pH','rho','DOsat'}
+av = 'pH'; % {'T','S','DO','P','C','pH','rho','DOsat'}
 
 % Fixed parameters
-avar_buoy = struct('T','degC','S','psu','DO','mg/L','P','dBars','C','S/m', ...
-                   'pH','none','rho','kg/m^3','DOsat','percent');
-avar_station = struct('T','mnTemp','S','mnSal','DO','mnDO','P','mnPres', ...
-                      'C','mnCond','pH','mnPH','rho','mnRho','DOsat','mnDOsat');
-buoy_station = struct('ARTG','E1','CLIS','C1','EXRX','A4');
+av_by = struct('T','degC','S','psu','DO','mg/L','P','dBars','C','S/m', ...
+               'pH','none','rho','kg/m^3','DOsat','percent');
+av_stn = struct('T','mnTemp','S','mnSal','DO','mnDO','P','mnPres', ...
+                'C','mnCond','pH','mnPH','rho','mnRho','DOsat','mnDOsat');
+by_stn = struct('ARTG','E1','CLIS','C1','EXRX','A4');
 
 switch loc
     case 'sfc'
@@ -65,34 +65,42 @@ end
 close(conn);
 
 %%
-% Get cruise names from CTDEEP data in a specific year
-[~,~,CruiseNames] = GetCTDEEP_WQDataForComps(buoy_station.(buoy),Ayear,1:12);
-% Get CTDEEP ship survey data
-dCTD_Station = GetCTDEEP_CTD_Stats(buoy_station.(buoy),CruiseNames,ZT,ZB);
+% Get cruise names for 12 months in a specific year
+CruiseNames = cell(12,1);
+for nn = 1:12
+    if nn < 10
+        Amonth = sprintf('0%i', nn);
+    else
+        Amonth = sprintf('%i', nn);
+    end
+    [~, CruiseNames{nn}] = GetCruiseNames(Ayear, Amonth);
+end
+% Get ship survey data in a depth range for all cruises at a station
+dCTD = GetCTDEEP_CTD_Stats(by_stn.(buoy),CruiseNames,ZT,ZB);
 
 % Plot CTDEEP ship survey data
-for nn = 1:length(dCTD_Station)
-    if ~isempty(dCTD_Station{nn})
+for nn = 1:length(dCTD)
+    if ~isempty(dCTD{nn})
         break
     end
 end
 
 figure; hold on; grid on;
-for n = 1:length(dCTD_Station)
-    if ~isempty(dCTD_Station{n})
+for n = 1:length(dCTD)
+    if ~isempty(dCTD{n})
         if n == nn
-            plot(dCTD_Station{n}.mnTime,dCTD_Station{n}.(avar_station.(avar)), ...
-                 'gs','MarkerFaceColor','g','DisplayName',['Ship Survey (' avar ')']);
+            plot(dCTD{n}.mnTime,dCTD{n}.(av_stn.(av)),'gs','MarkerFaceColor','g', ...
+                 'DisplayName',['Ship Survey (' av ')']);
         else
-            plot(dCTD_Station{n}.mnTime,dCTD_Station{n}.(avar_station.(avar)), ...
-                 'gs','MarkerFaceColor','g','HandleVisibility','off');
+            plot(dCTD{n}.mnTime,dCTD{n}.(av_stn.(av)),'gs','MarkerFaceColor','g', ...
+                 'HandleVisibility','off');
         end
     end
 end
 
 %%
 % Get station climatology data
-clim_stats = GetDEEPWQClimStats(buoy_station.(buoy),ZT,ZB,avar);
+clim_stats = GetDEEPWQClimStats(by_stn.(buoy),ZT,ZB,av);
 
 % Put the station climatology patch on the graph
 t = datetime(Ayear,1:12,15);
@@ -101,7 +109,7 @@ y2 = clim_stats.bd95upper;
 
 % Plot station raw data
 plot(t,clim_stats.data(1,:),'.','Color',[0.5,0.5,0.5], ...
-     'DisplayName',[buoy_station.(buoy) ' (' avar ')']);
+     'DisplayName',[by_stn.(buoy) ' (' av ')']);
 plot(t,clim_stats.data(2:end,:),'.','Color',[0.5,0.5,0.5], ...
      'HandleVisibility','off');
 
@@ -118,42 +126,35 @@ pp.FaceColor = [0.1 0.9 0.7]; pp.EdgeColor = [0.1 0.9 0.7];
 %%
 % Buoy data cleaning
 para = mean(clim_stats.bd84 - clim_stats.bd16);
-buoydata = CleanBuoyData(buoy_loc,avar,para);
+buoyData = CleanBuoyData(buoy_loc,av,para);
 
 % Plot time series for buoy data in a specific year
-plot(buoydata.TmStamp,buoydata.(avar_buoy.(avar)),'b.', ...
-     'DisplayName',[buoy ' (' avar ')']);
+plot(buoyData.TmStamp,buoyData.(av_by.(av)),'b.','DisplayName',[buoy ' (' av ')']);
 xticks(datetime(Ayear,1:12,1));
 xtickformat('MMM/dd');
-ylabel([avar,' (',avar_buoy.(avar),')']);
-title([buoy '\_' loc ' ' num2str(Ayear) ' Climatology at ' ...
-       buoy_station.(buoy) ' (' avar ')']);
+ylabel([av,' (',av_by.(av),')']);
+title([buoy '\_' loc ' ' num2str(Ayear) ' Climatology at ' by_stn.(buoy) ' (' av ')']);
 legend('Location','eastoutside');
 
 %%
 % QAQC checks
-[QAQC,buoydataQAQC] = CheckBuoyDataQAQC(buoydata,loc,avar,avar_buoy);
+[QAQC,dQAQC] = CheckBuoyDataQAQC(buoyData,loc,av,av_by);
 
 % Plot outliers through QAQC checks
-iu1 = find(floor(buoydataQAQC.QAQCTests/10000) ~= 1);
-plot(buoydataQAQC.TmStamp(iu1),buoydataQAQC.(avar_buoy.(avar))(iu1), ...
-     'rd','DisplayName','Threshold test');
-iu2 = find(mod(floor(buoydataQAQC.QAQCTests/1000),10) ~= 1);
-plot(buoydataQAQC.TmStamp(iu2),buoydataQAQC.(avar_buoy.(avar))(iu2), ...
-     'ro','DisplayName','Jump limit test');
-iu3 = find(mod(floor(buoydataQAQC.QAQCTests/100),10) ~= 1);
-plot(buoydataQAQC.TmStamp(iu3),buoydataQAQC.(avar_buoy.(avar))(iu3), ...
-     'rs','DisplayName','Gap test');
-iu4 = find(mod(floor(buoydataQAQC.QAQCTests/10),10) ~= 1);
-plot(buoydataQAQC.TmStamp(iu4),buoydataQAQC.(avar_buoy.(avar))(iu4), ...
-     'rp','DisplayName','Pressure range test');
-iu5 = find(mod(buoydataQAQC.QAQCTests,10) ~= 1);
-plot(buoydataQAQC.TmStamp(iu5),buoydataQAQC.(avar_buoy.(avar))(iu5), ...
-     'r^','DisplayName','Spike test');
+iu1 = find(floor(dQAQC.QAQCTests/10000) ~= 1);
+plot(dQAQC.TmStamp(iu1),dQAQC.(av_by.(av))(iu1),'rd','DisplayName','Threshold test');
+iu2 = find(mod(floor(dQAQC.QAQCTests/1000),10) ~= 1);
+plot(dQAQC.TmStamp(iu2),dQAQC.(av_by.(av))(iu2),'ro','DisplayName','Jump limit test');
+iu3 = find(mod(floor(dQAQC.QAQCTests/100),10) ~= 1);
+plot(dQAQC.TmStamp(iu3),dQAQC.(av_by.(av))(iu3),'rs','DisplayName','Gap test');
+iu4 = find(mod(floor(dQAQC.QAQCTests/10),10) ~= 1);
+plot(dQAQC.TmStamp(iu4),dQAQC.(av_by.(av))(iu4),'rp','DisplayName','Pressure range test');
+iu5 = find(mod(dQAQC.QAQCTests,10) ~= 1);
+plot(dQAQC.TmStamp(iu5),dQAQC.(av_by.(av))(iu5),'r^','DisplayName','Spike test');
 
 %%
 % ylim(QAQC.Thesholds); 
-% saveas(gcf, [buoy '_' loc ' ' num2str(Ayear) ' Climatology at ' buoy_station.(buoy) ' (' avar ').png']);
+% saveas(gcf, [buoy '_' loc ' ' num2str(Ayear) ' Climatology at ' by_stn.(buoy) ' (' av ').png']);
 
 % % Ginput
 % disp('Click twice to zoom in.');

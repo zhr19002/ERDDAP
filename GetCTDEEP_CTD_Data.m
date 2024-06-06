@@ -1,6 +1,6 @@
 function d = GetCTDEEP_CTD_Data(Astn, Acrs, ZT, ZB)
 % 
-% Get data from station (Astn) on cruise (Acrs) from ZT to ZB
+% Get data at station (Astn) on cruise (Acrs) from ZT to ZB
 % Return a structure with salinity, temperature, and density
 % 
 % Called from GetCTDEEP_CTD_Stats.m

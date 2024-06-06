@@ -1,10 +1,10 @@
 function [dd, CruiseDay, CruiseNames] = GetCTDEEP_WQDataForComps(Astn, Ayear, Nmth)
 % 
-% Get station data (dd{12}) from ERDDAP
+% Get station data (dd) from ERDDAP
 % 
 % Note that Nmth may be a range (e.g., Nmth = 1:3), then dd{1:3} is returned
 % Since there may be more than 1 cruise per month, 
-% then dd{3}{1}.DEEP_WQ, dd{3}{2}.DEEP_WQ, etc. are returned
+% then dd{3}{1}, dd{3}{2}, etc. are returned
 % 
 % Calls GetCruiseNames.m
 % Called from GetCTDEEP_WQDataForComps_demo.m
@@ -22,7 +22,7 @@ aURLpat = ['http://merlin.dms.uconn.edu:8080/erddap/tabledap/DEEP_WQ.mat?cruise_
 aURL0 = strrep(aURLpat, 'XX', Astn);
 aURL0 = strrep(aURL0, 'YYYY', Ayear);
 
-dd = cell(12,1);
+dd = cell(12,1); CruiseDay = cell(12,1); CruiseNames = cell(12,1);
 % Step through months and get station data from ERDDAP
 for nn = Nmth
     if nn < 10
@@ -32,24 +32,25 @@ for nn = Nmth
     end
     
     % Get the list of cruises
-    [CruiseDay, CruiseNames] = GetCruiseNames(Ayear, Amonth);
+    [CruiseDay{nn}, CruiseNames{nn}] = GetCruiseNames(Ayear, Amonth);
     aURL = strrep(aURL0, 'MM', Amonth);
     
     % Request data from each cruise
-    for nc = 1:length(CruiseNames)
-        afile = ['DEEPWQ_' Astn '_' CruiseNames{nc} '.mat'];
+    for nc = 1:length(CruiseNames{nn})
+        afile = ['DEEPWQ_' Astn '_' CruiseNames{nn}{nc} '.mat'];
         if ~exist(afile, 'file')
-            disp(['Getting data from ERDDAP at ' Astn ' on ' CruiseNames{nc}]);
+            disp(['Getting data from ERDDAP at ' Astn ' on ' CruiseNames{nn}{nc}]);
             try
-                aURL = strrep(aURL, 'NNNNNNN', CruiseNames{nc});
+                aURL = strrep(aURL, 'NNNNNNN', CruiseNames{nn}{nc});
                 af = websave(afile, aURL, wopts);
                 dd{nn}{nc} = load(af);
-                dd{nn}{nc}.DEEP_WQ.CruiseDay = CruiseDay{nc};
-                dd{nn}{nc}.DEEP_WQ.CruiseNames = CruiseNames{nc};
-                DEEP_WQ = dd{nn}{nc}.DEEP_WQ;
+                dd{nn}{nc} = dd{nn}{nc}.DEEP_WQ;
+                dd{nn}{nc}.CruiseDay = CruiseDay{nn}{nc};
+                dd{nn}{nc}.CruiseNames = CruiseNames{nn}{nc};
+                DEEP_WQ = dd{nn}{nc};
                 save(af, 'DEEP_WQ');
             catch
-                disp(['No data at ' Astn ' on ' CruiseNames{nc}]);
+                disp(['No data at ' Astn ' on ' CruiseNames{nn}{nc}]);
                 dd{nn}{nc} = [];
             end
         else

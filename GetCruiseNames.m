@@ -20,7 +20,7 @@ end
 if ~isempty(data)
     CruiseDay = cell(size(data.table.rows));
     CruiseNames = cell(size(data.table.rows));
-    for nc = 1:size(data.table.rows, 1)
+    for nc = 1:numel(data.table.rows)
         CruiseNames{nc} = data.table.rows{nc}{1};
         CruiseDay{nc}.start = data.table.rows{nc}{2};
         CruiseDay{nc}.end = data.table.rows{nc}{3};

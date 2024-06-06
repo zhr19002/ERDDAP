@@ -30,8 +30,8 @@ for ZT = 0:2:ZT_max
         if isfield(clim_d, avar_station.(avar{1}))
             clim.([avar{1} '_Check'])(:) = 1;
             iu1 = find(clim.(avar_station.(avar{1})) < station_para.(avar{1})('Min_Value') | ...
-                      clim.(avar_station.(avar{1})) > station_para.(avar{1})('Max_Value') | ...
-                      isnan(clim.(avar_station.(avar{1}))));
+                       clim.(avar_station.(avar{1})) > station_para.(avar{1})('Max_Value') | ...
+                       isnan(clim.(avar_station.(avar{1}))));
             if ~isempty(iu1)
                 clim.([avar{1} '_Check'])(iu1) = 4;
             end

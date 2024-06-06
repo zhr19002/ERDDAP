@@ -22,7 +22,7 @@ afile = ['CTDEEP_' Astn '_' num2str(ZT) '_' num2str(ZB) '.mat'];
 if exist(afile, 'file')
     d = load(afile);
 else
-    af = websave(afile, aurl, wopt);
+    af = websave(afile, aurl, wopts);
     d = load(af);
 end
 

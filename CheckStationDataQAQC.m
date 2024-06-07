@@ -61,5 +61,5 @@ for ZT = 0:5:5*floor(maxDepth/5)
 end
 
 % Save QAQC results
-stationQAQC = clim;
-save(['CTDEEP_' Astn '_QAQC.mat'], 'stationQAQC');
+StationQAQC = clim;
+save(['CTDEEP_' Astn '_QAQC.mat'], 'StationQAQC');

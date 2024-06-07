@@ -1,7 +1,7 @@
 function d = ImplementDeltaQAQC(din, Para)
 % 
 % Implement sample to sample difference test
-% Set 1 for pass, 4 for fail and 3 for suspicious
+% Set 1 for pass, 4 for fail, and 3 for suspicious
 % 
 % Called from CheckBuoyDataQAQC.m
 % 

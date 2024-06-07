@@ -9,7 +9,7 @@
 % 
 
 clc; clear;
-Ayear0 = 2021;
+Ayear0 = 2021; Ayear1 = 2021;
 av_stn = struct('T','sea_water_temperature','S','sea_water_salinity', ...
                 'DO','oxygen_concentration_in_sea_wat','pH','pH', ...
                 'P','sea_water_pressure','C','sea_water_electrical_conductivi', ...
@@ -18,7 +18,7 @@ av_stn = struct('T','sea_water_temperature','S','sea_water_salinity', ...
 stn_para = readtable('Station_Para.csv', ReadRowNames=true);
 
 for Astn = {'E1'}
-    for Ayear = Ayear0:2021
+    for Ayear = Ayear0:Ayear1
         % Get cruise names for 12 months in a specific year
         CruiseNames = cell(12,1);
         for nn = 1:12
@@ -74,8 +74,8 @@ for Astn = {'E1'}
             end
         end
     end
-    % Save QAQC results
-    ShipSurveyDataQAQC = clim;
-    save(['CTDEEP_' Astn{1} '_' num2str(Ayear0) '_' num2str(Ayear) '_QAQC.mat'], 'ShipSurveyDataQAQC');
 end
 
+% Save QAQC results
+ShipSurveyQAQC = clim;
+save(['CTDEEP_Cruises_' num2str(Ayear0) '_' num2str(Ayear1) '_QAQC.mat'], 'ShipSurveyQAQC');

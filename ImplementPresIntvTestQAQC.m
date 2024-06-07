@@ -3,7 +3,7 @@ function d = ImplementPresIntvTestQAQC(din, Para, loc)
 % Apply IOOS QARTOD gap test on data level
 % 
 % Find anomalous pressure out of range
-% Set 1 for pass, 4 for fail and 3 for suspicious
+% Set 1 for pass, 4 for fail, and 3 for suspicious
 % 
 % Called from CheckBuoyDataQAQC.m
 % 

@@ -3,7 +3,7 @@ function d = ImplementGapTestQAQC(din, Para)
 % Apply IOOS QARTOD gap test on data time
 % 
 % Find anomalous time seperations
-% Set 1 for pass, 4 for fail and 3 for suspicious
+% Set 1 for pass, 4 for fail, and 3 for suspicious
 % 
 % Called from CheckBuoyDataQAQC.m
 % 

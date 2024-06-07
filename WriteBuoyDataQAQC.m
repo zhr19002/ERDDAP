@@ -55,28 +55,28 @@ for loc = locs
     
     close(conn);
     
-    buoyQAQC.(loc{1}).time = buoy_loc.TmStamp;
-    buoyQAQC.(loc{1}).depth = buoy_loc.depth;
+    BuoyQAQC.(loc{1}).time = buoy_loc.TmStamp;
+    BuoyQAQC.(loc{1}).depth = buoy_loc.depth;
     for av = {'T','S','DO','P','C','pH','rho','DOsat'}
         tbvars = categorical(buoy_loc.Properties.VariableNames);
         if iscategory(tbvars, av_by.(av{1}))
             % Get station climatology data
-            clim_stats = GetDEEPWQClimStats(by_stn.(buoy),ZT,ZB,av{1});
+            stats = GetDEEPWQClimStats(by_stn.(buoy),ZT,ZB,av{1});
             % Buoy data cleaning
-            para = mean(clim_stats.bd84 - clim_stats.bd16);
+            para = mean(stats.bd84 - stats.bd16);
             buoyData = CleanBuoyData(buoy_loc,av{1},para);
             % QAQC checks
             [~,dQAQC] = CheckBuoyDataQAQC(buoyData,loc{1},av{1},av_by);
-            buoyQAQC.(loc{1}).(av{1}) = dQAQC;
+            BuoyQAQC.(loc{1}).(av{1}) = dQAQC;
         end
     end
 end
 
 % Save QAQC results
-save([buoy '_QAQC.mat'], 'buoyQAQC');
+save([buoy '_QAQC.mat'], 'BuoyQAQC');
 
 %%
 % Save all the data plotted in a structure that can be exported to NETCDF and to ERDDAP
 latlon = [41 + 0.60/60, -(73 + 17.29/60)];
 stnDep = 30;
-WriteNETCDFbuoyfile(buoy, locs, latlon, stnDep, buoyQAQC);
+WriteNETCDFbuoyfile(buoy, locs, latlon, stnDep, BuoyQAQC);

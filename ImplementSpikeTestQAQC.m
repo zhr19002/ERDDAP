@@ -1,7 +1,7 @@
 function d = ImplementSpikeTestQAQC(din, Para, loc)
 % 
 % Apply IOOS QARTOD Spike on data  
-% Set 1 for pass, 4 for fail and 3 for suspicious
+% Set 1 for pass, 4 for fail, and 3 for suspicious
 % 
 % Called from CheckBuoyDataQAQC.m
 % 
@@ -23,14 +23,14 @@ SPK_REF = (din(1:end-2) + din(3:end))/2;
 SPK_REF = SPK_REF([1 1:end end]);
 SPK = abs(din-SPK_REF);
 
+isus = find(SPK>pbot);  % Find minor spikes
+if ~isempty(isus)
+    d(isus) = 3;
+end
+
 ifail = find(SPK>ptop | isnan(din));  % Find big spikes
 if ~isempty(ifail)
     d(ifail) = 4;
-end
-
-isus = find(SPK>pbot & SPK<ptop, 1);  % Find minor spikes
-if ~isempty(isus)
-    d(isus) = 3;
 end
 
 end

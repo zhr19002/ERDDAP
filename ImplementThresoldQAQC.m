@@ -1,12 +1,17 @@
 function d = ImplementThresoldQAQC(din, Para)
 % 
 % Threshold data or Gross Range Test in QARTOD and missing value test
-% Set 1 for pass, 4 for fail and 3 for suspicious
+% Set 1 for pass, 4 for fail, and 3 for suspicious
 % 
 % Called from CheckBuoyDataQAQC.m
 % 
 
 d = ones(size(din));  % Set QAQC code to 1
+
+isus = find(din<Para.bd98(1) | din>Para.bd98(2));
+if ~isempty(isus)
+    d(isus) = 3;
+end
 
 ifail = find(din<Para.Thesholds(1) | din>Para.Thesholds(2) | isnan(din));
 if ~isempty(ifail)

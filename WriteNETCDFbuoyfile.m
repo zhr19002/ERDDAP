@@ -1,4 +1,4 @@
-function WriteNETCDFbuoyfile(buoy, locs, latlon, stnDep, buoyQAQC)
+function WriteNETCDFbuoyfile(buoy, locs, latlon, stnDep, BuoyQAQC)
 % 
 % Create a NETCDF file with buoy data
 % 
@@ -19,7 +19,7 @@ meta.time_zone = 'EST';
 
 % Convert to the expected format
 for loc = locs
-    d = buoyQAQC.(loc{1});
+    d = BuoyQAQC.(loc{1});
     WriteNC_Buoyfiles([buoy '_' loc{1} '.nc'], d, meta);
     clear d;
 end

@@ -29,7 +29,7 @@ for ZT = 0:5:5*floor(maxDepth/5)
     % Check each variable in station climatology data
     for av = {'T','S','DO','P','C','pH','rho','DOsat'}
         % Get station climatology statistics
-        clim_stats = GetDEEPWQClimStats(Astn, ZT, ZB, av{1});
+        stats = GetDEEPWQClimStats(Astn, ZT, ZB, av{1});
         if isfield(d, av_stn.(av{1}))
             % Shorten field names
             dpth = ['depth_' num2str(ZT) '_' num2str(ZB)];
@@ -50,8 +50,8 @@ for ZT = 0:5:5*floor(maxDepth/5)
             % Check 99% data range thresholds for each month
             for MM = 1:12
                 iu2 = find(month(d.time/(24*3600) + datetime(1970,1,1)) == MM);
-                iu3 = find(d.(av_stn.(av{1}))(iu2) < clim_stats.bd99lower(MM) | ...
-                           d.(av_stn.(av{1}))(iu2) > clim_stats.bd99upper(MM));
+                iu3 = find(d.(av_stn.(av{1}))(iu2) < stats.bd1(MM) | ...
+                           d.(av_stn.(av{1}))(iu2) > stats.bd99(MM));
                 if ~isempty(iu3)
                     clim.(dpth).(av{1}).check(iu3) = 3;
                 end
@@ -61,5 +61,5 @@ for ZT = 0:5:5*floor(maxDepth/5)
 end
 
 % Save QAQC results
-StationDataQAQC = clim;
-save(['CTDEEP_' Astn '_QAQC.mat'], 'StationDataQAQC');
+stationQAQC = clim;
+save(['CTDEEP_' Astn '_QAQC.mat'], 'stationQAQC');

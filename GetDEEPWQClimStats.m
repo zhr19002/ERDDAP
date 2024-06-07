@@ -1,4 +1,4 @@
-function res = GetDEEPWQClimStats(Astn, ZT, ZB, av)
+function stats = GetDEEPWQClimStats(Astn, ZT, ZB, av)
 % 
 % Return the stats of station climatology data
 % av = {'T','S','DO','P','C','pH','rho','DOsat'}
@@ -16,25 +16,24 @@ av_stn = struct('T','sea_water_temperature','S','sea_water_salinity', ...
 
 for nm = 1:12
     iu = find(month(daten)==nm);
-    res.ndays(nm) = length(unique(daten(iu)));
-    res.nu(nm) = length(iu);
+    stats.ndays(nm) = length(unique(daten(iu)));
+    stats.nu(nm) = length(iu);
     tmp = d.(av_stn.(av))(iu);
-    res.mninfo(nm) = mean(tmp(~isnan(tmp)));
-    tmp = d.(av_stn.(av))(iu);
-    res.sdinfo(nm) = std(tmp(~isnan(tmp)));
-    res.bd99lower(nm) = prctile(d.(av_stn.(av))(iu),0.5);
-    res.bd95lower(nm) = prctile(d.(av_stn.(av))(iu),2.5);
-    res.bd16(nm) = prctile(d.(av_stn.(av))(iu),16);
-    res.bd50(nm) = prctile(d.(av_stn.(av))(iu),50);
-    res.bd84(nm) = prctile(d.(av_stn.(av))(iu),84);
-    res.bd95upper(nm) = prctile(d.(av_stn.(av))(iu),97.5);
-    res.bd99upper(nm) = prctile(d.(av_stn.(av))(iu),99.5);
+    stats.mean(nm) = mean(tmp(~isnan(tmp)));
+    stats.std(nm) = std(tmp(~isnan(tmp)));
+    stats.bd1(nm) = prctile(tmp,1);
+    stats.bd2_5(nm) = prctile(tmp,2.5);
+    stats.bd16(nm) = prctile(tmp,16);
+    stats.bd50(nm) = prctile(tmp,50);
+    stats.bd84(nm) = prctile(tmp,84);
+    stats.bd97_5(nm) = prctile(tmp,97.5);
+    stats.bd99(nm) = prctile(tmp,99);
 end
 
-res.data = NaN(max(res.nu), 12);
+stats.data = NaN(max(stats.nu), 12);
 for nm = 1:12
     iu = find(month(daten)==nm);
-    res.data(1:length(iu),nm) = d.(av_stn.(av))(iu);
+    stats.data(1:length(iu),nm) = d.(av_stn.(av))(iu);
 end
 
 end

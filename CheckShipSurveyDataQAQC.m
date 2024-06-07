@@ -38,7 +38,7 @@ for Astn = {'E1'}
             % Check each variable in ship survey data
             for av = {'T','S','DO','P','C','pH','rho','DOsat'}
                 % Get station climatology statistics
-                clim_stats = GetDEEPWQClimStats(Astn{1}, ZT, ZB, av{1});
+                stats = GetDEEPWQClimStats(Astn{1}, ZT, ZB, av{1});
                 % Check ship survey data for each cruise
                 for nc = 1:numel(dCTD)
                     if isfield(dCTD{nc}, av_stn.(av{1}))
@@ -62,8 +62,8 @@ for Astn = {'E1'}
                         for MM = 1:12
                             iu2 = find(month(dCTD{nc}.mnTime) == MM);
                             if ~isempty(iu2)
-                                iu3 = find(dCTD{nc}.(av_stn.(av{1}))(iu2) < clim_stats.bd99lower(MM) | ...
-                                           dCTD{nc}.(av_stn.(av{1}))(iu2) > clim_stats.bd99upper(MM));
+                                iu3 = find(dCTD{nc}.(av_stn.(av{1}))(iu2) < stats.bd1(MM) | ...
+                                           dCTD{nc}.(av_stn.(av{1}))(iu2) > stats.bd99(MM));
                                 if ~isempty(iu3)
                                     clim.(crs).(stn).(dpth).(av{1}).check(iu3) = 3;
                                 end

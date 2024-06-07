@@ -6,6 +6,7 @@ function d = GetDEEPWQClimData(Astn, ZT, ZB)
 % 
 
 wopts = weboptions; wopts.Timeout = 120;
+ZT = num2str(ZT); ZB = num2str(ZB);
 
 % Form ERDDAP request
 aurl0 = ['http://merlin.dms.uconn.edu:8080/erddap/tabledap/DEEP_WQ.mat?' ...
@@ -15,17 +16,27 @@ aurl0 = ['http://merlin.dms.uconn.edu:8080/erddap/tabledap/DEEP_WQ.mat?' ...
          'percent_saturation%2Csea_water_density%2CStart_Date&' ...
 	     'station_name=%22XX%22&depth%3E=ZT&depth%3C=ZB'];
 aurl = strrep(aurl0, 'XX', Astn);
-aurl = strrep(aurl, 'ZT', num2str(ZT));
-aurl = strrep(aurl, 'ZB', num2str(ZB));
-afile = ['CTDEEP_' Astn '_' num2str(ZT) '_' num2str(ZB) '.mat'];
+aurl = strrep(aurl, 'ZT', ZT);
+aurl = strrep(aurl, 'ZB', ZB);
 
-if exist(afile, 'file')
-    d = load(afile);
+afile = ['CTDEEP_' Astn '_' ZT '_' ZB '.mat'];
+if ~exist(afile, 'file')
+    disp(['Getting data from ERDDAP at ' Astn ' (' ZT 'm-' ZB 'm)']);
+    try
+        af = websave(afile, aurl, wopts);
+        d = load(af);
+        d = d.DEEP_WQ;
+    catch
+        disp(['No data at ' Astn ' (' ZT 'm-' ZB 'm)']);
+        d = {};
+    end
 else
-    af = websave(afile, aurl, wopts);
-    d = load(af);
+    if ~isempty(dir(afile)) & dir(afile).bytes>0
+        d = load(afile);
+        d = d.DEEP_WQ;
+    else
+        d = {};
+    end
 end
-
-d = d.DEEP_WQ;
 
 end

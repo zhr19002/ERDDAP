@@ -100,24 +100,24 @@ end
 
 %%
 % Get station climatology data
-clim_stats = GetDEEPWQClimStats(by_stn.(buoy),ZT,ZB,av);
+stats = GetDEEPWQClimStats(by_stn.(buoy),ZT,ZB,av);
 
 % Put the station climatology patch on the graph
 t = datetime(Ayear,1:12,15);
-y1 = clim_stats.bd95lower;
-y2 = clim_stats.bd95upper;
+y1 = stats.bd2_5;
+y2 = stats.bd97_5;
 
 % Plot station raw data
-plot(t,clim_stats.data(1,:),'.','Color',[0.5,0.5,0.5], ...
+plot(t,stats.data(1,:),'.','Color',[0.5,0.5,0.5], ...
      'DisplayName',[by_stn.(buoy) ' (' av ')']);
-plot(t,clim_stats.data(2:end,:),'.','Color',[0.5,0.5,0.5], ...
+plot(t,stats.data(2:end,:),'.','Color',[0.5,0.5,0.5], ...
      'HandleVisibility','off');
 
 % Plot station stats
-plot(t,clim_stats.mninfo,'k-','DisplayName','Mean');
-plot(t,clim_stats.bd50,'m-.','DisplayName','Median');
-plot(t,clim_stats.bd16,'m--','DisplayName','68% boundary');
-plot(t,clim_stats.bd84,'m--','HandleVisibility','off');
+plot(t,stats.mean,'k-','DisplayName','Mean');
+plot(t,stats.bd50,'m-.','DisplayName','Median');
+plot(t,stats.bd16,'m--','DisplayName','68% boundary');
+plot(t,stats.bd84,'m--','HandleVisibility','off');
 pp = patch([t(1) t t(end) fliplr(t(1:end))], ...
            [y1(1) y1 y1(end) fliplr(y2)],'b','DisplayName','95% boundary');
 pp.FaceAlpha = 0.2; pp.EdgeAlpha = 0.2;
@@ -125,7 +125,7 @@ pp.FaceColor = [0.1 0.9 0.7]; pp.EdgeColor = [0.1 0.9 0.7];
 
 %%
 % Buoy data cleaning
-para = mean(clim_stats.bd84 - clim_stats.bd16);
+para = mean(stats.bd84 - stats.bd16);
 buoyData = CleanBuoyData(buoy_loc,av,para);
 
 % Plot time series for buoy data in a specific year

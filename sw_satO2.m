@@ -1,4 +1,5 @@
 function c = sw_satO2(S,T)
+
 % SW_SATO2   Satuaration of O2 in sea water
 %=========================================================================
 % sw_satO2 $Id: sw_satO2.m,v 1.1 2003/12/12 04:23:22 pen078 Exp $
@@ -44,6 +45,7 @@ function c = sw_satO2(S,T)
 %----------------------
 % CHECK INPUT ARGUMENTS
 %----------------------
+
 if nargin ~=2
    error('sw_satO2.m: Must pass 2 parameters')
 end %if

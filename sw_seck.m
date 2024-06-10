@@ -1,4 +1,5 @@
 function K = sw_seck(S,T,P)
+
 % SW_SECK    Secant bulk modulus (K) of sea water
 %=========================================================================
 % SW_SECK  $Id: sw_seck.m,v 1.1 2003/12/12 04:23:22 pen078 Exp $
@@ -43,6 +44,7 @@ function K = sw_seck(S,T,P)
 %----------------------
 % CHECK INPUT ARGUMENTS
 %----------------------
+
 if nargin ~=3
    error('sw_seck.m: Must pass 3 parameters')
 end %if
@@ -113,4 +115,3 @@ K0 = KW + (  f0 + (f1 + (f2 + f3*T68).*T68).*T68 ...
         +   (g0 + (g1 + g2*T68).*T68).*SR         ).*S;      % eqn 16
 K = K0 + (A + B.*P).*P;  % eqn 15
 return
-%----------------------------------------------------------------------------

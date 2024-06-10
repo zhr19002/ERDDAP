@@ -1,4 +1,5 @@
 function dens = sw_smow(T)
+
 % SW_SMOW    Denisty of standard mean ocean water (pure water)
 %=========================================================================
 % SW_SMOW  $Id: sw_smow.m,v 1.1 2003/12/12 04:23:22 pen078 Exp $
@@ -37,6 +38,7 @@ function dens = sw_smow(T)
 % CHECK INPUT ARGUMENTS
 %----------------------
 % TEST INPUTS
+
 if nargin ~= 1
    error('sw_smow.m: Only one input argument allowed')
 end %if
@@ -52,4 +54,3 @@ a5 =   6.536332e-9;
 T68 = T * 1.00024;
 dens = a0 + (a1 + (a2 + (a3 + (a4 + a5*T68).*T68).*T68).*T68).*T68;
 return
-%--------------------------------------------------------------------

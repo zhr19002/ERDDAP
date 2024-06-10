@@ -1,4 +1,5 @@
 function dens = sw_dens0(S,T)
+
 % SW_DENS0   Denisty of sea water at atmospheric pressure
 %=========================================================================
 % SW_DENS0  $Id: sw_dens0.m,v 1.1 2003/12/12 04:23:22 pen078 Exp $
@@ -39,6 +40,7 @@ function dens = sw_dens0(S,T)
 %----------------------
 % CHECK INPUT ARGUMENTS
 %----------------------
+
 if nargin ~=2
    error('sw_dens0.m: Must pass 2 parameters')
 end %if
@@ -64,4 +66,3 @@ d0 = 4.8314e-4;
 dens = sw_smow(T) + (b0 + (b1 + (b2 + (b3 + b4*T68).*T68).*T68).*T68).*S  ...
                    + (c0 + (c1 + c2*T68).*T68).*S.*sqrt(S) + d0*S.^2;
 return
-%--------------------------------------------------------------------

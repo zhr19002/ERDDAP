@@ -10,7 +10,7 @@ function [dd, CruiseDay, CruiseNames] = GetCTDEEP_WQDataForComps(Astn, Ayear, Nm
 % Called from GetCTDEEP_WQDataForComps_demo.m
 % 
 
-wopts = weboptions; wopts.Timeout = 60;
+wopts = weboptions; wopts.Timeout = 120;
 Ayear = num2str(Ayear);
 
 aURLpat = ['http://merlin.dms.uconn.edu:8080/erddap/tabledap/DEEP_WQ.mat?cruise_name' ...

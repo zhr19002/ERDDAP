@@ -1,4 +1,5 @@
 function dens = sw_dens(S,T,P)
+
 % SW_DENS    Density of sea water
 %=========================================================================
 % SW_DENS  $Id: sw_dens.m,v 1.1 2003/12/12 04:23:22 pen078 Exp $
@@ -42,6 +43,7 @@ function dens = sw_dens(S,T,P)
 %----------------------
 % CHECK INPUT ARGUMENTS
 %----------------------
+
 if nargin ~=3
    error('sw_dens.m: Must pass 3 parameters')
 end %if
@@ -74,4 +76,3 @@ K      = sw_seck(S,T,P);
 P      = P/10;  % convert from db to atm pressure units
 dens   = densP0./(1-P./K);
 return
-%--------------------------------------------------------------------

@@ -26,6 +26,7 @@ for i = 1:length(crs)
                 else
                     tmp = 0;
                 end
+                stats.(crs{i}).(stn{j}).(dp{k}).(av{1}).nu = length(iu);
                 stats.(crs{i}).(stn{j}).(dp{k}).(av{1}).mean = mean(tmp(~isnan(tmp)));
                 stats.(crs{i}).(stn{j}).(dp{k}).(av{1}).std = std(tmp(~isnan(tmp)));
             end

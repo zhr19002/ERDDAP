@@ -14,7 +14,7 @@ function [QAQC, dQAQC] = CheckBuoyDataQAQC(d, loc, av, av_by)
 
 % Read QAQC parameters
 QAQC_para = readtable('QAQC_Para.csv', ReadRowNames=true);
-QAQC.bd98 = [QAQC_para.(av)('Min_Value') QAQC_para.(av)('Max_Value')];
+QAQC.bd98 = [QAQC_para.(av)('BD_1') QAQC_para.(av)('BD_99')]; % 98% boundary
 QAQC.Thesholds = [QAQC_para.(av)('Min_Value') QAQC_para.(av)('Max_Value')];
 QAQC.Delta = [QAQC_para.(av)('Min_Jump') QAQC_para.(av)('Max_Jump')];
 QAQC.THRSHLD = [QAQC_para.(av)('SPK_sfc_bot') QAQC_para.(av)('SPK_sfc_top');
@@ -46,7 +46,9 @@ d.('QAQCTests') = tmp + d.('QAQCTests');
 d.('FailedTestsCount') = (tmp~=1) + d.('FailedTestsCount');
 
 % Form QAQC structure
+dQAQC.time = d.TmStamp;
 dQAQC.data = d.(av_by.(av));
 dQAQC.QAQCTests = d.QAQCTests;
 dQAQC.FailedTestsCount = d.FailedTestsCount;
+
 end

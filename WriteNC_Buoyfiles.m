@@ -2,8 +2,6 @@ function WriteNC_Buoyfiles(ncfile, d, meta)
 % 
 % Output the buoy data in d, all records at a fixed level, to nc file
 % 
-% gb_range is the number of time samples to write to nc file
-% 
 % Called from WriteNETCDFbuoyfile.m
 % 
 

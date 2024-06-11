@@ -5,12 +5,12 @@ function [CruiseDay, CruiseNames] = GetCruiseDateByCruiseName(d)
 % Called from GetCTDEEP_NutDataForComps.m
 % 
 
-wopts = weboptions; wopts.Timeout = 60;
+wopts = weboptions; wopts.Timeout = 120;
 AllCruiseNames = d.cruise;
 CruiseNames = unique(AllCruiseNames, 'rows');
 
-aURLp = ['http://merlin.dms.uconn.edu:8080/erddap/tabledap/DEEP_Cruise_Info.json?cruise_name%2C' ...
-         'Start_Date%2CEnd_Date&cruise_name=%22CCCC%22'];
+aURLp = ['http://merlin.dms.uconn.edu:8080/erddap/tabledap/DEEP_Cruise_Info.json?' ...
+         'cruise_name%2CStart_Date%2CEnd_Date&cruise_name=%22CCCC%22'];
 
 CruiseDay = cell(size(CruiseNames,1), 1);
 for nc = 1:size(CruiseNames,1)

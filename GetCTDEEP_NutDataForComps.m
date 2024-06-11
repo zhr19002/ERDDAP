@@ -3,11 +3,8 @@ function [ds, db, CruiseNames] = GetCTDEEP_NutDataForComps(Astn, Ayear, Nmth)
 % Get station data (dd, ds, db) from ERDDAP
 % 
 % Calls GetCruiseDateByCruiseName.m
-% Calls seperate_DEEP_Nut_data.m
+% Calls SepCTDEEP_NutData.m
 % 
-
-clc; clear;
-Astn = 'E1'; Ayear = 2021; Nmth = 1:12;
 
 wopts = weboptions; wopts.Timeout = 120;
 Ayear = num2str(Ayear);
@@ -21,7 +18,7 @@ aURLpat = ['http://merlin.dms.uconn.edu:8080/erddap/tabledap/DEEP_Nutrient.mat?c
 aURL0 = strrep(aURLpat, 'XX', Astn);
 aURL0 = strrep(aURL0, 'YYYY', Ayear);
 
-dd = cell(12,1);
+d = cell(12,1);
 % Step through months and get station data from ERDDAP
 for nn = Nmth
     if nn < 10
@@ -38,19 +35,19 @@ for nn = Nmth
         disp(['Getting data from ERDDAP at ' Astn ' in ' Ayear '-' Amonth]);
         try
             af = websave(afile, aURL, wopts);
-            dd{nn} = load(af);
-            dd{nn} = dd{nn}.DEEP_Nutrient;
+            d{nn} = load(af);
+            d{nn} = d{nn}.DEEP_Nutrient;
         catch
             disp(['No data at ' Astn ' in ' Ayear '-' Amonth]);
-            dd{nn} = [];
+            d{nn} = [];
         end
     else
         disp(['Loading local ' afile]);
         if ~isempty(dir(afile)) & dir(afile).bytes>0
-            dd{nn} = load(afile);
-            dd{nn} = dd{nn}.DEEP_Nutrient;
+            d{nn} = load(afile);
+            d{nn} = d{nn}.DEEP_Nutrient;
         else
-            dd{nn} = [];
+            d{nn} = [];
         end
     end
 end
@@ -59,16 +56,14 @@ CruiseDay = cell(12,1); CruiseNames = cell(12,1);
 ds = cell(12,1); db = cell(12,1);
 % Extract the required data for the surface and bottom
 for nn = Nmth
-    if ~isempty(dd{nn})
+    if ~isempty(d{nn})
         % Get the cruise date range
         % Note that there may be more than one cruise per month
-        [CruiseDay{nn}, CruiseNames{nn}] = GetCruiseDateByCruiseName(dd{nn});
-        [ds{nn}, db{nn}] = seperate_DEEP_Nut_data(dd{nn}, CruiseDay{nn});
+        [CruiseDay{nn}, CruiseNames{nn}] = GetCruiseDateByCruiseName(d{nn});
+        [ds{nn}, db{nn}] = SepCTDEEP_NutData(d{nn}, CruiseDay{nn});
     else
-        ds{nn} = [];
-        db{nn} = [];
-        CruiseNames{nn} = [];
-        CruiseDay{nn} = [];
+        CruiseDay{nn} = []; CruiseNames{nn} = [];
+        ds{nn} = []; db{nn} = [];
     end
 end
 

@@ -1,4 +1,4 @@
-function [QAQC, dQAQC] = CheckBuoyDataQAQC(d, loc, av, av_by)
+function [QAQC, dQAQC] = CheckBuoyDataQAQC(d, loc, av)
 % 
 % Identify and flag failed QAQC tests of buoy data
 % 
@@ -8,9 +8,12 @@ function [QAQC, dQAQC] = CheckBuoyDataQAQC(d, loc, av, av_by)
 % Calls ImplementPresIntvTestQAQC.m
 % Calls ImplementSpikeTestQAQC.m
 % 
-% Called from VisualizeBuoyDataQAQC.m
 % Called from WriteBuoyDataQAQC.m
 % 
+
+% Fixed parameters
+av_by = struct('T','degC','S','psu','DO','mg/L','P','dBars','C','S/m', ...
+               'pH','none','rho','kg/m^3','DOsat','percent');
 
 % Read QAQC parameters
 QAQC_para = readtable('QAQC_Para.csv', ReadRowNames=true);
@@ -46,7 +49,6 @@ d.('QAQCTests') = tmp + d.('QAQCTests');
 d.('FailedTestsCount') = (tmp~=1) + d.('FailedTestsCount');
 
 % Form QAQC structure
-dQAQC.time = d.TmStamp;
 dQAQC.data = d.(av_by.(av));
 dQAQC.QAQCTests = d.QAQCTests;
 dQAQC.FailedTestsCount = d.FailedTestsCount;

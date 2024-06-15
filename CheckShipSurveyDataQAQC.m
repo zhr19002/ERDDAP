@@ -47,26 +47,24 @@ for Astn = {'E1'}
                         stn = dCTD{nc}.station_name(1,:);
                         dpth = ['depth_' num2str(ZT) '_' num2str(ZB)];
                         % Form QAQC structure
-                        clim.(crs).(stn).(dpth).time = dCTD{nc}.time;
+                        clim.(crs).(stn).(dpth).time = dCTD{nc}.time/(24*3600)+datetime(1970,1,1);
                         clim.(crs).(stn).(dpth).depth = dCTD{nc}.depth;
                         clim.(crs).(stn).(dpth).(av{1}).data = dCTD{nc}.(av_stn.(av{1}));
                         clim.(crs).(stn).(dpth).(av{1}).check = ones(size(dCTD{nc}.time));
                         % Check max-min thresholds
-                        iu1 = find(dCTD{nc}.(av_stn.(av{1})) < stn_para.(av{1})('Min_Value') | ...
-                                   dCTD{nc}.(av_stn.(av{1})) > stn_para.(av{1})('Max_Value') | ...
-                                   isnan(dCTD{nc}.(av_stn.(av{1}))));
+                        d_tmp = clim.(crs).(stn).(dpth).(av{1}).data;
+                        iu1 = find(d_tmp < stn_para.(av{1})('Min_Value') | ...
+                                   d_tmp > stn_para.(av{1})('Max_Value') | ...
+                                   isnan(d_tmp));
                         if ~isempty(iu1)
                             clim.(crs).(stn).(dpth).(av{1}).check(iu1) = 4;
                         end
-                        % Check 99% data range thresholds for each month
+                        % Check 98% data range thresholds for each month
                         for MM = 1:12
-                            iu2 = find(month(dCTD{nc}.mnTime) == MM);
+                            iu2 = find(month(clim.(crs).(stn).(dpth).time) == MM & ...
+                                       (d_tmp < stats.bd1(MM) | d_tmp > stats.bd99(MM)));
                             if ~isempty(iu2)
-                                iu3 = find(dCTD{nc}.(av_stn.(av{1}))(iu2) < stats.bd1(MM) | ...
-                                           dCTD{nc}.(av_stn.(av{1}))(iu2) > stats.bd99(MM));
-                                if ~isempty(iu3)
-                                    clim.(crs).(stn).(dpth).(av{1}).check(iu3) = 3;
-                                end
+                                clim.(crs).(stn).(dpth).(av{1}).check(iu2) = 3;
                             end
                         end
                     end

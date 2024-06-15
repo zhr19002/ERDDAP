@@ -13,22 +13,23 @@ for i = 1:length(crs)
         dp = fieldnames(d.(crs{i}).(stn{j}));
         for k = 1:length(dp)
             for av = {'T','S','DO','P','C','pH','rho','DOsat'}
+                c_tmp = d.(crs{i}).(stn{j}).(dp{k}).(av{1}).check;
                 switch drng_type
                     case 1
-                        iu = find(d.(crs{i}).(stn{j}).(dp{k}).(av{1}).check~=0);
+                        iu = find(c_tmp~=0);
                     case 2
-                        iu = find(d.(crs{i}).(stn{j}).(dp{k}).(av{1}).check~=4);
+                        iu = find(c_tmp~=4);
                     case 3
-                        iu = find(d.(crs{i}).(stn{j}).(dp{k}).(av{1}).check==1);
+                        iu = find(c_tmp==1);
                 end
                 if ~isempty(iu)
-                    tmp = d.(crs{i}).(stn{j}).(dp{k}).(av{1}).data(iu);
+                    d_tmp = d.(crs{i}).(stn{j}).(dp{k}).(av{1}).data(iu);
                 else
-                    tmp = 0;
+                    d_tmp = 0;
                 end
                 stats.(crs{i}).(stn{j}).(dp{k}).(av{1}).nu = length(iu);
-                stats.(crs{i}).(stn{j}).(dp{k}).(av{1}).mean = mean(tmp(~isnan(tmp)));
-                stats.(crs{i}).(stn{j}).(dp{k}).(av{1}).std = std(tmp(~isnan(tmp)));
+                stats.(crs{i}).(stn{j}).(dp{k}).(av{1}).mean = mean(d_tmp(~isnan(d_tmp)));
+                stats.(crs{i}).(stn{j}).(dp{k}).(av{1}).std = std(d_tmp(~isnan(d_tmp)));
             end
         end
     end

@@ -41,19 +41,19 @@ for ZT = 0:5:5*floor(maxDepth/5)
             clim.(dpth).(av{1}).data = d.(av_stn.(av{1}));
             clim.(dpth).(av{1}).check = ones(size(d.time));
             % Check max-min thresholds
-            iu1 = find(d.(av_stn.(av{1})) < stn_para.(av{1})('Min_Value') | ...
-                       d.(av_stn.(av{1})) > stn_para.(av{1})('Max_Value') | ...
-                       isnan(d.(av_stn.(av{1}))));
+            d_tmp = clim.(dpth).(av{1}).data;
+            iu1 = find(d_tmp < stn_para.(av{1})('Min_Value') | ...
+                       d_tmp > stn_para.(av{1})('Max_Value') | ...
+                       isnan(d_tmp));
             if ~isempty(iu1)
                 clim.(dpth).(av{1}).check(iu1) = 4;
             end
-            % Check 99% data range thresholds for each month
+            % Check 98% data range thresholds for each month
             for MM = 1:12
-                iu2 = find(month(d.time/(24*3600) + datetime(1970,1,1)) == MM);
-                iu3 = find(d.(av_stn.(av{1}))(iu2) < stats.bd1(MM) | ...
-                           d.(av_stn.(av{1}))(iu2) > stats.bd99(MM));
-                if ~isempty(iu3)
-                    clim.(dpth).(av{1}).check(iu3) = 3;
+                iu2 = find(month(clim.(dpth).time) == MM & ...
+                           (d_tmp < stats.bd1(MM) | d_tmp > stats.bd99(MM)));
+                if ~isempty(iu2)
+                    clim.(dpth).(av{1}).check(iu2) = 3;
                 end
             end
         end

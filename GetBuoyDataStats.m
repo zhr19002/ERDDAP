@@ -10,26 +10,23 @@ locs = fieldnames(d);
 for i = 1:length(locs)
     for av = {'T','S','DO','P','C','pH','rho','DOsat'}
         for nm = 1:12
-            it = find(month(d.(locs{i}).(av{1}).time)==nm);
+            c_tmp = d.(locs{i}).(av{1}).QAQCTests;
             switch drng_type
                 case 1
-                    tmp = floor(d.(locs{i}).(av{1}).QAQCTests(it)/10000);
-                    iu = find(tmp~=0);
+                    iu = find(month(d.(locs{i}).time)==nm);
                 case 2
-                    tmp = floor(d.(locs{i}).(av{1}).QAQCTests(it)/10000);
-                    iu = find(tmp~=4);
+                    iu = find(month(d.(locs{i}).time)==nm & floor(c_tmp/10000)~=4);
                 case 3
-                    tmp = floor(d.(locs{i}).(av{1}).QAQCTests(it)/10000);
-                    iu = find(tmp==1);
+                    iu = find(month(d.(locs{i}).time)==nm & floor(c_tmp/10000)==1);
             end
             if ~isempty(iu)
-                tmp = d.(locs{i}).(av{1}).data(iu);
+                d_tmp = d.(locs{i}).(av{1}).data(iu);
             else
-                tmp = 0;
+                d_tmp = 0;
             end
             stats.(locs{i}).(av{1}).nu(nm) = length(iu);
-            stats.(locs{i}).(av{1}).mean(nm) = mean(tmp(~isnan(tmp)));
-            stats.(locs{i}).(av{1}).std(nm) = std(tmp(~isnan(tmp)));
+            stats.(locs{i}).(av{1}).mean(nm) = mean(d_tmp(~isnan(d_tmp)));
+            stats.(locs{i}).(av{1}).std(nm) = std(d_tmp(~isnan(d_tmp)));
         end
     end
 end

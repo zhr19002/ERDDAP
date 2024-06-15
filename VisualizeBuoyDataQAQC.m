@@ -1,23 +1,18 @@
 % 
-% Calls GetCTDEEP_WQDataForComps.m
+% Calls GetCruiseNames.m
 % Calls GetCTDEEP_CTD_Stats.m
 % Calls GetDEEPWQClimStats.m
-% Calls CleanBuoyData.m
-% Calls CheckBuoyDataQAQC.m
 % 
 
 clc; clear;
 % Set up parameters
-Ayear = 2021; buoy = 'ARTG'; loc = 'btm1';
-av = 'pH'; % {'T','S','DO','P','C','pH','rho','DOsat'}
+Astn = 'E1';
+buoy = 'ARTG'; loc = 'btm1'; Ayear = 2021;
+av = 'T'; % {'T','S','DO','P','C','pH','rho','DOsat'}
 
 % Fixed parameters
-av_by = struct('T','degC','S','psu','DO','mg/L','P','dBars','C','S/m', ...
-               'pH','none','rho','kg/m^3','DOsat','percent');
 av_stn = struct('T','mnTemp','S','mnSal','DO','mnDO','P','mnPres', ...
                 'C','mnCond','pH','mnPH','rho','mnRho','DOsat','mnDOsat');
-by_stn = struct('ARTG','E1','CLIS','C1','EXRX','A4');
-
 switch loc
     case 'sfc'
         ZT = 0; ZB = 3;
@@ -28,41 +23,33 @@ switch loc
 end
 
 %%
-% Read buoy database for a specific year
-% 
-% Connect to database
-username = 'lisicos';
-password = 'vncq489';
-conn = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
-    'DatabaseName','provLNDB','PortNumber',5432);
+% Plot time series for buoy data in a specific year
+d = load([buoy '_QAQC.mat']);
+d = d.BuoyQAQC;
+iu = find(year(d.(loc).time)==Ayear);
+d_tmp = d.(loc).(av).data;
+c_tmp = d.(loc).(av).QAQCTests;
 
-% tbldata = sqlfind(conn,"")
+figure; hold on; grid on;
 
-% Extract tables from database
-dbname = append(buoy,"_pb2_sbe37",loc);
-buoy_loc = sqlread(conn,append('"',dbname,'"'));
+plot(d.(loc).time(iu),d_tmp(iu),'b.','DisplayName',[buoy ' (' av ')']);
+xticks(datetime(Ayear,1:12,1));
+xtickformat('MMM/dd');
+ylabel(av);
+title([buoy '\_' loc ' ' num2str(Ayear) ' Climatology at ' Astn ' (' av ')']);
+legend('Location','eastoutside');
 
-% Filter buoy data in a specific year
-buoy_loc_rf = buoy_loc.TmStamp >= datetime(Ayear,01,01) & ...
-              buoy_loc.TmStamp <= datetime(Ayear,12,31);
-buoy_loc = sortrows(buoy_loc(buoy_loc_rf,:),'TmStamp');
-
-% Calculate rho and DOsat
-buoy_loc.('kg/m^3') = sw_dens(buoy_loc.('psu'),buoy_loc.('degC'),buoy_loc.('dBars'))-1000;
-sat = sw_satO2(buoy_loc.('psu'),buoy_loc.('degC'))*1.33; % Converted to mg/L
-buoy_loc.('percent') = 100*buoy_loc.('mg/L')./sat;
-
-% Add the pH column
-switch strcmp([num2str(Ayear) '_' buoy '_' loc], '2021_ARTG_btm1')
-    case 0
-        buoy_loc.none(:) = NaN;
-    case 1
-        d = load('artg_sbe37_2013-2021_tablesrev.mat'); 
-        d = d.d.artgbtm2_21; d = sortrows(d,'EST');
-        buoy_loc.none = [d.pH; d.pH(end)];
-end
-
-close(conn);
+% Plot outliers through QAQC checks
+iu1 = find(year(d.(loc).time)==Ayear & floor(c_tmp/10000)~=1);
+plot(d.(loc).time(iu1),d_tmp(iu1),'rd','DisplayName','Threshold test');
+iu2 = find(year(d.(loc).time)==Ayear & mod(floor(c_tmp/1000),10)~=1);
+plot(d.(loc).time(iu2),d_tmp(iu2),'ro','DisplayName','Jump limit test');
+iu3 = find(year(d.(loc).time)==Ayear & mod(floor(c_tmp/100),10)~=1);
+plot(d.(loc).time(iu3),d_tmp(iu3),'rs','DisplayName','Gap test');
+iu4 = find(year(d.(loc).time)==Ayear & mod(floor(c_tmp/10),10)~=1);
+plot(d.(loc).time(iu4),d_tmp(iu4),'rp','DisplayName','Pressure range test');
+iu5 = find(year(d.(loc).time)==Ayear & mod(c_tmp,10)~=1);
+plot(d.(loc).time(iu5),d_tmp(iu5),'r^','DisplayName','Spike test');
 
 %%
 % Get cruise names for 12 months in a specific year
@@ -76,7 +63,7 @@ for nn = 1:12
     [~, CruiseNames{nn}] = GetCruiseNames(Ayear, Amonth);
 end
 % Get ship survey data in a depth range for all cruises at a station
-dCTD = GetCTDEEP_CTD_Stats(by_stn.(buoy),CruiseNames,ZT,ZB);
+dCTD = GetCTDEEP_CTD_Stats(Astn,CruiseNames,ZT,ZB);
 
 % Plot CTDEEP ship survey data
 for nn = 1:length(dCTD)
@@ -85,7 +72,6 @@ for nn = 1:length(dCTD)
     end
 end
 
-figure; hold on; grid on;
 for n = 1:length(dCTD)
     if ~isempty(dCTD{n})
         if n == nn
@@ -100,7 +86,7 @@ end
 
 %%
 % Get station climatology data
-stats = GetDEEPWQClimStats(by_stn.(buoy),ZT,ZB,av);
+stats = GetDEEPWQClimStats(Astn,ZT,ZB,av);
 
 % Put the station climatology patch on the graph
 t = datetime(Ayear,1:12,15);
@@ -108,10 +94,8 @@ y1 = stats.bd2_5;
 y2 = stats.bd97_5;
 
 % Plot station raw data
-plot(t,stats.data(1,:),'.','Color',[0.5,0.5,0.5], ...
-     'DisplayName',[by_stn.(buoy) ' (' av ')']);
-plot(t,stats.data(2:end,:),'.','Color',[0.5,0.5,0.5], ...
-     'HandleVisibility','off');
+plot(t,stats.data(1,:),'.','Color',[0.5,0.5,0.5],'DisplayName',[Astn ' (' av ')']);
+plot(t,stats.data(2:end,:),'.','Color',[0.5,0.5,0.5],'HandleVisibility','off');
 
 % Plot station stats
 plot(t,stats.mean,'k-','DisplayName','Mean');
@@ -124,37 +108,10 @@ pp.FaceAlpha = 0.2; pp.EdgeAlpha = 0.2;
 pp.FaceColor = [0.1 0.9 0.7]; pp.EdgeColor = [0.1 0.9 0.7];
 
 %%
-% Buoy data cleaning
-para = mean(stats.bd84 - stats.bd16);
-buoyData = CleanBuoyData(buoy_loc,av,para);
-
-% Plot time series for buoy data in a specific year
-plot(buoyData.TmStamp,buoyData.(av_by.(av)),'b.','DisplayName',[buoy ' (' av ')']);
-xticks(datetime(Ayear,1:12,1));
-xtickformat('MMM/dd');
-ylabel([av,' (',av_by.(av),')']);
-title([buoy '\_' loc ' ' num2str(Ayear) ' Climatology at ' by_stn.(buoy) ' (' av ')']);
-legend('Location','eastoutside');
-
-%%
-% QAQC checks
-[QAQC,dQAQC] = CheckBuoyDataQAQC(buoyData,loc,av,av_by);
-
-% Plot outliers through QAQC checks
-iu1 = find(floor(dQAQC.QAQCTests/10000) ~= 1);
-plot(dQAQC.TmStamp(iu1),dQAQC.(av_by.(av))(iu1),'rd','DisplayName','Threshold test');
-iu2 = find(mod(floor(dQAQC.QAQCTests/1000),10) ~= 1);
-plot(dQAQC.TmStamp(iu2),dQAQC.(av_by.(av))(iu2),'ro','DisplayName','Jump limit test');
-iu3 = find(mod(floor(dQAQC.QAQCTests/100),10) ~= 1);
-plot(dQAQC.TmStamp(iu3),dQAQC.(av_by.(av))(iu3),'rs','DisplayName','Gap test');
-iu4 = find(mod(floor(dQAQC.QAQCTests/10),10) ~= 1);
-plot(dQAQC.TmStamp(iu4),dQAQC.(av_by.(av))(iu4),'rp','DisplayName','Pressure range test');
-iu5 = find(mod(dQAQC.QAQCTests,10) ~= 1);
-plot(dQAQC.TmStamp(iu5),dQAQC.(av_by.(av))(iu5),'r^','DisplayName','Spike test');
-
-%%
+% QAQC_para = readtable('QAQC_Para.csv', ReadRowNames=true);
+% QAQC.Thesholds = [QAQC_para.(av)('Min_Value') QAQC_para.(av)('Max_Value')];
 % ylim(QAQC.Thesholds); 
-% saveas(gcf, [buoy '_' loc ' ' num2str(Ayear) ' Climatology at ' by_stn.(buoy) ' (' av ').png']);
+% saveas(gcf, [buoy '_' loc ' ' num2str(Ayear) ' Climatology at ' Astn ' (' av ').png']);
 
 % % Ginput
 % disp('Click twice to zoom in.');

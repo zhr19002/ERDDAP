@@ -3,7 +3,6 @@ function d = GetUCONNDataForComps(aBuoy, NoFig)
 % Get the nutrient sample data from the XLS file
 % 
 % Calls "ArtGNutients.csv"
-% Called from Proc2021_pH_data.m
 % 
 
 % aBuoy = 'ARTG'; NoFig = 1;

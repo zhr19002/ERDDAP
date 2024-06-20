@@ -1,4 +1,5 @@
 % 
+% Calls CleanBuoyData.m
 % Calls CheckBuoyDataQAQC.m
 % Calls WriteNETCDFbuoyfile.m
 % 
@@ -22,27 +23,29 @@ for loc = locs
     
     % Extract tables from database
     dbname = append(buoy,"_pb2_sbe37",loc{1});
-    buoyData = sqlread(conn,append('"',dbname,'"'));
-    buoyData = sortrows(buoyData,'TmStamp');
-    
+    buoyT = sqlread(conn,append('"',dbname,'"'));
+    buoyT = sortrows(buoyT,'TmStamp');
+    close(conn);
+
     % Calculate rho and DOsat
-    buoyData.('kg/m^3') = sw_dens(buoyData.('psu'),buoyData.('degC'),buoyData.('dBars'))-1000;
-    sat = sw_satO2(buoyData.('psu'),buoyData.('degC'))*1.33; % Converted to mg/L
-    buoyData.('percent') = 100*buoyData.('mg/L')./sat;
+    buoyT.('kg/m^3') = sw_dens(buoyT.('psu'),buoyT.('degC'),buoyT.('dBars'))-1000;
+    sat = sw_satO2(buoyT.('psu'),buoyT.('degC'))*1.33; % Converted to mg/L
+    buoyT.('percent') = 100*buoyT.('mg/L')./sat;
     
     % Add the pH column
     switch strcmp([buoy '_' loc{1}], 'ARTG_btm1')
         case 0
-            buoyData.none(:) = NaN;
+            buoyT.none(:) = NaN;
         case 1
-            buoyData.none(:) = NaN;
+            buoyT.none(:) = NaN;
             d = load('artg_sbe37_2013-2021_tablesrev.mat'); 
             d = d.d.artgbtm2_21; d = sortrows(d,'EST');
-            buoyData.none(year(buoyData.TmStamp)==2021) = [d.pH; d.pH(end)];
+            buoyT.none(year(buoyT.TmStamp)==2021) = [d.pH; d.pH(end)];
     end
     
-    close(conn);
-    
+    % Clean buoy data
+    buoyData = CleanBuoyData(buoyT, av_by);
+
     BuoyQAQC.(loc{1}).time = buoyData.TmStamp;
     BuoyQAQC.(loc{1}).depth = buoyData.depth;
     for av = {'T','S','DO','P','C','pH','rho','DOsat'}

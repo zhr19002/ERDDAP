@@ -7,7 +7,7 @@
 clc; clear;
 % Set up parameters
 Astn = 'E1';
-buoy = 'ARTG'; loc = 'btm1'; Ayear = 2021;
+buoy = 'ARTG'; loc = 'sfc'; Ayear = 2021;
 av = 'T'; % {'T','S','DO','P','C','pH','rho','DOsat'}
 
 % Fixed parameters
@@ -22,7 +22,6 @@ switch loc
         ZT = 20; ZB = 30;
 end
 
-%%
 % Plot time series for buoy data in a specific year
 d = load([buoy '_QAQC.mat']);
 d = d.BuoyQAQC;

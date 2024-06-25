@@ -6,6 +6,7 @@
 % Calls GetDEEPWQClimDepth.m
 % Calls GetCTDEEP_CTD_Stats.m
 % Calls GetDEEPWQClimStats.m
+% Calls WriteNETCDFshipSurveyFile.m
 % 
 
 clc; clear;
@@ -17,7 +18,9 @@ av_stn = struct('T','sea_water_temperature','S','sea_water_salinity', ...
 % Read station parameters
 stn_para = readtable('Station_Para.csv', ReadRowNames=true);
 
+% Get max depth at a station
 for Astn = {'E1'}
+    [dd.(Astn{1}).lat, dd.(Astn{1}).lon, dd.(Astn{1}).maxDepth] = GetDEEPWQClimDepth(Astn{1}, 2023);
     for Ayear = Ayear0:Ayear1
         % Get cruise names for 12 months in a specific year
         CruiseNames = cell(12,1);
@@ -29,10 +32,8 @@ for Astn = {'E1'}
             end
             [~, CruiseNames{nn}] = GetCruiseNames(Ayear, Amonth);
         end
-        % Get max depth at a station
-        maxDepth = GetDEEPWQClimDepth(Astn{1}, Ayear);
         % Get ship survey data in a depth range for all cruises at a station
-        for ZT = 0:5:5*floor(maxDepth/5)
+        for ZT = 0:5:5*floor(dd.(Astn{1}).maxDepth/5)
             ZB = ZT+5;
             dCTD = GetCTDEEP_CTD_Stats(Astn{1},CruiseNames,ZT,ZB);
             % Check each variable in ship survey data
@@ -77,3 +78,18 @@ end
 % Save QAQC results
 ShipSurveyQAQC = clim;
 save(['CTDEEP_Cruises_' num2str(Ayear0) '_' num2str(Ayear1) '_QAQC.mat'], 'ShipSurveyQAQC');
+
+%%
+% Save all the data plotted in a structure that can be exported to NETCDF
+crs = fieldnames(ShipSurveyQAQC);
+for i = 1:length(crs)
+    stn = fieldnames(ShipSurveyQAQC.(crs{i}));
+    for j = 1:length(stn)
+        latlon = [dd.(stn{j}).lat, dd.(stn{j}).lon];
+        dp = fieldnames(ShipSurveyQAQC.(crs{i}).(stn{j}));
+        for k = 1:length(dp)
+            stnDep = max(ShipSurveyQAQC.(crs{i}).(stn{j}).(dp{k}).depth);
+            WriteNETCDFshipSurveyFile(crs{i}, dp{k}, latlon, stnDep, ShipSurveyQAQC.(crs{i}).(stn{j}).(dp{k}));
+        end
+    end
+end

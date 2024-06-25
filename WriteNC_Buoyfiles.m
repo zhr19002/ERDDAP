@@ -1,4 +1,4 @@
-function WriteNC_Buoyfiles(ncfile, d, meta)
+function WriteNC_BuoyFiles(ncfile, d, meta)
 % 
 % Output the buoy data in d, all records at a fixed level, to nc file
 % 

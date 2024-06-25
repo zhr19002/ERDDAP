@@ -1,7 +1,7 @@
 % 
 % Calls CleanBuoyData.m
 % Calls CheckBuoyDataQAQC.m
-% Calls WriteNETCDFbuoyfile.m
+% Calls WriteNETCDFbuoyFile.m
 % 
 
 clc; clear;
@@ -45,7 +45,7 @@ for loc = locs
     
     % Clean buoy data
     buoyData = CleanBuoyData(buoyT, av_by);
-
+    
     BuoyQAQC.(loc{1}).time = buoyData.TmStamp;
     BuoyQAQC.(loc{1}).depth = buoyData.depth;
     for av = {'T','S','DO','P','C','pH','rho','DOsat'}
@@ -62,7 +62,9 @@ end
 save([buoy '_QAQC.mat'], 'BuoyQAQC');
 
 %%
-% Save all the data plotted in a structure that can be exported to NETCDF and to ERDDAP
-latlon = [41 + 0.60/60, -(73 + 17.29/60)];
-stnDep = 30;
-WriteNETCDFbuoyfile(buoy, locs, latlon, stnDep, BuoyQAQC);
+% Save all the data plotted in a structure that can be exported to NETCDF
+latlon = [mode(buoyData.latitude), mode(buoyData.longitude)];
+for i = 1:length(locs)
+    stnDep = max(BuoyQAQC.(locs{i}).depth);
+    WriteNETCDFbuoyFile(buoy, locs{i}, latlon, stnDep, BuoyQAQC.(locs{i}));
+end

@@ -8,11 +8,11 @@ function res = CleanBuoyData(d, av_by)
 res = d;
 uYears = unique(year(d.TmStamp));
 for i = 1:numel(uYears)
-    idx = (year(d.TmStamp)==uYears(i));
-    iu = ((year(d.TmStamp)==uYears(i)) & ... % Filter a specific year
-          (d.TmStamp<min(d.TmStamp(idx))+4 | d.TmStamp>max(d.TmStamp(idx))-4) & ... % Filter dates
-          (d.('psu')<5 | d.('dBars')<0.2)); % Filter unusual S or P values
-
+    idx = (year(d.TmStamp)==uYears(i));     % Filter a specific year
+    iu = (idx & (d.TmStamp<min(d.TmStamp(idx))+5 | ...
+                 d.TmStamp>max(d.TmStamp(idx))-5) & ... % Filter dates
+         (d.('psu')<5 | d.('dBars')<0.2));  % Filter unusual S or P values
+    
     for av = {'T','S','DO','P','C','pH','rho','DOsat'}
         tbvars = categorical(d.Properties.VariableNames);
         if iscategory(tbvars, av_by.(av{1}))

@@ -5,6 +5,7 @@
 % Calls GetDEEPWQClimDepth.m
 % Calls GetDEEPWQClimData.m
 % Calls GetDEEPWQClimStats.m
+% Calls WriteNETCDFstationFile.m
 % 
 
 clc; clear;
@@ -17,15 +18,12 @@ av_stn = struct('T','sea_water_temperature','S','sea_water_salinity', ...
 stn_para = readtable('Station_Para.csv', ReadRowNames=true);
 
 % Get max depth at a station
-maxDepth = GetDEEPWQClimDepth(Astn, 2023);
+[lat, lon, maxDepth] = GetDEEPWQClimDepth(Astn, 2023);
 % Download station climatology data in the depth range ZT to ZB
 for ZT = 0:5:5*floor(maxDepth/5)
     ZB = ZT+5;
     % Get station climatology data
     d = GetDEEPWQClimData(Astn, ZT, ZB);
-    % Check Lon/Lat
-    d.latitude(:) = mode(d.latitude);
-    d.longitude(:) = mode(d.longitude);
     % Check each variable in station climatology data
     for av = {'T','S','DO','P','C','pH','rho','DOsat'}
         % Get station climatology statistics
@@ -34,8 +32,6 @@ for ZT = 0:5:5*floor(maxDepth/5)
             % Shorten field names
             dpth = ['depth_' num2str(ZT) '_' num2str(ZB)];
             % Form QAQC structure
-            clim.(dpth).latitude = d.latitude;
-            clim.(dpth).longitude = d.longitude;
             clim.(dpth).time = d.time/(24*3600)+datetime(1970,1,1);
             clim.(dpth).depth = d.depth;
             clim.(dpth).(av{1}).data = d.(av_stn.(av{1}));
@@ -63,3 +59,12 @@ end
 % Save QAQC results
 StationQAQC = clim;
 save(['CTDEEP_' Astn '_QAQC.mat'], 'StationQAQC');
+
+%%
+% Save all the data plotted in a structure that can be exported to NETCDF
+dp_rng = fieldnames(StationQAQC);
+latlon = [lat, lon];
+for i = 1:length(dp_rng)
+    stnDep = max(StationQAQC.(dp_rng{i}).depth);
+    WriteNETCDFstationFile(Astn, dp_rng{i}, latlon, stnDep, StationQAQC.(dp_rng{i}));
+end

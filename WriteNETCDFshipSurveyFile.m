@@ -1,13 +1,14 @@
-function WriteNETCDFstationFile(Astn, dp_rng, latlon, stnDep, d)
+function WriteNETCDFshipSurveyFile(cruise, Astn, dp_rng, latlon, stnDep, d)
 % 
-% Create NETCDF files with station data
+% Create NETCDF files with ship survey data
 % 
-% Calls WriteNC_StationFiles.m
+% Calls WriteNC_ShipSurveyFiles.m
 % 
-% Called from WriteStationDataQAQC.m
+% Called from WriteShipSurveyDataQAQC.m
 % 
 
-meta.Processing_Notes = 'Screened with WriteStationDataQAQC.m';
+meta.Processing_Notes = 'Screened with WriteShipSurveyDataQAQC.m';
+meta.cruise_name = cruise;
 meta.mooring_name = Astn;
 meta.lat = latlon(1,1);
 meta.lon = latlon(1,2);
@@ -19,6 +20,6 @@ meta.lab = 'Data from LISICOS moored sensors';
 meta.time_zone = 'EST';
 
 % Convert to the expected format
-WriteNC_StationFiles([Astn '_' dp_rng '.nc'], d, meta);
+WriteNC_ShipSurveyFiles([cruise '_' Astn '_' dp_rng '.nc'], d, meta);
 
 end

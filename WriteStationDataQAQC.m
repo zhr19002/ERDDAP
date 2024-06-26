@@ -1,6 +1,6 @@
 % 
 % Identify and flag station climatology data outliers
-% (1 = pass; 3 = beyond 99% data range; 4 = beyond max-min range)
+% (1 = pass; 3 = beyond 98% data range; 4 = beyond max-min range)
 % 
 % Calls GetDEEPWQClimDepth.m
 % Calls GetDEEPWQClimData.m

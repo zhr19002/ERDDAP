@@ -1,6 +1,6 @@
 % 
 % Identify and flag ship survey data outliers
-% (1 = pass; 3 = beyond 99% data range; 4 = beyond max-min range)
+% (1 = pass; 3 = beyond 98% data range; 4 = beyond max-min range)
 % 
 % Calls GetCruiseNames.m
 % Calls GetDEEPWQClimDepth.m
@@ -89,7 +89,7 @@ for i = 1:length(crs)
         dp = fieldnames(ShipSurveyQAQC.(crs{i}).(stn{j}));
         for k = 1:length(dp)
             stnDep = max(ShipSurveyQAQC.(crs{i}).(stn{j}).(dp{k}).depth);
-            WriteNETCDFshipSurveyFile(crs{i}, dp{k}, latlon, stnDep, ShipSurveyQAQC.(crs{i}).(stn{j}).(dp{k}));
+            WriteNETCDFshipSurveyFile(crs{i}, stn{j}, dp{k}, latlon, stnDep, ShipSurveyQAQC.(crs{i}).(stn{j}).(dp{k}));
         end
     end
 end

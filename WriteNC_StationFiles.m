@@ -1,6 +1,6 @@
 function WriteNC_StationFiles(ncfile, d, meta)
 % 
-% Output station data to NC files
+% Write station data to NC files
 % 
 % Called from WriteNETCDFstationFile.m
 % 

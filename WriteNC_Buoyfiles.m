@@ -1,6 +1,6 @@
 function WriteNC_BuoyFiles(ncfile, d, meta)
 % 
-% Output buoy data to NC files
+% Write buoy data to NC files
 % 
 % Called from WriteNETCDFbuoyFile.m
 % 

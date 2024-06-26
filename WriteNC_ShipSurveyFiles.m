@@ -1,6 +1,6 @@
 function WriteNC_ShipSurveyFiles(ncfile, d, meta)
 % 
-% Output ship survey data to NC files
+% Write ship survey data to NC files
 % 
 % Called from WriteNETCDFshipSurveyFile.m
 % 

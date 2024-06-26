@@ -18,7 +18,7 @@ meta.processed_by = 'James O''Donnell, james.odonnell@uconn.edu';
 meta.lab = 'Data from LISICOS moored sensors';
 meta.time_zone = 'EST';
 
-% Convert to the expected format
+% Write buoy data to NC files
 WriteNC_BuoyFiles([buoy '_' loc '.nc'], d, meta);
 
 end

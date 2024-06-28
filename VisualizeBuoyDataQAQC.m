@@ -29,7 +29,8 @@ iu = find(year(d.(loc).time)==Ayear);
 d_tmp = d.(loc).(av).data;
 c_tmp = d.(loc).(av).QAQCTests;
 
-figure; hold on; grid on;
+figure('Position', [10 180 710 420]); 
+hold on; grid on;
 
 plot(d.(loc).time(iu),d_tmp(iu),'b.','DisplayName',[buoy ' (' av ')']);
 xticks(datetime(Ayear,1:12,1));

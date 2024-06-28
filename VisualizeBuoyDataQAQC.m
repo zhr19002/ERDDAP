@@ -7,7 +7,7 @@
 clc; clear;
 % Set up parameters
 Astn = 'E1';
-buoy = 'ARTG'; loc = 'sfc'; Ayear = 2021;
+buoy = 'ARTG'; loc = 'sfc'; Ayear = 2022;
 av = 'T'; % {'T','S','DO','P','C','pH','rho','DOsat'}
 
 % Fixed parameters
@@ -109,7 +109,7 @@ pp.FaceColor = [0.1 0.9 0.7]; pp.EdgeColor = [0.1 0.9 0.7];
 %%
 % QAQC_para = readtable('QAQC_Para.csv', ReadRowNames=true);
 % QAQC.Thesholds = [QAQC_para.(av)('Min_Value') QAQC_para.(av)('Max_Value')];
-% ylim(QAQC.Thesholds); 
+% ylim(QAQC.Thesholds);
 % saveas(gcf, [buoy '_' loc ' ' num2str(Ayear) ' Climatology at ' Astn ' (' av ').png']);
 
 % % Ginput

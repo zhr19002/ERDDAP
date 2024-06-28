@@ -41,3 +41,5 @@ end
 ax = nexttile(1);
 lgd = legend(ax,'Orientation','horizontal');
 lgd.Layout.Tile = 'south';
+
+% saveas(gcf, ['CTDEEP_Cruises_2021_2021_QAQC (' av ').png']);

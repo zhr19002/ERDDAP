@@ -5,7 +5,9 @@
 % 
 
 clc; clear;
-buoy = 'ARTG'; locs = {'btm1', 'btm2', 'sfc'};
+buoy = 'ARTG'; locs = {'btm1','btm2','sfc'};
+% buoy = 'EXRX'; locs = {'btm2','mid','sfc'};
+% buoy = 'CLIS'; locs = {'btm'};
 
 % Fixed parameters
 av_by = struct('T','degC','S','psu','DO','mg/L','P','dBars','C','S/m', ...

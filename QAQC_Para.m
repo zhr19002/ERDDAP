@@ -33,10 +33,16 @@ disp(jmp_spk_tbl);
 
 %%
 % Statistics of QAQC results
-stats_tbl = table([0;1;2;3;4],'VariableNames',{'FailedTestsCount'});
+stats_tbl = table([0;1;2;3;4;5],'VariableNames',{'FailedTestsCount'});
 for i = 1:length(avar)
     tmp = tabulate(din.BuoyQAQC.(locs{1}).(avar{i}).FailedTestsCount);
-    av_count = arrayfun(@(ii) sprintf('%d (%.2f%%)', tmp(ii,2), tmp(ii,3)), 1:height(tmp), 'UniformOutput', false);
+    for j = 0:5
+        if ~ismember(j,tmp(:,1))
+            tmp = [tmp; [j 0 0]];
+        end
+    end
+    tmp = sortrows(tmp);
+    av_count = arrayfun(@(k) sprintf('%d (%.2f%%)', tmp(k,2), tmp(k,3)), 1:6, 'UniformOutput', false);
     stats_tbl.(avar{i}) = av_count';
 end
 disp(stats_tbl);

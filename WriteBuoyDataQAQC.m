@@ -29,10 +29,13 @@ for loc = locs
     buoyT = sortrows(buoyT,'TmStamp');
     close(conn);
 
-    % Calculate rho and DOsat
+    % Calculate rho
     buoyT.('kg/m^3') = sw_dens(buoyT.('psu'),buoyT.('degC'),buoyT.('dBars'))-1000;
+    % Calculate DOsat
     sat = sw_satO2(buoyT.('psu'),buoyT.('degC'))*1.33; % Converted to mg/L
     buoyT.('percent') = 100*buoyT.('mg/L')./sat;
+    % Replace DOsat values greater than 1000 with NaN
+    buoyT.('percent')(buoyT.('percent') > 1000) = NaN;
     
     % Add the pH column
     switch strcmp([buoy '_' loc{1}], 'ARTG_btm1')

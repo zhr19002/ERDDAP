@@ -3,28 +3,28 @@ clc; clear;
 Astn = 'A4';
 d = load(['CTDEEP_' Astn '_QAQC.mat']);
 avar = ["T";"S";"DO";"P";"C";"rho";"pH";"DOsat"];
-dp_rng = fieldnames(d.StationQAQC);
 
 % Concatenate QAQC results from structures of different depths
-for i = 1:length(avar)
-    av_check.(avar{i}) = d.StationQAQC.(dp_rng{1}).(avar{i}).check;
-    for j = 2:length(dp_rng)
-        c_tmp = d.StationQAQC.(dp_rng{j}).(avar{i}).check;
-        av_check.(avar{i}) = [av_check.(avar{i});c_tmp];
+dpth = fieldnames(d.StationQAQC);
+for av = 1:length(avar)
+    av_check.(avar{av}) = d.StationQAQC.(dpth{1}).(avar{av}).check;
+    for dp = 2:length(dpth)
+        c_tmp = d.StationQAQC.(dpth{dp}).(avar{av}).check;
+        av_check.(avar{av}) = [av_check.(avar{av});c_tmp];
     end
 end
 
 % Statistics of QAQC results
-stats_tbl = table([1;2;3;4],'VariableNames',{'Flag'});
-for i = 1:length(avar)
-    tmp = tabulate(av_check.(avar{i}));
-    for j = [1 3 4]
-        if ~ismember(j,tmp(:,1))
-            tmp = [tmp; [j 0 0]];
+stats_tbl = table((1:4)','VariableNames',{'Flag'});
+for av = 1:length(avar)
+    tmp = tabulate(av_check.(avar{av}));
+    for n = 1:4
+        if ~ismember(n,tmp(:,1))
+            tmp = [tmp; [n 0 0]];
         end
     end
     tmp = sortrows(tmp);
-    av_count = arrayfun(@(k) sprintf('%d (%.2f%%)', tmp(k,2), tmp(k,3)), 1:4, 'UniformOutput', false);
-    stats_tbl.(avar{i}) = av_count';
+    av_count = arrayfun(@(i) sprintf('%d (%.2f%%)', tmp(i,2), tmp(i,3)), 1:4, 'UniformOutput', false);
+    stats_tbl.(avar{av}) = av_count';
 end
 disp(stats_tbl);

@@ -8,7 +8,7 @@ d0 = load(['CTDEEP_' Astn '_QAQC.mat']);
 d0 = d0.StationQAQC;
 dp_rng = fieldnames(d0);
 
-d = load('CTDEEP_Cruises_2021_2021_QAQC.mat');
+d = load(['CTDEEP_Cruises_' num2str(Ayear) '_QAQC.mat']);
 d = d.ShipSurveyQAQC;
 crs = fieldnames(d);
 
@@ -42,4 +42,4 @@ ax = nexttile(1);
 lgd = legend(ax,'Orientation','horizontal');
 lgd.Layout.Tile = 'south';
 
-% saveas(gcf, ['CTDEEP_Cruises_2021_2021_QAQC (' av ').png']);
+% saveas(gcf, ['CTDEEP_Cruises_' num2str(Ayear) '_QAQC (' av ').png']);

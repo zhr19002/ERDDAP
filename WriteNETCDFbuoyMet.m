@@ -19,6 +19,6 @@ meta.lab = 'Data from LISICOS moored sensors';
 meta.time_zone = 'EST';
 
 % Write buoy MET data to NC files
-WriteNC_BuoyMet([buoy '.nc'], d, meta);
+WriteNC_BuoyMet([buoy '_MET.nc'], d, meta);
 
 end

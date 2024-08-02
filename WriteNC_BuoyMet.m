@@ -47,22 +47,20 @@ netcdf.putAtt(ncid,windSpdQid,'long_name','windSpd_Kts_status_flag');
 netcdf.putAtt(ncid,windSpdQid,'note',QAQCnote);
 
 windDirMid = netcdf.defVar(ncid,'windDirM','NC_FLOAT',burstid);
-netcdf.putAtt(ncid,windDirMid,'units','deg');
+netcdf.putAtt(ncid,windDirMid,'units','degrees');
 netcdf.putAtt(ncid,windDirMid,'long_name','windDir_M');
 
 windDirMQid = netcdf.defVar(ncid,'windDirM_status','NC_INT',burstid);
 netcdf.putAtt(ncid,windDirMQid,'long_name','windDir_M_status_flag');
 netcdf.putAtt(ncid,windDirMQid,'note',QAQCnote);
 
-if isfield(d, 'windDir_STD')
-    windDirSTDid = netcdf.defVar(ncid,'windDirSTD','NC_FLOAT',burstid);
-    netcdf.putAtt(ncid,windDirSTDid,'units','deg');
-    netcdf.putAtt(ncid,windDirSTDid,'long_name','windDir_STD');
-    
-    windDirSTDQid = netcdf.defVar(ncid,'windDirSTD_status','NC_INT',burstid);
-    netcdf.putAtt(ncid,windDirSTDQid,'long_name','windDir_STD_status_flag');
-    netcdf.putAtt(ncid,windDirSTDQid,'note',QAQCnote);
-end
+windDirSTDid = netcdf.defVar(ncid,'windDirSTD','NC_FLOAT',burstid);
+netcdf.putAtt(ncid,windDirSTDid,'units','none');
+netcdf.putAtt(ncid,windDirSTDid,'long_name','windDir_STD');
+
+windDirSTDQid = netcdf.defVar(ncid,'windDirSTD_status','NC_INT',burstid);
+netcdf.putAtt(ncid,windDirSTDQid,'long_name','windDir_STD_status_flag');
+netcdf.putAtt(ncid,windDirSTDQid,'note',QAQCnote);
 
 windSpdMaxid = netcdf.defVar(ncid,'windSpdMax','NC_FLOAT',burstid);
 netcdf.putAtt(ncid,windSpdMaxid,'units','kts');
@@ -73,7 +71,7 @@ netcdf.putAtt(ncid,windSpdMaxQid,'long_name','windSpd_Max_status_flag');
 netcdf.putAtt(ncid,windSpdMaxQid,'note',QAQCnote);
 
 windDirSMMid = netcdf.defVar(ncid,'windDirSMM','NC_FLOAT',burstid);
-netcdf.putAtt(ncid,windDirSMMid,'units','deg');
+netcdf.putAtt(ncid,windDirSMMid,'units','degrees');
 netcdf.putAtt(ncid,windDirSMMid,'long_name','windDir_SMM');
 
 windDirSMMQid = netcdf.defVar(ncid,'windDirSMM_status','NC_INT',burstid);
@@ -89,7 +87,7 @@ netcdf.putAtt(ncid,fiveSecAvgQid,'long_name','fiveSecAvg_Max_flag');
 netcdf.putAtt(ncid,fiveSecAvgQid,'note',QAQCnote);
 
 airTempid = netcdf.defVar(ncid,'airTemp','NC_FLOAT',burstid);
-netcdf.putAtt(ncid,airTempid,'units','degF');
+netcdf.putAtt(ncid,airTempid,'units','degC');
 netcdf.putAtt(ncid,airTempid,'long_name','airTemp_Avg');
 
 airTempQid = netcdf.defVar(ncid,'airTemp_status','NC_INT',burstid);
@@ -105,7 +103,7 @@ netcdf.putAtt(ncid,relHumidQid,'long_name','relHumid_Avg_status_flag');
 netcdf.putAtt(ncid,relHumidQid,'note',QAQCnote);
 
 baroPressid = netcdf.defVar(ncid,'baroPress','NC_FLOAT',burstid);
-netcdf.putAtt(ncid,baroPressid,'units','millibar');
+netcdf.putAtt(ncid,baroPressid,'units','millibars');
 netcdf.putAtt(ncid,baroPressid,'long_name','baroPress_Avg');
 
 baroPressQid = netcdf.defVar(ncid,'baroPress_status','NC_INT',burstid);
@@ -126,9 +124,7 @@ netcdf.endDef(ncid);
 netcdf.putVar(ncid, timeid, days(d.time(:)-datetime(1970,1,1,0,0,0)));
 netcdf.putVar(ncid, windSpdid, d.windSpd_Kts.data);
 netcdf.putVar(ncid, windDirMid, d.windDir_M.data);
-if isfield(d, 'windDir_STD')
-    netcdf.putVar(ncid, windDirSTDid, d.windDir_STD.data);
-end
+netcdf.putVar(ncid, windDirSTDid, d.windDir_STD.data);
 netcdf.putVar(ncid, windSpdMaxid, d.windSpd_Max.data);
 netcdf.putVar(ncid, windDirSMMid, d.windDir_SMM.data);
 netcdf.putVar(ncid, fiveSecAvgid, d.fiveSecAvg_Max.data);
@@ -140,9 +136,7 @@ netcdf.putVar(ncid, dewPTid, d.dewPT_Avg.data);
 % Write Flags
 netcdf.putVar(ncid, windSpdQid, d.windSpd_Kts.check);
 netcdf.putVar(ncid, windDirMQid, d.windDir_M.check);
-if isfield(d, 'windDir_STD')
-    netcdf.putVar(ncid, windDirSTDQid, d.windDir_STD.check);
-end
+netcdf.putVar(ncid, windDirSTDQid, d.windDir_STD.check);
 netcdf.putVar(ncid, windSpdMaxQid, d.windSpd_Max.check);
 netcdf.putVar(ncid, windDirSMMQid, d.windDir_SMM.check);
 netcdf.putVar(ncid, fiveSecAvgQid, d.fiveSecAvg_Max.check);

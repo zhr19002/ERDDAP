@@ -13,8 +13,7 @@ function [ut, res] = GetDEEPStationSurfaceData(Astn)
 
 FigsOn = 0; % Set >0 for graphs
 
-wopt = weboptions;
-wopt.Timeout = 300;
+wopt = weboptions; wopt.Timeout = 300;
 
 % Get the surface data from top 3 m of all profiles at Astn
 Atop = num2str(0); Abot = num2str(3);

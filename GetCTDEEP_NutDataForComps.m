@@ -1,6 +1,6 @@
 function [ds, db, CruiseNames] = GetCTDEEP_NutDataForComps(Astn, Ayear, Nmth)
 % 
-% Get station data (dd, ds, db) from ERDDAP
+% Get station data [ds, db] from ERDDAP
 % 
 % Calls GetCruiseDateByCruiseName.m
 % Calls SepCTDEEP_NutData.m

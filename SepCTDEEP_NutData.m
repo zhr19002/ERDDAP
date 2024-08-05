@@ -12,7 +12,7 @@ level = {'S','B'};
 dl = {'dsurf','dbot'};
 
 vars = {'BIOSI_LC','CHLA','DIP','DOC','NH_LC','NOX_LC', ...
-         'PC','PN','PP_LC','SIO2_LC','TDN_LC','TDP','TSS'};
+        'PC','PN','PP_LC','SIO2_LC','TDN_LC','TDP','TSS'};
 
 for i = 1:2
     % Seperate data by the S/B level

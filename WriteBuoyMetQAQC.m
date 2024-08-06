@@ -3,9 +3,9 @@
 % 
 
 clc; clear;
-buoy = 'ARTG'; % {'ARTG','CLIS1','CLIS2','EXRX','WLIS'}
-metVars = {'windSpd_Kts','windDir_M','windDir_STD','windSpd_Max','windDir_SMM', ...
-           'fiveSecAvg_Max','airTemp_Avg','relHumid_Avg','baroPress_Avg','dewPT_Avg'};
+buoy = 'WLIS'; % {'ARTG','CLIS1','CLIS2','EXRX','WLIS'}
+metVars = {'windSpd_Kts','windSpd_Max','fiveSecAvg_Max','windDir_M', ...
+           'airTemp_Avg','relHumid_Avg','baroPress_Avg','dewPT_Avg'};
 tVars = [{'TmStamp','RecNum'}, metVars, {'longitude','latitude','depth'}];
 
 % Read QAQC parameters
@@ -24,7 +24,6 @@ switch buoy
     case 'ARTG'
         dbname = "ARTG_pb2_metDat";
         buoyMet = sqlread(conn, append('"', dbname, '"'));
-        buoyMet.('windDir_STD') = NaN(height(buoyMet),1);
     case 'CLIS1'
         dbname = "clis_cr1xPB4_metDat";
         buoyMet = sqlread(conn, append('"', dbname, '"'));
@@ -36,7 +35,6 @@ switch buoy
     case 'EXRX'
         dbname1 = "EXRX_pb2_metDat_arch1";
         buoyMet1 = sqlread(conn, append('"', dbname1, '"'));
-        buoyMet1.('windDir_STD') = NaN(height(buoyMet1),1);
         dbname2 = "EXRX_pb1_metRO";
         buoyMet2 = sqlread(conn, append('"', dbname2, '"'));
         buoyMet2 = renamevars(buoyMet2,'dewPt_Avg','dewPT_Avg');

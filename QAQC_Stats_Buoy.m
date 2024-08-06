@@ -1,7 +1,7 @@
 clc; clear;
 
-buoy = 'ARTG'; locs = {'btm1','btm2','sfc'};
-% buoy = 'EXRX'; locs = {'btm2','mid','sfc'};
+% buoy = 'ARTG'; locs = {'btm1','btm2','sfc'};
+buoy = 'EXRX'; locs = {'btm2','mid','sfc'};
 % buoy = 'CLIS'; locs = {'btm'};
 
 din = load([buoy '_QAQC.mat']);

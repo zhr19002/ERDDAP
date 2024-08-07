@@ -1,9 +1,10 @@
 % 
+% Calls ImplementDeltaQAQC.m
 % Calls WriteNETCDFbuoyMet.m
 % 
 
 clc; clear;
-buoy = 'WLIS'; % {'ARTG','CLIS1','CLIS2','EXRX','WLIS'}
+buoy = 'ARTG'; % {'ARTG','CLIS1','CLIS2','EXRX','WLIS'}
 metVars = {'windSpd_Kts','windSpd_Max','fiveSecAvg_Max','windDir_M', ...
            'airTemp_Avg','relHumid_Avg','baroPress_Avg','dewPT_Avg'};
 tVars = [{'TmStamp','RecNum'}, metVars, {'longitude','latitude','depth'}];
@@ -54,18 +55,28 @@ for av = metVars
     buoyMet.(av{1})(buoyMet.(av{1}) < -1000) = NaN;
     % Form QAQC structure
     MetQAQC.(av{1}).data = buoyMet.(av{1});
-    MetQAQC.(av{1}).check = ones(size(buoyMet.TmStamp));
-    % Check max-min thresholds
-    d_tmp = MetQAQC.(av{1}).data;
-    iu1 = find(d_tmp < MET_QAQC.(av{1})('Min_Value') | ...
-               d_tmp > MET_QAQC.(av{1})('Max_Value') | ...
-               isnan(d_tmp));
-    if ~isempty(iu1)
-        MetQAQC.(av{1}).check(iu1) = 4;
+    if ismember(av{1}, "windDir_M")
+        % Jump limit test
+        d_tmp = cos(buoyMet.(av{1})*pi/180);
+        MetQAQC.(av{1}).deltaCheck = ImplementDeltaQAQC(d_tmp);
+    else
+        d_tmp = MetQAQC.(av{1}).data;
+        MetQAQC.(av{1}).check = ones(size(buoyMet.TmStamp));
+        % Threshold test
+        iu1 = find(d_tmp < MET_QAQC.(av{1})('Min_Value') | ...
+                   d_tmp > MET_QAQC.(av{1})('Max_Value') | ...
+                   isnan(d_tmp));
+        if ~isempty(iu1)
+            MetQAQC.(av{1}).check(iu1) = 4;
+        end
+        % Jump limit test
+        if ismember(av{1}, "windSpd_Kts")
+            MetQAQC.(av{1}).deltaCheck = ImplementDeltaQAQC(d_tmp);
+        end
     end
 end
 
-% Save QAQC results
+% Save QAQC resultsdui
 save([buoy '_MET_QAQC.mat'], 'MetQAQC');
 
 %%

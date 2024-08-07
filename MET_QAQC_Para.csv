@@ -1,3 +1,3 @@
-﻿,windSpd_Kts,windSpd_Max,fiveSecAvg_Max,airTemp_Avg,relHumid_Avg,baroPress_Avg,dewPT_Avg,windDir_M
-Max_Value,60,80,80,35,100,1040,35,360
-Min_Value,0,0,0,-10,10,920,-28,0
+﻿,windSpd_Kts,windSpd_Max,fiveSecAvg_Max,airTemp_Avg,relHumid_Avg,baroPress_Avg,dewPT_Avg
+Max_Value,60,80,80,35,100,1040,35
+Min_Value,0,0,0,-10,10,920,-28

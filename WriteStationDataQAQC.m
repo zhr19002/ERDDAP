@@ -15,7 +15,7 @@ av_stn = struct('T','sea_water_temperature','S','sea_water_salinity', ...
                 'P','sea_water_pressure','C','sea_water_electrical_conductivi', ...
                 'rho','sea_water_density','DOsat','percent_saturation');
 % Read station parameters
-stn_para = readtable('Station_Para.csv', ReadRowNames=true);
+QAQC_para = readtable('QAQC_Para.csv', ReadRowNames=true);
 
 % Get max depth at a station
 [lat, lon, maxDepth] = GetDEEPWQClimDepth(Astn, 2023);
@@ -38,8 +38,8 @@ for ZT = 0:5:5*floor(maxDepth/5)
             clim.(dpth).(av{1}).check = ones(size(d.time));
             % Check max-min thresholds
             d_tmp = clim.(dpth).(av{1}).data;
-            iu1 = find(d_tmp < stn_para.(av{1})('Min_Value') | ...
-                       d_tmp > stn_para.(av{1})('Max_Value') | ...
+            iu1 = find(d_tmp < QAQC_para.(av{1})('Min_Value') | ...
+                       d_tmp > QAQC_para.(av{1})('Max_Value') | ...
                        isnan(d_tmp));
             if ~isempty(iu1)
                 clim.(dpth).(av{1}).check(iu1) = 4;

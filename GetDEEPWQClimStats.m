@@ -15,18 +15,9 @@ av_stn = struct('T','sea_water_temperature','S','sea_water_salinity', ...
                 'rho','sea_water_density','DOsat','percent_saturation');
 
 for nm = 1:12
-    iu = find(month(daten)==nm);
-    stats.ndays(nm) = length(unique(daten(iu)));
-    stats.nu(nm) = length(iu);
+    iu = month(daten)==nm;
     tmp = d.(av_stn.(av))(iu);
-    stats.mean(nm) = mean(tmp(~isnan(tmp)));
-    stats.std(nm) = std(tmp(~isnan(tmp)));
     stats.bd1(nm) = prctile(tmp,1);
-    stats.bd2_5(nm) = prctile(tmp,2.5);
-    stats.bd16(nm) = prctile(tmp,16);
-    stats.bd50(nm) = prctile(tmp,50);
-    stats.bd84(nm) = prctile(tmp,84);
-    stats.bd97_5(nm) = prctile(tmp,97.5);
     stats.bd99(nm) = prctile(tmp,99);
 end
 

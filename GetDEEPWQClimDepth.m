@@ -9,8 +9,9 @@ function [lat, lon, maxDepth] = GetDEEPWQClimDepth(Astn, Ayear)
 wopts = weboptions; wopts.Timeout = 120;
 
 % Form ERDDAP request
-aurl0 = ['http://merlin.dms.uconn.edu:8080/erddap/tabledap/DEEP_WQ.mat?station_name%2Ctime%2C' ...
-         'latitude%2Clongitude%2Cdepth&station_name=%22XX%22&time%3E=YYYY-01-01&time%3C=YYYY-12-31'];
+aurl0 = ['http://merlin.dms.uconn.edu:8080/erddap/tabledap/DEEP_WQ.mat?' ...
+         'station_name%2Ctime%2Clatitude%2Clongitude%2Cdepth&' ...
+         'station_name=%22XX%22&time%3E=YYYY-01-01&time%3C=YYYY-12-31'];
 aurl = strrep(aurl0, 'XX', Astn);
 aurl = strrep(aurl, 'YYYY', num2str(Ayear));
 

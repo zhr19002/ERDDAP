@@ -24,16 +24,16 @@ for ZT = 0:5:5*floor(maxDepth/5)
     ZB = ZT+5;
     % Get station climatology data
     d = GetDEEPWQClimData(Astn, ZT, ZB);
+    % Shorten field names
+    dpth = ['depth_' num2str(ZT) '_' num2str(ZB)];
+    clim.(dpth).time = d.time/(24*3600)+datetime(1970,1,1);
+    clim.(dpth).depth = d.depth;
     % Check each variable in station climatology data
     for av = {'T','S','DO','P','C','pH','rho','DOsat'}
         % Get station climatology statistics
         stats = GetDEEPWQClimStats(Astn, ZT, ZB, av{1});
         if isfield(d, av_stn.(av{1}))
-            % Shorten field names
-            dpth = ['depth_' num2str(ZT) '_' num2str(ZB)];
-            % Form QAQC structure
-            clim.(dpth).time = d.time/(24*3600)+datetime(1970,1,1);
-            clim.(dpth).depth = d.depth;
+            % Form QAQC structure 
             clim.(dpth).(av{1}).data = d.(av_stn.(av{1}));
             clim.(dpth).(av{1}).check = ones(size(d.time));
             % Check max-min thresholds

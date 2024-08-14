@@ -2,11 +2,11 @@ function dQAQC = CheckBuoyDataQAQC(d, buoy, loc, av)
 % 
 % Identify and flag failed QAQC tests of buoy data
 % 
-% Calls ImplementThresholdQAQC.m
-% Calls ImplementDeltaQAQC.m
-% Calls ImplementGapTestQAQC.m
-% Calls ImplementPresIntvTestQAQC.m
-% Calls ImplementSpikeTestQAQC.m
+% Calls ImplementThresholdTest.m
+% Calls ImplementJumpLimTest.m
+% Calls ImplementGapTest.m
+% Calls ImplementPresRngTest.m
+% Calls ImplementSpikeTest.m
 % 
 % Called from WriteBuoyDataQAQC.m
 % 
@@ -18,9 +18,9 @@ av_by = struct('T','degC','S','psu','DO','mg/L','P','dBars','C','S/m', ...
 % Read station group parameters
 QAQC = load([buoy '_para.mat']);
 QAQC = QAQC.QAQC_para;
-QAQC.ExpectedTimeIncr = 0.25/24;        % Expected data sample period (days)
-QAQC.TolExpectedTimeIncr = 0.25/48;     % Tolerance in sample period (days)
-QAQC.PresIntvTest = [0 3; 5 15; 16 30]; % Expected depth range
+QAQC.ExpectedTimeIncr = 0.25/24;    % Expected data sample period (days)
+QAQC.TolExpectedTimeIncr = 0.25/48; % Tolerance in sample period (days)
+QAQC.PresRng = [0 3; 5 15; 16 30];  % Expected depth range
 
 % Run five QAQC tests
 % Determine the depth range ZT to ZB
@@ -32,23 +32,23 @@ else
     ZT = 16; ZB = 30;
 end
 dpth = ['depth_' num2str(ZT) '_' num2str(ZB)];
-tmp = ImplementThresholdQAQC(d.(av_by.(av)), d.TmStamp, QAQC, dpth, av);
+tmp = ImplementThresholdTest(d.(av_by.(av)), d.TmStamp, QAQC, dpth, av);
 d.('QAQCTests') = 10000*tmp;
 d.('FailedTestsCount') = (tmp~=1);
 
-tmp = ImplementDeltaQAQC(d.(av_by.(av)));
+tmp = ImplementJumpLimTest(d.(av_by.(av)));
 d.('QAQCTests') = 1000*tmp + d.('QAQCTests');
 d.('FailedTestsCount') = (tmp~=1) + d.('FailedTestsCount');
 
-tmp = ImplementGapTestQAQC(d.TmStamp, QAQC);
+tmp = ImplementGapTest(d.TmStamp, QAQC);
 d.('QAQCTests') = 100*tmp + d.('QAQCTests');
 d.('FailedTestsCount') = (tmp~=1) + d.('FailedTestsCount');
 
-tmp = ImplementPresIntvTestQAQC(d.depth, QAQC, loc);
+tmp = ImplementPresRngTest(d.depth, QAQC, loc);
 d.('QAQCTests') = 10*tmp + d.('QAQCTests');
 d.('FailedTestsCount') = (tmp~=1) + d.('FailedTestsCount');
 
-tmp = ImplementSpikeTestQAQC(d.(av_by.(av)));
+tmp = ImplementSpikeTest(d.(av_by.(av)));
 d.('QAQCTests') = tmp + d.('QAQCTests');
 d.('FailedTestsCount') = (tmp~=1) + d.('FailedTestsCount');
 

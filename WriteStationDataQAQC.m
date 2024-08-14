@@ -3,7 +3,7 @@
 % (1 = pass; 3 = beyond 98% data range; 4 = beyond max-min range)
 % 
 % Calls GetCTDEEP_Clim_Data.m
-% Calls ImplementThresholdQAQC.m
+% Calls ImplementThresholdTest.m
 % Calls WriteStationNETCDF.m
 % 
 
@@ -42,7 +42,7 @@ for ZT = 0:5:40
                 clim.(dpth).(av{1}).data = d.(av_stn.(av{1}));
                 d_tmp = clim.(dpth).(av{1}).data;
                 dt = clim.(dpth).time;
-                c_tmp = ImplementThresholdQAQC(d_tmp, dt, QAQC, dpth, av{1});
+                c_tmp = ImplementThresholdTest(d_tmp, dt, QAQC, dpth, av{1});
                 clim.(dpth).(av{1}).check = c_tmp;
             end
         end

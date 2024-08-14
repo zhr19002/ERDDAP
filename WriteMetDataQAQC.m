@@ -1,5 +1,5 @@
 % 
-% Calls ImplementDeltaQAQC.m
+% Calls ImplementJumpLimTest.m
 % Calls WriteMetNETCDF.m
 % 
 
@@ -58,7 +58,7 @@ for av = metVars
     if ismember(av{1}, "windDir_M")
         % Jump limit test
         d_tmp = cos(buoyMet.(av{1})*pi/180);
-        MetQAQC.(av{1}).deltaCheck = ImplementDeltaQAQC(d_tmp);
+        MetQAQC.(av{1}).deltaCheck = ImplementJumpLimTest(d_tmp);
     else
         d_tmp = MetQAQC.(av{1}).data;
         MetQAQC.(av{1}).check = ones(size(buoyMet.TmStamp));
@@ -71,7 +71,7 @@ for av = metVars
         end
         % Jump limit test
         if ismember(av{1}, "windSpd_Kts")
-            MetQAQC.(av{1}).deltaCheck = ImplementDeltaQAQC(d_tmp);
+            MetQAQC.(av{1}).deltaCheck = ImplementJumpLimTest(d_tmp);
         end
     end
 end

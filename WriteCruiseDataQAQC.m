@@ -4,7 +4,7 @@
 % 
 % Calls GetCruiseNames.m
 % Calls GetCTDEEP_CTD_Stats.m
-% Calls ImplementThresholdQAQC.m
+% Calls ImplementThresholdTest.m
 % Calls WriteCruiseNETCDF.m
 % 
 
@@ -57,7 +57,7 @@ for Astn = {'A4','B3','C1','C2','D3','E1','F3'}
                         clim.(crs).(stn).(dpth).(av{1}).data = dCTD{nc}.(av_stn.(av{1}));
                         d_tmp = clim.(crs).(stn).(dpth).(av{1}).data;
                         dt = clim.(crs).(stn).(dpth).time;
-                        c_tmp = ImplementThresholdQAQC(d_tmp, dt, QAQC, dpth, av{1});
+                        c_tmp = ImplementThresholdTest(d_tmp, dt, QAQC, dpth, av{1});
                         clim.(crs).(stn).(dpth).(av{1}).check = c_tmp;
                     end
                 end

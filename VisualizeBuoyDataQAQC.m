@@ -1,4 +1,7 @@
 % 
+% Plot the time series of buoy data from "buoy_QAQC.mat"
+% Highlight the marked outliers
+% 
 % Calls GetCruiseNames.m
 % Calls GetCTDEEP_CTD_Stats.m
 % Calls GetCTDEEP_Clim_Data.m
@@ -22,7 +25,7 @@ switch loc
         ZT = 20; ZB = 30;
 end
 
-% Plot time series for buoy data in a specific year
+% Plot the time series of buoy data in Ayear
 d = load([buoy '_QAQC.mat']);
 d = d.BuoyQAQC;
 iu = find(year(d.(loc).time)==Ayear);
@@ -39,7 +42,7 @@ ylabel(av);
 title([buoy '\_' loc ' ' num2str(Ayear) ' Climatology at ' Astn ' (' av ')']);
 legend('Location','eastoutside');
 
-% Plot outliers through QAQC checks
+% Highlight the outliers
 iu1 = find(year(d.(loc).time)==Ayear & floor(c_tmp/10000)~=1);
 plot(d.(loc).time(iu1),d_tmp(iu1),'rd','DisplayName','Threshold test');
 iu2 = find(year(d.(loc).time)==Ayear & mod(floor(c_tmp/1000),10)~=1);
@@ -62,7 +65,7 @@ for nn = 1:12
     end
     [~, CruiseNames{nn}] = GetCruiseNames(Ayear, Amonth);
 end
-% Get ship survey data in a depth range for all cruises at a station
+% Get cruise data in a depth range for all cruises at a station
 dCTD = GetCTDEEP_CTD_Stats(Astn,CruiseNames,ZT,ZB);
 
 % Plot CTDEEP ship survey data

@@ -1,8 +1,8 @@
 function WriteStationNETCDF(Astn, dp_rng, latlon, stnDep, d)
 % 
-% Write station data to NC files
+% Write station QAQC data to NC files
 % 
-% Called from WriteNETCDFstationFile.m
+% Called from WriteStationDataQAQC.m
 % 
 
 meta.Processing_Notes = 'Screened with WriteStationDataQAQC.m';

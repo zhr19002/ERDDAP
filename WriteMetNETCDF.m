@@ -1,6 +1,6 @@
 function WriteMetNETCDF(buoy, latlon, stnDep, d)
 % 
-% Write MET data to NC files
+% Write meteorology QAQC data to NC files
 % 
 % Called from WriteMetDataQAQC.m
 % 
@@ -19,7 +19,7 @@ meta.time_zone = 'EST';
 QAQCnote = '1 = pass; 3 = beyond 98% data range; 4 = beyond max-min range';
 
 % Make NC file
-ncid = netcdf.create([buoy '_MET.nc'],'64BIT_OFFSET');
+ncid = netcdf.create([buoy '_Met.nc'],'64BIT_OFFSET');
 
 % GLOBAL ATTRIBUTES
 varid = netcdf.getConstant('NC_GLOBAL');
@@ -133,10 +133,10 @@ netcdf.putVar(ncid, dewPTid, d.dewPT_Avg.data);
 
 % Write Flags
 netcdf.putVar(ncid, windSpdQ1id, d.windSpd_Kts.check);
-netcdf.putVar(ncid, windSpdQ2id, d.windSpd_Kts.deltaCheck);
+netcdf.putVar(ncid, windSpdQ2id, d.windSpd_Kts.jumpCheck);
 netcdf.putVar(ncid, windSpdMaxQid, d.windSpd_Max.check);
 netcdf.putVar(ncid, fiveSecAvgQid, d.fiveSecAvg_Max.check);
-netcdf.putVar(ncid, windDirQid, d.windDir_M.deltaCheck);
+netcdf.putVar(ncid, windDirQid, d.windDir_M.jumpCheck);
 netcdf.putVar(ncid, airTempQid, d.airTemp_Avg.check);
 netcdf.putVar(ncid, relHumidQid, d.relHumid_Avg.check);
 netcdf.putVar(ncid, baroPressQid, d.baroPress_Avg.check);

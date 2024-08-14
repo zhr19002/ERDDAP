@@ -1,4 +1,7 @@
 % 
+% Identify and flag buoy meteorology data outliers
+% (1 = pass; 3 = beyond 98% data range; 4 = beyond max-min range)
+% 
 % Calls ImplementJumpLimTest.m
 % Calls WriteMetNETCDF.m
 % 
@@ -9,8 +12,8 @@ metVars = {'windSpd_Kts','windSpd_Max','fiveSecAvg_Max','windDir_M', ...
            'airTemp_Avg','relHumid_Avg','baroPress_Avg','dewPT_Avg'};
 tVars = [{'TmStamp','RecNum'}, metVars, {'longitude','latitude','depth'}];
 
-% Read QAQC parameters
-MET_QAQC = readtable('QAQC_Para_MET.csv', ReadRowNames=true);
+% Read meteorology QAQC parameters
+QAQC = readtable('QAQC_Para_Met.csv', ReadRowNames=true);
 
 % Connect to database
 username = 'lisicos';
@@ -51,33 +54,31 @@ close(conn);
 
 MetQAQC.time = buoyMet.TmStamp;
 for av = metVars
-    % Clean MET data
+    % Clean meteorology data
     buoyMet.(av{1})(buoyMet.(av{1}) < -1000) = NaN;
     % Form QAQC structure
     MetQAQC.(av{1}).data = buoyMet.(av{1});
     if ismember(av{1}, "windDir_M")
         % Jump limit test
         d_tmp = cos(buoyMet.(av{1})*pi/180);
-        MetQAQC.(av{1}).deltaCheck = ImplementJumpLimTest(d_tmp);
+        MetQAQC.(av{1}).jumpCheck = ImplementJumpLimTest(d_tmp);
     else
         d_tmp = MetQAQC.(av{1}).data;
         MetQAQC.(av{1}).check = ones(size(buoyMet.TmStamp));
         % Threshold test
-        iu1 = find(d_tmp < MET_QAQC.(av{1})('Min_Value') | ...
-                   d_tmp > MET_QAQC.(av{1})('Max_Value') | ...
-                   isnan(d_tmp));
-        if ~isempty(iu1)
-            MetQAQC.(av{1}).check(iu1) = 4;
+        iu = find(d_tmp<QAQC.(av{1})('min_val') | d_tmp>QAQC.(av{1})('max_val') | isnan(d_tmp));
+        if ~isempty(iu)
+            MetQAQC.(av{1}).check(iu) = 4;
         end
         % Jump limit test
         if ismember(av{1}, "windSpd_Kts")
-            MetQAQC.(av{1}).deltaCheck = ImplementJumpLimTest(d_tmp);
+            MetQAQC.(av{1}).jumpCheck = ImplementJumpLimTest(d_tmp);
         end
     end
 end
 
 % Save QAQC resultsdui
-save([buoy '_MET_QAQC.mat'], 'MetQAQC');
+save([buoy '_Met_QAQC.mat'], 'MetQAQC');
 
 %%
 % Save all the data plotted in a structure that can be exported to NETCDF

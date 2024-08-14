@@ -1,4 +1,9 @@
 % 
+% Identify and flag buoy climatology data outliers through 5 QAQC tests
+% (1 = pass; 3 = beyond 98% data range; 4 = beyond max-min range)
+% 
+% Calls sw_dens.m
+% Calls sw_satO2.m
 % Calls CleanBuoyData.m
 % Calls CheckBuoyDataQAQC.m
 % Calls WriteBuoyNETCDF.m
@@ -30,7 +35,10 @@ for loc = locs
     close(conn);
 
     % Calculate rho
-    buoyT.('kg/m^3') = sw_dens(buoyT.('psu'),buoyT.('degC'),buoyT.('dBars'))-1000;
+    sw_S = buoyT.('psu');
+    sw_T = buoyT.('degC');
+    sw_P = buoyT.('dBars');
+    buoyT.('kg/m^3') = real(sw_dens(sw_S,sw_T,sw_P)-1000);
     % Calculate DOsat
     sat = sw_satO2(buoyT.('psu'),buoyT.('degC'))*1.33; % Converted to mg/L
     buoyT.('percent') = 100*buoyT.('mg/L')./sat;

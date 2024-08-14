@@ -14,7 +14,7 @@ av_stn = struct('T','sea_water_temperature','S','sea_water_salinity', ...
                 'P','sea_water_pressure','C','sea_water_electrical_conductivi', ...
                 'rho','sea_water_density','DOsat','percent_saturation');
 
-% Read station group parameters
+% Read station group QAQC parameters
 if ismember(Astn, {'A2','A4','B3','C1','C2','D3','E1','09','15'})
     stnGroup = 'WStations';
 elseif ismember(Astn, {'F2','F3','H2','H4','H6'})
@@ -22,8 +22,8 @@ elseif ismember(Astn, {'F2','F3','H2','H4','H6'})
 else
     stnGroup = 'EStations';
 end
-QAQC = load([stnGroup '_para.mat']);
-QAQC = QAQC.QAQC_para;
+QAQC = load(['QAQC_Para_' stnGroup '.mat']);
+QAQC = QAQC.QAQC;
 
 % Download station climatology data in the depth range ZT to ZB
 for ZT = 0:5:40
@@ -55,7 +55,7 @@ save(['CTDEEP_' Astn '_QAQC.mat'], 'StationQAQC');
 
 %%
 % Save all the data plotted in a structure that can be exported to NETCDF
-d0 = GetDEEPWQClimData(Astn, 0, 5);
+d0 = GetCTDEEP_Clim_Data(Astn, 0, 5);
 latlon = [mode(d0.latitude), mode(d0.longitude)];
 dp_rng = fieldnames(StationQAQC);
 for i = 1:length(dp_rng)

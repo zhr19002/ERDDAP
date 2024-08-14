@@ -4,6 +4,7 @@ function d = ImplementJumpLimTest(din)
 % Set 1 for pass, 4 for fail, and 3 for suspicious
 % 
 % Called from CheckBuoyDataQAQC.m
+% Called from WriteMetDataQAQC.m
 % 
 
 d = ones(size(din));  % Set QAQC code to 1

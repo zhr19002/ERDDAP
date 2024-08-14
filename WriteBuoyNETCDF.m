@@ -1,6 +1,6 @@
 function WriteBuoyNETCDF(buoy, loc, latlon, stnDep, d)
 % 
-% Write buoy data to NC files
+% Write buoy QAQC data to NC files
 % 
 % Called from WriteBuoyDataQAQC.m
 % 

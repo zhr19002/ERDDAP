@@ -15,18 +15,18 @@ function dQAQC = CheckBuoyDataQAQC(d, buoy, loc, av)
 av_by = struct('T','degC','S','psu','DO','mg/L','P','dBars','C','S/m', ...
                'pH','none','rho','kg/m^3','DOsat','percent');
 
-% Read station group parameters
-QAQC = load([buoy '_para.mat']);
-QAQC = QAQC.QAQC_para;
+% Read station group QAQC parameters
+QAQC = load(['QAQC_Para_' buoy '.mat']);
+QAQC = QAQC.QAQC;
 QAQC.ExpectedTimeIncr = 0.25/24;    % Expected data sample period (days)
 QAQC.TolExpectedTimeIncr = 0.25/48; % Tolerance in sample period (days)
 QAQC.PresRng = [0 3; 5 15; 16 30];  % Expected depth range
 
-% Run five QAQC tests
+% Run 5 QAQC tests
 % Determine the depth range ZT to ZB
-if contains(loc{1}, 'sfc')
+if contains(loc, 'sfc')
     ZT = 0; ZB = 3;
-elseif contains(loc{1}, 'mid')
+elseif contains(loc, 'mid')
     ZT = 5; ZB = 15;
 else
     ZT = 16; ZB = 30;

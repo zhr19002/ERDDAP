@@ -1,14 +1,13 @@
 function d = GetCTDEEP_CTD_Stats(Astn, CruiseNames, ZT, ZB)
 % 
-% Get the CTD profile statistics at a station by CruiseNames
+% Get CTD statistics for cruises at Astn in the depth range ZT to ZB
 % 
-% CruiseNames is a structure with an element for each month. There may be 
-% multiple cruises in each month that need to put them into a single series
+% "CruiseNames" is a structure with an element for each month, and there may be 
+% multiple cruises within each month that need to be combined into a single series
 % 
 % Calls GetCTDEEP_CTD_Data.m
 % 
-% Called from VisualizeBuoyDataQAQC.m
-% Called from WriteShipSurveyDataQAQC.m
+% Called from WriteCruiseDataQAQC.m
 % 
 
 nct = 0;
@@ -24,9 +23,10 @@ end
 
 d = cell(size(CN));
 for nc = 1:numel(CN)
+    % Get cruise climatology data on CN{nc} at Astn
     d{nc} = GetCTDEEP_CTD_Data(Astn, CN{nc}, ZT, ZB);
     if ~isempty(d{nc})
-        % Average properties in the depth range specified
+        % Mean values for each variable in the depth range ZT to ZB
         tmp = d{nc}.depth;
         d{nc}.mnDepth = mean(tmp(~isnan(tmp)));
         tmp = d{nc}.time;
@@ -48,12 +48,6 @@ for nc = 1:numel(CN)
         d{nc}.mnRho = mean(tmp(~isnan(tmp)));
         tmp = d{nc}.percent_saturation;
         d{nc}.mnDOsat = mean(tmp(~isnan(tmp)));
-        tmp = d{nc}.PAR;
-        d{nc}.mnPAR = mean(tmp(~isnan(tmp)));
-        tmp = d{nc}.Chlorophyll;
-        d{nc}.mnCHL = mean(tmp(~isnan(tmp)));
-        tmp = d{nc}.Corrected_Chlorophyll;
-        d{nc}.mnCorCHL = mean(tmp(~isnan(tmp)));
     end
 end
 

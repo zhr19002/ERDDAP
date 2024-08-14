@@ -1,3 +1,7 @@
+% 
+% Generate a statistics table of QAQC results from "buoy_QAQC.mat"
+% 
+
 clc; clear;
 
 buoy = 'ARTG'; locs = {'btm1','btm2','sfc'};

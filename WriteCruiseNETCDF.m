@@ -1,6 +1,6 @@
 function WriteCruiseNETCDF(cruise, Astn, dp_rng, latlon, stnDep, d)
 % 
-% Write cruise data to NC files
+% Write cruise QAQC data to NC files
 % 
 % Called from WriteCruiseDataQAQC.m
 % 

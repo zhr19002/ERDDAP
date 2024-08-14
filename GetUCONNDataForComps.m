@@ -24,7 +24,7 @@ d.Phos = T.Var8(iu);
 if NoFig == 1
     figure;
     plot(d.daten, d.NO2, 'r+', d.daten, d.NO3, 'b+', d.daten, d.Phos, 'g*');
-    ylabel('mg/l');
+    ylabel('mg/L');
     legend({'NO2','NO3','Phos'});
     xtickformat('MM/yy');
     title(buoy);

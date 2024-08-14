@@ -21,7 +21,7 @@ d.TSSmean = T.smc_mgL(iu);
 if NoFig == 1
     figure;
     plot(d.daten, d.TSSmean, 'r+');
-    ylabel('TSS (mg/l)');
+    ylabel('TSS (mg/L)');
     xtickformat('MM/yy');
     title(buoy);
 end

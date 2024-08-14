@@ -1,6 +1,6 @@
 function res = CleanBuoyData(d, av_by)
 % 
-% Identify and make outliers NaN values near the start/end date of each year
+% Identify and mark outliers NaN near the start/end date of each year
 % 
 % Called from WriteBuoyDataQAQC.m
 % 

@@ -1,18 +1,23 @@
+% 
+% Generate a statistics table of QAQC results from "buoy_Met_QAQC.mat"
+% 
+
 clc; clear;
+
 buoy = 'ARTG'; % {'ARTG','CLIS1','CLIS2','EXRX','WLIS'}
 metVars = ["windSpd_Kts";"windSpd_Delta";"windSpd_Max";"fiveSecAvg_Max"; ...
            "windDir_M";"airTemp_Avg";"relHumid_Avg";"baroPress_Avg";"dewPT_Avg"];
 
-d = load([buoy '_MET_QAQC.mat']);
+d = load([buoy '_Met_QAQC.mat']);
 d = d.MetQAQC;
 
-% Statistics of MET QAQC results
+% Statistics of QAQC results
 stats_tbl = table((1:4)','VariableNames',{'Flag'});
 for i = 1:length(metVars)
     if ismember(metVars{i}, "windSpd_Delta")
-        tmp = tabulate(d.(metVars{1}).deltaCheck);
+        tmp = tabulate(d.(metVars{1}).jumpCheck);
     elseif ismember(metVars{i}, "windDir_M")
-        tmp = tabulate(d.(metVars{i}).deltaCheck);
+        tmp = tabulate(d.(metVars{i}).jumpCheck);
     else
         tmp = tabulate(d.(metVars{i}).check);
     end

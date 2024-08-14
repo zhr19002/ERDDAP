@@ -1,9 +1,14 @@
 % 
+% Create QAQC tables for different depths in a region
+% 
 % Calls GetCTDEEP_Clim_Data.m
+% 
+% Creates "QAQC_Para_(W/C/E)Stations.mat"
 % 
 
 clc; clear;
-Astn = 'EStations'; % {'WStations','CStations','EStations'}
+Astn = 'WStations'; % {'WStations','CStations','EStations'}
+
 fields = {'station_name','time','latitude','longitude','depth', ...
           'sea_water_temperature','sea_water_salinity', ...
           'oxygen_concentration_in_sea_wat','pH', ...
@@ -17,11 +22,6 @@ av_stn = struct('T','sea_water_temperature','S','sea_water_salinity', ...
 % Download station climatology data in the depth range ZT to ZB
 for ZT = 0:5:40
     ZB = ZT+5;
-    % Initialize climatology data structure in the depth range ZT to ZB
-    d = struct();
-    for i = 1:length(fields)
-        d.(fields{i}) = [];
-    end
     % Select station group
     switch Astn
         case 'WStations'
@@ -30,6 +30,11 @@ for ZT = 0:5:40
             stnGroup = {'F2','F3','H2','H4','H6'};
         case 'EStations'
             stnGroup = {'I2','J2','K2','M3'};
+    end
+    % Initialize climatology data structure in the depth range ZT to ZB
+    d = struct();
+    for i = 1:length(fields)
+        d.(fields{i}) = [];
     end
     % Get station group climatology data
     for i = 1:length(stnGroup)
@@ -47,7 +52,7 @@ for ZT = 0:5:40
     for av = {'T','S','DO','P','C','pH','rho','DOsat'}
         if isfield(d, av_stn.(av{1}))
             % Form QAQC structure
-            clim.(dpth).(av{1}).data = d.(av_stn.(av{1}));
+            clim.(dpth).(av{1}) = d.(av_stn.(av{1}));
         end
     end
 end
@@ -66,8 +71,7 @@ for i = 1:length(dp_rng)
         for nm = 1:12
             iu = find(month(clim.(dp_rng{i}).time)==nm);
             if ~isempty(iu)
-                data = clim.(dp_rng{i}).(av{1}).data(iu);
-                data = real(data);
+                data = clim.(dp_rng{i}).(av{1})(iu);
             else
                 data = 0;
             end
@@ -98,9 +102,9 @@ for i = 1:length(dp_rng)
             para{4,nm} = min(prctile(data,99), rng(2));
             para{5,nm} = max(prctile(data,1), rng(1));
         end
-        QAQC_para.(dp_rng{i}).(av{1}) = para;
+        QAQC.(dp_rng{i}).(av{1}) = para;
     end
 end
 
 % Save QAQC parameters of a group of stations
-save([Astn '_para.mat'], 'QAQC_para');
+save(['QAQC_Para_' Astn '.mat'], 'QAQC');

@@ -1,6 +1,11 @@
+% 
+% Generate a statistics table of QAQC results from "CTDEEP_station_QAQC.mat"
+% 
+
 clc; clear;
 
-Astn = 'A4';
+Astn = 'E1';
+
 d = load(['CTDEEP_' Astn '_QAQC.mat']);
 avar = ["T";"S";"DO";"P";"C";"rho";"pH";"DOsat"];
 

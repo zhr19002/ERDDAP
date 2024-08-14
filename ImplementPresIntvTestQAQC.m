@@ -1,4 +1,4 @@
-function d = ImplementPresIntvTestQAQC(din, Para, loc)
+function d = ImplementPresIntvTestQAQC(din, para, loc)
 % 
 % Apply IOOS QARTOD gap test on data level
 % 
@@ -10,14 +10,14 @@ function d = ImplementPresIntvTestQAQC(din, Para, loc)
 
 switch loc
     case 'sfc'
-        ptop = Para.PresIntvTest(1,1);
-        pbot = Para.PresIntvTest(1,2);
+        ptop = para.PresIntvTest(1,1);
+        pbot = para.PresIntvTest(1,2);
     case 'mid'
-        ptop = Para.PresIntvTest(2,1);
-        pbot = Para.PresIntvTest(2,2);
+        ptop = para.PresIntvTest(2,1);
+        pbot = para.PresIntvTest(2,2);
     case {'btm','btm1','btm2'}
-        ptop = Para.PresIntvTest(3,1);
-        pbot = Para.PresIntvTest(3,2);
+        ptop = para.PresIntvTest(3,1);
+        pbot = para.PresIntvTest(3,2);
 end
 
 d = ones(size(din));  % Set QAQC code to 1

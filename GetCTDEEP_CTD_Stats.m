@@ -8,7 +8,7 @@ function d = GetCTDEEP_CTD_Stats(Astn, CruiseNames, ZT, ZB)
 % Calls GetCTDEEP_CTD_Data.m
 % 
 % Called from VisualizeBuoyDataQAQC.m
-% Called from CheckShipSurveyDataQAQC.m
+% Called from WriteShipSurveyDataQAQC.m
 % 
 
 nct = 0;

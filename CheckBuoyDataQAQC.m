@@ -1,8 +1,8 @@
-function [QAQC, dQAQC] = CheckBuoyDataQAQC(d, loc, av)
+function dQAQC = CheckBuoyDataQAQC(d, buoy, loc, av)
 % 
 % Identify and flag failed QAQC tests of buoy data
 % 
-% Calls ImplementThresoldQAQC.m
+% Calls ImplementThresholdQAQC.m
 % Calls ImplementDeltaQAQC.m
 % Calls ImplementGapTestQAQC.m
 % Calls ImplementPresIntvTestQAQC.m
@@ -15,16 +15,24 @@ function [QAQC, dQAQC] = CheckBuoyDataQAQC(d, loc, av)
 av_by = struct('T','degC','S','psu','DO','mg/L','P','dBars','C','S/m', ...
                'pH','none','rho','kg/m^3','DOsat','percent');
 
-% Read QAQC parameters
-QAQC_para = readtable('QAQC_Para.csv', ReadRowNames=true);
-QAQC.Thesholds = [QAQC_para.(av)('Min_Value') QAQC_para.(av)('Max_Value')];
-QAQC.bd98 = [QAQC_para.(av)('BD_1') QAQC_para.(av)('BD_99')]; % 98% boundary
+% Read station group parameters
+QAQC = load([buoy '_para.mat']);
+QAQC = QAQC.QAQC_para;
 QAQC.ExpectedTimeIncr = 0.25/24;        % Expected data sample period (days)
 QAQC.TolExpectedTimeIncr = 0.25/48;     % Tolerance in sample period (days)
-QAQC.PresIntvTest = [0 3; 5 15; 20 30]; % Expected depth range
+QAQC.PresIntvTest = [0 3; 5 15; 16 30]; % Expected depth range
 
-% Run QAQC tests
-tmp = ImplementThresoldQAQC(d.(av_by.(av)),QAQC);
+% Run five QAQC tests
+% Determine the depth range ZT to ZB
+if contains(loc{1}, 'sfc')
+    ZT = 0; ZB = 3;
+elseif contains(loc{1}, 'mid')
+    ZT = 5; ZB = 15;
+else
+    ZT = 16; ZB = 30;
+end
+dpth = ['depth_' num2str(ZT) '_' num2str(ZB)];
+tmp = ImplementThresholdQAQC(d.(av_by.(av)), d.TmStamp, QAQC, dpth, av);
 d.('QAQCTests') = 10000*tmp;
 d.('FailedTestsCount') = (tmp~=1);
 
@@ -32,11 +40,11 @@ tmp = ImplementDeltaQAQC(d.(av_by.(av)));
 d.('QAQCTests') = 1000*tmp + d.('QAQCTests');
 d.('FailedTestsCount') = (tmp~=1) + d.('FailedTestsCount');
 
-tmp = ImplementGapTestQAQC(d.TmStamp,QAQC);
+tmp = ImplementGapTestQAQC(d.TmStamp, QAQC);
 d.('QAQCTests') = 100*tmp + d.('QAQCTests');
 d.('FailedTestsCount') = (tmp~=1) + d.('FailedTestsCount');
 
-tmp = ImplementPresIntvTestQAQC(d.depth,QAQC,loc);
+tmp = ImplementPresIntvTestQAQC(d.depth, QAQC, loc);
 d.('QAQCTests') = 10*tmp + d.('QAQCTests');
 d.('FailedTestsCount') = (tmp~=1) + d.('FailedTestsCount');
 

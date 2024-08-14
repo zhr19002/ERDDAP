@@ -1,7 +1,6 @@
 clc; clear;
 
-Astn = 'WStations'; % {'WStations','CStations','EStations'}
-max_depth = 50; % {50,50,50}
+Astn = 'EStations'; % {'WStations','CStations','EStations'}
 fields = {'station_name','time','latitude','longitude','depth', ...
           'sea_water_temperature','sea_water_salinity', ...
           'oxygen_concentration_in_sea_wat','pH', ...
@@ -13,7 +12,7 @@ av_stn = struct('T','sea_water_temperature','S','sea_water_salinity', ...
                 'rho','sea_water_density','DOsat','percent_saturation');
 
 % Download station climatology data in the depth range ZT to ZB
-for ZT = 0:5:max_depth
+for ZT = 0:5:40
     ZB = ZT+5;
     % Initialize climatology data structure in the depth range ZT to ZB
     d = struct();
@@ -51,40 +50,50 @@ for ZT = 0:5:max_depth
 end
 
 % Save raw data of a group of stations
-save([Astn '_raw_data.mat'], 'clim');
+save([Astn '_clim_data.mat'], 'clim');
 
 %%
-clc; clear;
-Astn = 'WStations';
-clim = load([Astn '_raw_data.mat']);
-clim = clim.clim;
-
 dp_rng = fieldnames(clim);
 for i = 1:length(dp_rng)
     for av = {'T','S','DO','P','C','pH','rho','DOsat'}
-        para = table('Size', [7, 12], ...
-                     'VariableTypes', repmat({'double'}, 1, 12), ...
-                     'VariableNames',arrayfun(@num2str,1:12,'UniformOutput',false), ...
-                     'RowNames',{'count','max_val','min_val','max_val2','min_val2','bd_99','bd_1'});
+        para = table('Size', [5,12], ...
+                     'VariableTypes', repmat({'double'},1,12), ...
+                     'VariableNames', arrayfun(@num2str,1:12,'UniformOutput',false), ...
+                     'RowNames',{'count','max_val','min_val','bd_99','bd_1'});
         for nm = 1:12
             iu = find(month(clim.(dp_rng{i}).time)==nm);
             if ~isempty(iu)
-                d = clim.(dp_rng{i}).(av{1}).data(iu);
+                data = clim.(dp_rng{i}).(av{1}).data(iu);
+                data = real(data);
             else
-                d = 0;
+                data = 0;
             end
-            count = length(iu);
-            max_val = max(d); min_val = min(d);
-            max_val2 = prctile(d,99.99); min_val2 = prctile(d,0.01);
-            bd_99 = prctile(d,99); bd_1 = prctile(d,1);
             
-            para{1, nm} = count;
-            para{2, nm} = max_val;
-            para{3, nm} = min_val;
-            para{4, nm} = max_val2;
-            para{5, nm} = min_val2;
-            para{6, nm} = bd_99;
-            para{7, nm} = bd_1; 
+            % Calibrate thresholds
+            switch av{1}
+                case 'T'
+                    rng = [-5 30];
+                case 'S'
+                    rng = [5 35];
+                case 'DO'
+                    rng = [0 20];
+                case 'P'
+                    rng = [0 70];
+                case 'C'
+                    rng = [0 50];
+                case 'pH'
+                    rng = [6 10];
+                case 'rho'
+                    rng = [16 25];
+                case 'DOsat'
+                    rng = [0 150];
+            end
+            
+            para{1,nm} = length(iu);
+            para{2,nm} = min(prctile(data,99.99), rng(2));
+            para{3,nm} = max(prctile(data,0.01), rng(1));
+            para{4,nm} = min(prctile(data,99), rng(2));
+            para{5,nm} = max(prctile(data,1), rng(1));
         end
         QAQC_para.(dp_rng{i}).(av{1}) = para;
     end

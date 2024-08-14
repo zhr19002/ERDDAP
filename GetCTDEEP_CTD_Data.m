@@ -27,12 +27,19 @@ if ~exist(afile, 'file')
         af = websave(afile, aurl, wopts);
         d = load(af);
         d = d.DEEP_WQ;
+        % Calculate rho
+        sw_S = d.sea_water_salinity;
+        sw_T = d.sea_water_temperature;
+        sw_P = d.sea_water_pressure;
+        d.sea_water_density = sw_dens(sw_S,sw_T,sw_P)-1000;
+        % Save the updated .mat file
+        DEEP_WQ = d;
+        save(afile, 'DEEP_WQ');
     catch
         disp(['No data at ' Astn ' on ' Acrs ' (' ZT 'm-' ZB 'm)']);
         d = {};
     end
 else
-    disp(['Loading local ' afile]);
     if ~isempty(dir(afile)) & dir(afile).bytes>0
         d = load(afile);
         d = d.DEEP_WQ;

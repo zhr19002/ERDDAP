@@ -1,4 +1,4 @@
-function d = ImplementGapTestQAQC(din, Para)
+function d = ImplementGapTestQAQC(din, para)
 % 
 % Apply IOOS QARTOD gap test on data time
 % 
@@ -8,8 +8,8 @@ function d = ImplementGapTestQAQC(din, Para)
 % Called from CheckBuoyDataQAQC.m
 % 
 
-TINC = Para.ExpectedTimeIncr;
-rngTINC = Para.TolExpectedTimeIncr;
+TINC = para.ExpectedTimeIncr;
+rngTINC = para.TolExpectedTimeIncr;
 
 d = ones(size(din));  % Set QAQC code to 1
 dt = diff(din);       % Find anomalous time spacing

@@ -3,9 +3,8 @@
 % (1 = pass; 3 = beyond 98% data range; 4 = beyond max-min range)
 % 
 % Calls GetCruiseNames.m
-% Calls GetDEEPWQClimDepth.m
 % Calls GetCTDEEP_CTD_Stats.m
-% Calls GetDEEPWQClimStats.m
+% Calls ImplementThresholdQAQC.m
 % Calls WriteNETCDFshipSurveyFile.m
 % 
 
@@ -15,12 +14,20 @@ av_stn = struct('T','sea_water_temperature','S','sea_water_salinity', ...
                 'DO','oxygen_concentration_in_sea_wat','pH','pH', ...
                 'P','sea_water_pressure','C','sea_water_electrical_conductivi', ...
                 'rho','sea_water_density','DOsat','percent_saturation');
-% Read station parameters
-QAQC_para = readtable('QAQC_Para.csv', ReadRowNames=true);
 
 % Get max depth at a station
 for Astn = {'A4','B3','C1','C2','D3','E1','F3'}
-    [dd.(Astn{1}).lat, dd.(Astn{1}).lon, dd.(Astn{1}).maxDepth] = GetDEEPWQClimDepth(Astn{1}, 2023);
+    % Read station group parameters
+    if ismember(Astn, {'A2','A4','B3','C1','C2','D3','E1','09','15'})
+        stnGroup = 'WStations';
+    elseif ismember(Astn, {'F2','F3','H2','H4','H6'})
+        stnGroup = 'CStations';
+    else
+        stnGroup = 'EStations';
+    end
+    QAQC = load([stnGroup '_para.mat']);
+    QAQC = QAQC.QAQC_para;
+    
     % Get cruise names for 12 months in a specific year
     CruiseNames = cell(12,1);
     for nn = 1:12
@@ -32,40 +39,26 @@ for Astn = {'A4','B3','C1','C2','D3','E1','F3'}
         [~, CruiseNames{nn}] = GetCruiseNames(Ayear, Amonth);
     end
     % Get ship survey data in a depth range for all cruises at a station
-    for ZT = 0:5:5*floor(dd.(Astn{1}).maxDepth/5)
+    for ZT = 0:5:40
         ZB = ZT+5;
         dCTD = GetCTDEEP_CTD_Stats(Astn{1},CruiseNames,ZT,ZB);
-        % Check each variable in ship survey data
-        for av = {'T','S','DO','P','C','pH','rho','DOsat'}
-            % Get station climatology statistics
-            stats = GetDEEPWQClimStats(Astn{1}, ZT, ZB, av{1});
-            % Check ship survey data for each cruise
-            for nc = 1:numel(dCTD)
-                if isfield(dCTD{nc}, av_stn.(av{1}))
-                    % Shorten field names
-                    crs = dCTD{nc}.cruise_name(1,:);
-                    stn = dCTD{nc}.station_name(1,:);
-                    dpth = ['depth_' num2str(ZT) '_' num2str(ZB)];
-                    % Form QAQC structure
-                    clim.(crs).(stn).(dpth).time = dCTD{nc}.time/(24*3600)+datetime(1970,1,1);
-                    clim.(crs).(stn).(dpth).depth = dCTD{nc}.depth;
-                    clim.(crs).(stn).(dpth).(av{1}).data = dCTD{nc}.(av_stn.(av{1}));
-                    clim.(crs).(stn).(dpth).(av{1}).check = ones(size(dCTD{nc}.time));
-                    % Check max-min thresholds
-                    d_tmp = clim.(crs).(stn).(dpth).(av{1}).data;
-                    iu1 = find(d_tmp < QAQC_para.(av{1})('Min_Value') | ...
-                               d_tmp > QAQC_para.(av{1})('Max_Value') | ...
-                               isnan(d_tmp));
-                    if ~isempty(iu1)
-                        clim.(crs).(stn).(dpth).(av{1}).check(iu1) = 4;
-                    end
-                    % Check 98% data range thresholds for each month
-                    for MM = 1:12
-                        iu2 = find(month(clim.(crs).(stn).(dpth).time) == MM & ...
-                                   (d_tmp < stats.bd1(MM) | d_tmp > stats.bd99(MM)));
-                        if ~isempty(iu2)
-                            clim.(crs).(stn).(dpth).(av{1}).check(iu2) = 3;
-                        end
+        for nc = 1:numel(dCTD)
+            if ~isempty(dCTD{nc})
+                % Shorten field names
+                crs = dCTD{nc}.cruise_name(1,:);
+                stn = dCTD{nc}.station_name(1,:);
+                dpth = ['depth_' num2str(ZT) '_' num2str(ZB)];
+                clim.(crs).(stn).(dpth).time = dCTD{nc}.time/(24*3600)+datetime(1970,1,1);
+                clim.(crs).(stn).(dpth).depth = dCTD{nc}.depth;
+                % Check each variable in ship survey data
+                for av = {'T','S','DO','P','C','pH','rho','DOsat'}
+                    if isfield(dCTD{nc}, av_stn.(av{1}))
+                        % Form QAQC structure
+                        clim.(crs).(stn).(dpth).(av{1}).data = dCTD{nc}.(av_stn.(av{1}));
+                        d_tmp = clim.(crs).(stn).(dpth).(av{1}).data;
+                        dt = clim.(crs).(stn).(dpth).time;
+                        c_tmp = ImplementThresholdQAQC(d_tmp, dt, QAQC, dpth, av{1});
+                        clim.(crs).(stn).(dpth).(av{1}).check = c_tmp;
                     end
                 end
             end
@@ -83,7 +76,8 @@ crs = fieldnames(ShipSurveyQAQC);
 for i = 1:length(crs)
     stn = fieldnames(ShipSurveyQAQC.(crs{i}));
     for j = 1:length(stn)
-        latlon = [dd.(stn{j}).lat, dd.(stn{j}).lon];
+        d0 = GetDEEPWQClimData(stn{j}, 0, 5);
+        latlon = [mode(d0.latitude), mode(d0.longitude)];
         dp = fieldnames(ShipSurveyQAQC.(crs{i}).(stn{j}));
         for k = 1:length(dp)
             stnDep = max(ShipSurveyQAQC.(crs{i}).(stn{j}).(dp{k}).depth);

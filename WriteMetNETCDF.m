@@ -1,14 +1,25 @@
-function WriteNC_BuoyMet(ncfile, d, meta)
+function WriteMetNETCDF(buoy, latlon, stnDep, d)
 % 
-% Write buoy MET data to NC files
+% Write MET data to NC files
 % 
-% Called from WriteNETCDFbuoyMet.m
+% Called from WriteMetDataQAQC.m
 % 
+
+meta.Processing_Notes = 'Screened with WriteBuoyMetQAQC.m';
+meta.mooring_name = buoy;
+meta.lat = latlon(1,1);
+meta.lon = latlon(1,2);
+meta.water_depth = stnDep;
+meta.depth_source = 'Ship range';
+meta.PI = 'James O''Donnell, UCONN Marine Sciences & CIRCA';
+meta.processed_by = 'James O''Donnell, james.odonnell@uconn.edu';
+meta.lab = 'Data from LISICOS moored sensors';
+meta.time_zone = 'EST';
 
 QAQCnote = '1 = pass; 3 = beyond 98% data range; 4 = beyond max-min range';
 
 % Make NC file
-ncid = netcdf.create(ncfile,'64BIT_OFFSET');
+ncid = netcdf.create([buoy '_MET.nc'],'64BIT_OFFSET');
 
 % GLOBAL ATTRIBUTES
 varid = netcdf.getConstant('NC_GLOBAL');

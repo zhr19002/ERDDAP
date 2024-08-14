@@ -1,18 +1,31 @@
-function WriteNC_StationFiles(ncfile, d, meta)
+function WriteCruiseNETCDF(cruise, Astn, dp_rng, latlon, stnDep, d)
 % 
-% Write station data to NC files
+% Write cruise data to NC files
 % 
-% Called from WriteNETCDFstationFile.m
+% Called from WriteCruiseDataQAQC.m
 % 
+
+meta.Processing_Notes = 'Screened with WriteShipSurveyDataQAQC.m';
+meta.cruise_name = cruise;
+meta.mooring_name = Astn;
+meta.lat = latlon(1,1);
+meta.lon = latlon(1,2);
+meta.water_depth = stnDep;
+meta.depth_source = 'Ship range';
+meta.PI = 'James O''Donnell, UCONN Marine Sciences & CIRCA';
+meta.processed_by = 'James O''Donnell, james.odonnell@uconn.edu';
+meta.lab = 'Data from LISICOS moored sensors';
+meta.time_zone = 'EST';
 
 QAQCnote = '1 = pass; 3 = beyond 98% data range; 4 = beyond max-min range';
 
 % Make NC file
-ncid = netcdf.create(ncfile,'64BIT_OFFSET');
+ncid = netcdf.create([cruise '_' Astn '_' dp_rng '.nc'],'64BIT_OFFSET');
 
 % GLOBAL ATTRIBUTES
 varid = netcdf.getConstant('NC_GLOBAL');
 netcdf.putAtt(ncid,varid,'Processing_Notes',meta.Processing_Notes);
+netcdf.putAtt(ncid,varid,'cruise_name',meta.cruise_name);
 netcdf.putAtt(ncid,varid,'mooring_name',meta.mooring_name);
 netcdf.putAtt(ncid,varid,'latitude',meta.lat);
 netcdf.putAtt(ncid,varid,'longitude',meta.lon);

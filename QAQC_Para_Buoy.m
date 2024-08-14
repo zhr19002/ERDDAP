@@ -1,8 +1,11 @@
-clc; clear;
+% 
+% Calls GetCTDEEP_Clim_Data.m
+% 
 
-% buoy = 'ARTG'; locs = {'btm1','btm2','sfc'};
+clc; clear;
+buoy = 'ARTG'; locs = {'btm1','btm2','sfc'};
 % buoy = 'EXRX'; locs = {'btm2','mid','sfc'};
-buoy = 'CLIS'; locs = {'btm'};
+% buoy = 'CLIS'; locs = {'btm'};
 
 fields = {'station_name','time','latitude','longitude','depth', ...
           'sea_water_temperature','sea_water_salinity', ...
@@ -40,7 +43,7 @@ for loc = locs
     end
     % Get station group climatology data
     for i = 1:length(stnGroup)
-        d0 = GetDEEPWQClimData(stnGroup{i}, ZT, ZB);
+        d0 = GetCTDEEP_Clim_Data(stnGroup{i}, ZT, ZB);
         for j = 1:length(fields)
             if isfield(d0, fields{j})
                 d.(fields{j}) = [d.(fields{j}); d0.(fields{j})];

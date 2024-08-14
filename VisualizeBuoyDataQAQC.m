@@ -1,7 +1,7 @@
 % 
 % Calls GetCruiseNames.m
 % Calls GetCTDEEP_CTD_Stats.m
-% Calls GetDEEPWQClimStats.m
+% Calls GetCTDEEP_Clim_Data.m
 % 
 
 clc; clear;

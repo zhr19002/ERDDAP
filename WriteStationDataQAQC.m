@@ -2,9 +2,9 @@
 % Identify and flag station climatology data outliers
 % (1 = pass; 3 = beyond 98% data range; 4 = beyond max-min range)
 % 
-% Calls GetDEEPWQClimData.m
+% Calls GetCTDEEP_Clim_Data.m
 % Calls ImplementThresholdQAQC.m
-% Calls WriteNETCDFstationFile.m
+% Calls WriteStationNETCDF.m
 % 
 
 clc; clear;
@@ -29,7 +29,7 @@ QAQC = QAQC.QAQC_para;
 for ZT = 0:5:40
     ZB = ZT+5;
     % Get station climatology data
-    d = GetDEEPWQClimData(Astn, ZT, ZB);
+    d = GetCTDEEP_Clim_Data(Astn, ZT, ZB);
     if ~isempty(d)
         % Shorten field names
         dpth = ['depth_' num2str(ZT) '_' num2str(ZB)];
@@ -60,5 +60,5 @@ latlon = [mode(d0.latitude), mode(d0.longitude)];
 dp_rng = fieldnames(StationQAQC);
 for i = 1:length(dp_rng)
     stnDep = max(StationQAQC.(dp_rng{i}).depth);
-    WriteNETCDFstationFile(Astn, dp_rng{i}, latlon, stnDep, StationQAQC.(dp_rng{i}));
+    WriteStationNETCDF(Astn, dp_rng{i}, latlon, stnDep, StationQAQC.(dp_rng{i}));
 end

@@ -2,15 +2,16 @@ clc; clear;
 
 Ayear = 2021;
 d = load(['CTDEEP_Cruises_' num2str(Ayear) '_QAQC.mat']);
+d = d.CruiseQAQC;
 avar = ["T";"S";"DO";"P";"C";"rho";"pH";"DOsat"];
 
 % Concatenate QAQC results from structures of different cruises, stations, and depths
-crs = fieldnames(d.ShipSurveyQAQC);
+crs = fieldnames(d);
 for av = 1:length(avar)
     for nc = 1:length(crs)
-        stn = fieldnames(d.ShipSurveyQAQC.(crs{nc}));
+        stn = fieldnames(d.(crs{nc}));
         for st = 1:length(stn)
-            d_tmp = d.ShipSurveyQAQC.(crs{nc}).(stn{st});
+            d_tmp = d.(crs{nc}).(stn{st});
             dpth = fieldnames(d_tmp);
             av_check.(avar{av}) = d_tmp.(dpth{1}).(avar{av}).check;
             for dp = 2:length(dpth)

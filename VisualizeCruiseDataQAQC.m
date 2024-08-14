@@ -9,7 +9,7 @@ d0 = d0.StationQAQC;
 dp_rng = fieldnames(d0);
 
 d = load(['CTDEEP_Cruises_' num2str(Ayear) '_QAQC.mat']);
-d = d.ShipSurveyQAQC;
+d = d.CruiseQAQC;
 crs = fieldnames(d);
 
 figure; tiledlayout(ceil(length(dp_rng)/2),2);

@@ -1,6 +1,6 @@
 % 
 % Calls ImplementDeltaQAQC.m
-% Calls WriteNETCDFbuoyMet.m
+% Calls WriteMetNETCDF.m
 % 
 
 clc; clear;
@@ -10,7 +10,7 @@ metVars = {'windSpd_Kts','windSpd_Max','fiveSecAvg_Max','windDir_M', ...
 tVars = [{'TmStamp','RecNum'}, metVars, {'longitude','latitude','depth'}];
 
 % Read QAQC parameters
-MET_QAQC = readtable('MET_QAQC_Para.csv', ReadRowNames=true);
+MET_QAQC = readtable('QAQC_Para_MET.csv', ReadRowNames=true);
 
 % Connect to database
 username = 'lisicos';
@@ -83,4 +83,4 @@ save([buoy '_MET_QAQC.mat'], 'MetQAQC');
 % Save all the data plotted in a structure that can be exported to NETCDF
 latlon = [mode(buoyMet.latitude), mode(buoyMet.longitude)];
 stnDep = mode(buoyMet.depth);
-WriteNETCDFbuoyMet(buoy, latlon, stnDep, MetQAQC);
+WriteMetNETCDF(buoy, latlon, stnDep, MetQAQC);

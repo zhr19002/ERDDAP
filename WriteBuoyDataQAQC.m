@@ -1,7 +1,7 @@
 % 
 % Calls CleanBuoyData.m
 % Calls CheckBuoyDataQAQC.m
-% Calls WriteNETCDFbuoyFile.m
+% Calls WriteBuoyNETCDF.m
 % 
 
 clc; clear;
@@ -71,5 +71,5 @@ save([buoy '_QAQC.mat'], 'BuoyQAQC');
 latlon = [mode(buoyData.latitude), mode(buoyData.longitude)];
 for i = 1:length(locs)
     stnDep = max(BuoyQAQC.(locs{i}).depth);
-    WriteNETCDFbuoyFile(buoy, locs{i}, latlon, stnDep, BuoyQAQC.(locs{i}));
+    WriteBuoyNETCDF(buoy, locs{i}, latlon, stnDep, BuoyQAQC.(locs{i}));
 end

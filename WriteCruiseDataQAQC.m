@@ -5,7 +5,7 @@
 % Calls GetCruiseNames.m
 % Calls GetCTDEEP_CTD_Stats.m
 % Calls ImplementThresholdQAQC.m
-% Calls WriteNETCDFshipSurveyFile.m
+% Calls WriteCruiseNETCDF.m
 % 
 
 clc; clear;
@@ -67,21 +67,21 @@ for Astn = {'A4','B3','C1','C2','D3','E1','F3'}
 end
 
 % Save QAQC results
-ShipSurveyQAQC = clim;
-save(['CTDEEP_Cruises_' num2str(Ayear) '_QAQC.mat'], 'ShipSurveyQAQC');
+CruiseQAQC = clim;
+save(['CTDEEP_Cruises_' num2str(Ayear) '_QAQC.mat'], 'CruiseQAQC');
 
 %%
 % Save all the data plotted in a structure that can be exported to NETCDF
-crs = fieldnames(ShipSurveyQAQC);
+crs = fieldnames(CruiseQAQC);
 for i = 1:length(crs)
-    stn = fieldnames(ShipSurveyQAQC.(crs{i}));
+    stn = fieldnames(CruiseQAQC.(crs{i}));
     for j = 1:length(stn)
         d0 = GetDEEPWQClimData(stn{j}, 0, 5);
         latlon = [mode(d0.latitude), mode(d0.longitude)];
-        dp = fieldnames(ShipSurveyQAQC.(crs{i}).(stn{j}));
+        dp = fieldnames(CruiseQAQC.(crs{i}).(stn{j}));
         for k = 1:length(dp)
-            stnDep = max(ShipSurveyQAQC.(crs{i}).(stn{j}).(dp{k}).depth);
-            WriteNETCDFshipSurveyFile(crs{i}, stn{j}, dp{k}, latlon, stnDep, ShipSurveyQAQC.(crs{i}).(stn{j}).(dp{k}));
+            stnDep = max(CruiseQAQC.(crs{i}).(stn{j}).(dp{k}).depth);
+            WriteCruiseNETCDF(crs{i}, stn{j}, dp{k}, latlon, stnDep, CruiseQAQC.(crs{i}).(stn{j}).(dp{k}));
         end
     end
 end

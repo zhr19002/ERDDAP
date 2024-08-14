@@ -1,4 +1,4 @@
-function d = GetDEEPWQClimData(Astn, ZT, ZB)
+function d = GetCTDEEP_Clim_Data(Astn, ZT, ZB)
 % 
 % Get all the climatology data from Astn in the depth range ZT to ZB
 % 

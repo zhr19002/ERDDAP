@@ -72,7 +72,7 @@ for loc = locs
 end
 
 % Save QAQC results
-save([buoy '_QAQC.mat'], 'BuoyQAQC');
+save(['Buoy_' buoy '_QAQC.mat'], 'BuoyQAQC');
 
 %%
 % Save all the data plotted in a structure that can be exported to NETCDF

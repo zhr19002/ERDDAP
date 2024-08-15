@@ -78,7 +78,7 @@ for av = metVars
 end
 
 % Save QAQC resultsdui
-save([buoy '_Met_QAQC.mat'], 'MetQAQC');
+save(['Buoy_' buoy '_Met_QAQC.mat'], 'MetQAQC');
 
 %%
 % Save all the data plotted in a structure that can be exported to NETCDF

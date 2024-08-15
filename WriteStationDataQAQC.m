@@ -29,7 +29,7 @@ QAQC = QAQC.QAQC;
 for ZT = 0:5:40
     ZB = ZT+5;
     % Get station climatology data
-    d = GetCTDEEP_Clim_Data(Astn, ZT, ZB);
+    d = GetCTDEEP_Clim_Data(Astn, ZT, ZB, 1);
     if ~isempty(d)
         % Shorten field names
         dpth = ['depth_' num2str(ZT) '_' num2str(ZB)];
@@ -55,7 +55,7 @@ save(['CTDEEP_' Astn '_QAQC.mat'], 'StationQAQC');
 
 %%
 % Save all the data plotted in a structure that can be exported to NETCDF
-d0 = GetCTDEEP_Clim_Data(Astn, 0, 5);
+d0 = GetCTDEEP_Clim_Data(Astn, 0, 5, 1);
 latlon = [mode(d0.latitude), mode(d0.longitude)];
 dp_rng = fieldnames(StationQAQC);
 for i = 1:length(dp_rng)

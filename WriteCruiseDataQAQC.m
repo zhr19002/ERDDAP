@@ -3,7 +3,7 @@
 % (1 = pass; 3 = beyond 98% data range; 4 = beyond max-min range)
 % 
 % Calls GetCTDEEP_Cruises.m
-% Calls GetCTDEEP_CTD_Stats.m
+% Calls GetCTDEEP_CTD_Data.m
 % Calls ImplementThresholdTest.m
 % Calls GetCTDEEP_Clim_Data.m
 % Calls WriteCruiseNETCDF.m
@@ -29,6 +29,7 @@ for Astn = {'A4','B3','C1','D3','E1','F3'}
     QAQC = QAQC.QAQC;
     
     % Get cruise names for all months in Ayear
+    % There may be multiple cruises within a month
     CruiseNames = cell(12,1);
     for nn = 1:12
         if nn < 10
@@ -38,25 +39,37 @@ for Astn = {'A4','B3','C1','D3','E1','F3'}
         end
         [~, CruiseNames{nn}] = GetCTDEEP_Cruises(Ayear, Amonth);
     end
-
+    
+    % Store each cruise name in the "CN" structure
+    nct = 0;
+    CN = cell(sum(cellfun(@length, CruiseNames)),1);
+    for nc = 1:numel(CruiseNames)
+        if ~isempty(CruiseNames{nc})
+            for ncc = 1:numel(CruiseNames{nc})
+                nct = nct + 1;
+                CN{nct} = CruiseNames{nc}{ncc};
+            end
+        end
+    end
+    
     % Download cruise climatology data at Astn in the depth range ZT to ZB
     for ZT = 0:5:40
         ZB = ZT+5;
         % Get cruise climatology data for cruises at Astn
-        dCTD = GetCTDEEP_CTD_Stats(Astn{1},CruiseNames,ZT,ZB);
-        for nc = 1:numel(dCTD)
-            if ~isempty(dCTD{nc})
+        d = GetCTDEEP_CTD_Data(Astn{1}, CN, ZT, ZB, 1);
+        for nc = 1:numel(d)
+            if ~isempty(d{nc})
                 % Shorten field names
-                crs = dCTD{nc}.cruise_name(1,:);
-                stn = dCTD{nc}.station_name(1,:);
+                crs = d{nc}.cruise_name(1,:);
+                stn = d{nc}.station_name(1,:);
                 dpth = ['depth_' num2str(ZT) '_' num2str(ZB)];
-                clim.(crs).(stn).(dpth).time = dCTD{nc}.time/(24*3600)+datetime(1970,1,1);
-                clim.(crs).(stn).(dpth).depth = dCTD{nc}.depth;
+                clim.(crs).(stn).(dpth).time = d{nc}.time/(24*3600)+datetime(1970,1,1);
+                clim.(crs).(stn).(dpth).depth = d{nc}.depth;
                 % Check each variable in cruise climatology data
                 for av = {'T','S','DO','P','C','pH','rho','DOsat'}
-                    if isfield(dCTD{nc}, av_stn.(av{1}))
+                    if isfield(d{nc}, av_stn.(av{1}))
                         % Form QAQC structure
-                        clim.(crs).(stn).(dpth).(av{1}).data = dCTD{nc}.(av_stn.(av{1}));
+                        clim.(crs).(stn).(dpth).(av{1}).data = d{nc}.(av_stn.(av{1}));
                         d_tmp = clim.(crs).(stn).(dpth).(av{1}).data;
                         dt = clim.(crs).(stn).(dpth).time;
                         c_tmp = ImplementThresholdTest(d_tmp, dt, QAQC, dpth, av{1});
@@ -78,7 +91,7 @@ crs = fieldnames(CruiseQAQC);
 for i = 1:length(crs)
     stn = fieldnames(CruiseQAQC.(crs{i}));
     for j = 1:length(stn)
-        d0 = GetCTDEEP_Clim_Data(stn{j}, 0, 5);
+        d0 = GetCTDEEP_Clim_Data(stn{j}, 0, 5, 1);
         latlon = [mode(d0.latitude), mode(d0.longitude)];
         dp = fieldnames(CruiseQAQC.(crs{i}).(stn{j}));
         for k = 1:length(dp)

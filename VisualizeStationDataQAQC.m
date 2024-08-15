@@ -1,5 +1,5 @@
 % 
-% Plot the time series of station climatology data from "CTDEEP_station_QAQC.mat"
+% Plot the time series of station climatology data from "CTDEEP_Astn_QAQC.mat"
 % Highlight the marked outliers
 % 
 

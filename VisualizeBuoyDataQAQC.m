@@ -40,6 +40,11 @@ title([buoy '\_' loc ' ' num2str(Ayear) ' Data at ' Astn ' (' av ')']);
 legend('Location','eastoutside');
 
 %%
+% Compare with the cruise climatology data from "Cruises_Ayear_QAQC.mat"
+d_crs = load(['Cruises_' num2str(Ayear) '_QAQC.mat']);
+d_crs = d_crs.CruiseQAQC;
+crs = fieldnames(d_crs);
+
 % Determine the depth range ZT to ZB
 switch loc
     case 'sfc'
@@ -49,47 +54,40 @@ switch loc
     otherwise
         ZT = 16; ZB = 30;
 end
-
-d_crs = load(['Cruises_' num2str(Ayear) '_QAQC.mat']);
-d_crs = d_crs.CruiseQAQC;
-crs = fieldnames(d_crs);
 dpth = ['depth_' num2str(ZT) '_' num2str(ZB)];
 
 for i = 1:length(crs)
-    dx = d_crs.(crs{i}).(Astn).(dpth).time;
-    dy = d_crs.(crs{i}).(Astn).(dpth).(av).data;
+    crsT = d_crs.(crs{i}).(Astn).(dpth).time;
+    crsD = d_crs.(crs{i}).(Astn).(dpth).(av).data;
     if i == 1
-        plot(dx,dy,'gs','MarkerFaceColor','g','DisplayName',['Cruises (' av ')']);
+        plot(crsT,crsD,'gs','MarkerFaceColor','g','DisplayName',['Cruises (' av ')']);
     else
-        plot(dx,dy,'gs','MarkerFaceColor','g','HandleVisibility','off');
+        plot(crsT,crsD,'gs','MarkerFaceColor','g','HandleVisibility','off');
     end
 end
 
 %%
+% Compare with the station climatology data from "CTDEEP_Astn_QAQC.mat"
 d_stn = load(['CTDEEP_' Astn '_QAQC.mat']);
 d_stn = d_stn.StationQAQC;
 
-dx = datetime(Ayear, month(d_stn.(dpth).time), 15);
-dy = d_stn.(dpth).(av).data;
+stnT = datetime(Ayear, month(d_stn.(dpth).time), 15);
+stnD = d_stn.(dpth).(av).data;
+plot(stnT,stnD,'.','Color',[0.5,0.5,0.5],'DisplayName',[Astn ' (' av ')']);
 
 % Get station climatology statistics
 bdmean = zeros(1,12); bd50 = zeros(1,12); 
 bd68L = zeros(1,12); bd68U = zeros(1,12);
 bd95L = zeros(1,12); bd95U = zeros(1,12);
-
 for nm = 1:12
-    iu = find(month(dx)==nm);
-    if ~isempty(iu)
-        tmp = dy(iu);
+    idx = find(month(stnT)==nm);
+    if ~isempty(idx)
+        tmp = stnD(idx);
         bdmean(nm) = mean(tmp(~isnan(tmp))); bd50(nm) = prctile(tmp,50);
         bd68L(nm) = prctile(tmp,16); bd68U(nm) = prctile(tmp,84);
         bd95L(nm) = prctile(tmp,2.5); bd95U(nm) = prctile(tmp,97.5);
     end
 end
-
-% Plot station climatology data
-
-plot(dx,dy,'.','Color',[0.5,0.5,0.5],'DisplayName',[Astn ' (' av ')']);
 
 % Put station climatology statistics patch on the graph
 dt = datetime(Ayear, 1:12, 15);

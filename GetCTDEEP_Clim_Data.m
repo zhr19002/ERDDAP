@@ -1,4 +1,4 @@
-function d = GetCTDEEP_Clim_Data(Astn, ZT, ZB)
+function d = GetCTDEEP_Clim_Data(Astn, ZT, ZB, deletion)
 % 
 % Get CTDEEP climatology data for Astn in the depth range ZT to ZB
 % 
@@ -38,6 +38,10 @@ if ~exist(afile, 'file')
         % Save the updated .mat file
         DEEP_WQ = d;
         save(afile, 'DEEP_WQ');
+        % Delete the generated .mat file
+        if deletion == 1
+            delete(afile);
+        end
     catch
         disp(['No data at ' Astn ' (' ZT 'm-' ZB 'm)']);
         d = {};

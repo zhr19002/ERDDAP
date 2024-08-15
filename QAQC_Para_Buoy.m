@@ -47,7 +47,7 @@ for loc = locs
     end
     % Get station group climatology data
     for i = 1:length(stnGroup)
-        d0 = GetCTDEEP_Clim_Data(stnGroup{i}, ZT, ZB);
+        d0 = GetCTDEEP_Clim_Data(stnGroup{i}, ZT, ZB, 1);
         for j = 1:length(fields)
             if isfield(d0, fields{j})
                 d.(fields{j}) = [d.(fields{j}); d0.(fields{j})];
@@ -65,9 +65,6 @@ for loc = locs
         end
     end
 end
-
-% Save raw data of a group of stations
-save([buoy '_clim_data.mat'], 'clim');
 
 %%
 dp_rng = fieldnames(clim);

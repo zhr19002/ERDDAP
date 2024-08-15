@@ -22,16 +22,19 @@ QAQC.ExpectedTimeIncr = 0.25/24;    % Expected data sample period (days)
 QAQC.TolExpectedTimeIncr = 0.25/48; % Tolerance in sample period (days)
 QAQC.PresRng = [0 3; 5 15; 16 30];  % Expected depth range
 
-% Run 5 QAQC tests
 % Determine the depth range ZT to ZB
-if contains(loc, 'sfc')
-    ZT = 0; ZB = 3;
-elseif contains(loc, 'mid')
-    ZT = 5; ZB = 15;
-else
-    ZT = 16; ZB = 30;
+switch loc
+    case 'sfc'
+        ZT = 0; ZB = 3;
+    case 'mid'
+        ZT = 5; ZB = 15;
+    otherwise
+        ZT = 16; ZB = 30;
 end
+
 dpth = ['depth_' num2str(ZT) '_' num2str(ZB)];
+
+% Run 5 QAQC tests
 tmp = ImplementThresholdTest(d.(av_by.(av)), d.TmStamp, QAQC, dpth, av);
 d.('QAQCTests') = 10000*tmp;
 d.('FailedTestsCount') = (tmp~=1);

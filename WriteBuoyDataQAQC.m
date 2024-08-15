@@ -64,7 +64,7 @@ for loc = locs
     for av = {'T','S','DO','P','C','pH','rho','DOsat'}
         tbvars = categorical(buoyData.Properties.VariableNames);
         if iscategory(tbvars, av_by.(av{1}))
-            % QAQC checks
+            % QAQC tests
             dQAQC = CheckBuoyDataQAQC(buoyData, buoy, loc{1}, av{1});
             BuoyQAQC.(loc{1}).(av{1}) = dQAQC;
         end

@@ -5,7 +5,6 @@ function d = GetCTDEEP_Clim_Data(Astn, ZT, ZB, deletion)
 % Calls sw_dens.m
 % 
 % Called from QAQC_Para_Station.m
-% Called from QAQC_Para_Buoy.m
 % Called from WriteStationDataQAQC.m
 % Called from WriteCruiseDataQAQC.m
 % 

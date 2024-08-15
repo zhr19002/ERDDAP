@@ -7,7 +7,7 @@
 % 
 
 clc; clear;
-Astn = 'WStations'; % {'WStations','CStations','EStations'}
+stns = 'WStations'; % {'WStations','CStations','EStations'}
 
 fields = {'station_name','time','latitude','longitude','depth', ...
           'sea_water_temperature','sea_water_salinity', ...
@@ -23,7 +23,7 @@ av_stn = struct('T','sea_water_temperature','S','sea_water_salinity', ...
 for ZT = 0:5:40
     ZB = ZT+5;
     % Select station group
-    switch Astn
+    switch stns
         case 'WStations'
             stnGroup = {'A2','A4','B3','C1','C2','D3','E1','09','15'};  
         case 'CStations'
@@ -104,4 +104,4 @@ for i = 1:length(dp_rng)
 end
 
 % Save QAQC parameters of a group of stations
-save(['QAQC_Para_' Astn '.mat'], 'QAQC');
+save(['QAQC_Para_' stns '.mat'], 'QAQC');

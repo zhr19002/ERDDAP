@@ -7,7 +7,7 @@
 % 
 
 clc; clear;
-stns = 'WStations'; % {'WStations','CStations','EStations'}
+stns = 'EStations'; % {'WStations','CStations','EStations'}
 
 fields = {'station_name','time','latitude','longitude','depth', ...
           'sea_water_temperature','sea_water_salinity', ...

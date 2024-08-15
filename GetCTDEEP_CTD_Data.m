@@ -46,6 +46,10 @@ for nc = 1:numel(CN)
         catch
             disp(['No data on ' CN{nc} ' at ' Astn ' (' ZT 'm-' ZB 'm)']);
             d = {};
+            % Delete the generated .mat file
+            if deletion == 1
+                delete(afile);
+            end
         end
     else
         if ~isempty(dir(afile)) & dir(afile).bytes>0

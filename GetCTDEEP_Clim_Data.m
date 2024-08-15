@@ -44,6 +44,10 @@ if ~exist(afile, 'file')
     catch
         disp(['No data at ' Astn ' (' ZT 'm-' ZB 'm)']);
         d = {};
+        % Delete the generated .mat file
+        if deletion == 1
+            delete(afile);
+        end
     end
 else
     if ~isempty(dir(afile)) & dir(afile).bytes>0

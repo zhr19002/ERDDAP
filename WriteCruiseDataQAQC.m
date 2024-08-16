@@ -10,7 +10,10 @@
 % 
 
 clc; clear;
-Ayear = 2023; stnGrp = {'A4','B3','C1','C2','D3','E1','F3'};
+
+Ayear = 2021; stnGrp = {'A4','B3','C1','C2','D3','E1','F3'};
+
+% Fixed parameters
 av_stn = struct('T','sea_water_temperature','S','sea_water_salinity', ...
                 'DO','oxygen_concentration_in_sea_wat','pH','pH', ...
                 'P','sea_water_pressure','C','sea_water_electrical_conductivi', ...

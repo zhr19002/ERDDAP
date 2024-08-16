@@ -4,6 +4,9 @@
 
 clc; clear;
 
+% {'A2','A4','B3','C1','C2','D3','E1','09','15'}
+% {'F2','F3','H2','H4','H6'}
+% {'I2','J2','K2','M3'}
 Astn = 'E1';
 
 d = load(['CTDEEP_' Astn '_QAQC.mat']);

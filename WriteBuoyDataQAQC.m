@@ -10,6 +10,7 @@
 % 
 
 clc; clear;
+
 stns = 'WStations'; buoy = 'ARTG'; locs = {'btm1','btm2','sfc'};
 % stns = 'WStations'; buoy = 'EXRX'; locs = {'btm2','mid','sfc'};
 % stns = 'CStations'; buoy = 'CLIS'; locs = {'btm'};

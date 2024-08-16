@@ -8,7 +8,13 @@
 % 
 
 clc; clear;
+
+% {'A2','A4','B3','C1','C2','D3','E1','09','15'}
+% {'F2','F3','H2','H4','H6'}
+% {'I2','J2','K2','M3'}
 Astn = 'E1';
+
+% Fixed parameters
 av_stn = struct('T','sea_water_temperature','S','sea_water_salinity', ...
                 'DO','oxygen_concentration_in_sea_wat','pH','pH', ...
                 'P','sea_water_pressure','C','sea_water_electrical_conductivi', ...

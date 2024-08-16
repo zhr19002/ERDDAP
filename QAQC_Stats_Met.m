@@ -1,5 +1,5 @@
 % 
-% Generate a statistics table of QAQC results from "buoy_Met_QAQC.mat"
+% Generate a statistics table of QAQC results from "Buoy_buoy_Met_QAQC.mat"
 % 
 
 clc; clear;
@@ -8,7 +8,7 @@ buoy = 'ARTG'; % {'ARTG','CLIS1','CLIS2','EXRX','WLIS'}
 metVars = ["windSpd_Kts";"windSpd_Delta";"windSpd_Max";"fiveSecAvg_Max"; ...
            "windDir_M";"airTemp_Avg";"relHumid_Avg";"baroPress_Avg";"dewPT_Avg"];
 
-d = load([buoy '_Met_QAQC.mat']);
+d = load(['Buoy_' buoy '_Met_QAQC.mat']);
 d = d.MetQAQC;
 
 % Statistics of QAQC results

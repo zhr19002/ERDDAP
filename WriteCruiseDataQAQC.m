@@ -10,22 +10,22 @@
 % 
 
 clc; clear;
-Ayear = 2021;
+Ayear = 2023; stnGrp = {'A4','B3','C1','C2','D3','E1','F3'};
 av_stn = struct('T','sea_water_temperature','S','sea_water_salinity', ...
                 'DO','oxygen_concentration_in_sea_wat','pH','pH', ...
                 'P','sea_water_pressure','C','sea_water_electrical_conductivi', ...
                 'rho','sea_water_density','DOsat','percent_saturation');
 
-for Astn = {'A4','B3','C1','D3','E1','F3'}
+for Astn = stnGrp
     % Read station group QAQC parameters
-    if ismember(Astn, {'A2','A4','B3','C1','C2','D3','E1','09','15'})
-        stnGroup = 'WStations';
-    elseif ismember(Astn, {'F2','F3','H2','H4','H6'})
-        stnGroup = 'CStations';
+    if ismember(Astn{1}, {'A2','A4','B3','C1','C2','D3','E1','09','15'})
+        stns = 'WStations';
+    elseif ismember(Astn{1}, {'F2','F3','H2','H4','H6'})
+        stns = 'CStations';
     else
-        stnGroup = 'EStations';
+        stns = 'EStations';
     end
-    QAQC = load(['QAQC_Para_' stnGroup '.mat']);
+    QAQC = load(['QAQC_Para_' stns '.mat']);
     QAQC = QAQC.QAQC;
     
     % Get cruise names for all months in Ayear
@@ -86,13 +86,19 @@ CruiseQAQC = clim;
 save(['Cruises_' num2str(Ayear) '_QAQC.mat'], 'CruiseQAQC');
 
 %%
+% Get [latitude, longitude] for each station
+stn_latlon = struct();
+for Astn = stnGrp
+    d0 = GetCTDEEP_Clim_Data(Astn{1}, 0, 5, 1);
+    stn_latlon.(Astn{1}) = [mode(d0.latitude), mode(d0.longitude)];
+end
+
 % Save all the data plotted in a structure that can be exported to NETCDF
 crs = fieldnames(CruiseQAQC);
 for i = 1:length(crs)
     stn = fieldnames(CruiseQAQC.(crs{i}));
     for j = 1:length(stn)
-        d0 = GetCTDEEP_Clim_Data(stn{j}, 0, 5, 1);
-        latlon = [mode(d0.latitude), mode(d0.longitude)];
+        latlon = stn_latlon.(stn{j});
         dp = fieldnames(CruiseQAQC.(crs{i}).(stn{j}));
         for k = 1:length(dp)
             stnDep = max(CruiseQAQC.(crs{i}).(stn{j}).(dp{k}).depth);

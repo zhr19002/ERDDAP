@@ -27,44 +27,44 @@ conn = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
 switch buoy
     case 'ARTG'
         dbname = "ARTG_pb2_metDat";
-        buoyMet = sqlread(conn, append('"', dbname, '"'));
+        dT = sqlread(conn, append('"', dbname, '"'));
     case 'CLIS1'
         dbname = "clis_cr1xPB4_metDat";
-        buoyMet = sqlread(conn, append('"', dbname, '"'));
-        buoyMet = renamevars(buoyMet,'windSpd_kts','windSpd_Kts');
+        dT = sqlread(conn, append('"', dbname, '"'));
+        dT = renamevars(dT,'windSpd_kts','windSpd_Kts');
     case 'CLIS2'
         dbname = "clis_cr1xPB4_metRO";
-        buoyMet = sqlread(conn, append('"', dbname, '"'));
-        buoyMet = renamevars(buoyMet,'windSpd_kts','windSpd_Kts');
+        dT = sqlread(conn, append('"', dbname, '"'));
+        dT = renamevars(dT,'windSpd_kts','windSpd_Kts');
     case 'EXRX'
         dbname1 = "EXRX_pb2_metDat_arch1";
         buoyMet1 = sqlread(conn, append('"', dbname1, '"'));
         dbname2 = "EXRX_pb1_metRO";
         buoyMet2 = sqlread(conn, append('"', dbname2, '"'));
         buoyMet2 = renamevars(buoyMet2,'dewPt_Avg','dewPT_Avg');
-        buoyMet = [buoyMet1(:,tVars); buoyMet2(:,tVars)];
+        dT = [buoyMet1(:,tVars); buoyMet2(:,tVars)];
     case 'WLIS'
         dbname = "WLIS_pb1_metDat";
-        buoyMet = sqlread(conn, append('"', dbname, '"'));
+        dT = sqlread(conn, append('"', dbname, '"'));
 end
 
-buoyMet = buoyMet(:,tVars);
-buoyMet = sortrows(buoyMet, 'TmStamp');
+dT = dT(:,tVars);
+dT = sortrows(dT, 'TmStamp');
 close(conn);
 
-MetQAQC.time = buoyMet.TmStamp;
+MetQAQC.time = dT.TmStamp;
 for av = metVars
     % Clean meteorology data
-    buoyMet.(av{1})(buoyMet.(av{1}) < -1000) = NaN;
+    dT.(av{1})(dT.(av{1}) < -1000) = NaN;
     % Form QAQC structure
-    MetQAQC.(av{1}).data = buoyMet.(av{1});
+    MetQAQC.(av{1}).data = dT.(av{1});
     if ismember(av{1}, "windDir_M")
         % Jump limit test
-        d_tmp = cos(buoyMet.(av{1})*pi/180);
+        d_tmp = cos(dT.(av{1})*pi/180);
         MetQAQC.(av{1}).jumpCheck = ImplementJumpLimTest(d_tmp);
     else
         d_tmp = MetQAQC.(av{1}).data;
-        MetQAQC.(av{1}).check = ones(size(buoyMet.TmStamp));
+        MetQAQC.(av{1}).check = ones(size(dT.TmStamp));
         % Threshold test
         iu = find(d_tmp<QAQC.(av{1})('min_val') | d_tmp>QAQC.(av{1})('max_val') | isnan(d_tmp));
         if ~isempty(iu)
@@ -82,6 +82,6 @@ save(['Buoy_' buoy '_Met_QAQC.mat'], 'MetQAQC');
 
 %%
 % Save all the data plotted in a structure that can be exported to NETCDF
-latlon = [mode(buoyMet.latitude), mode(buoyMet.longitude)];
-stnDep = mode(buoyMet.depth);
+latlon = [mode(dT.latitude), mode(dT.longitude)];
+stnDep = mode(dT.depth);
 WriteMetNETCDF(buoy, latlon, stnDep, MetQAQC);

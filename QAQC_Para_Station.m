@@ -1,9 +1,8 @@
 % 
 % Create QAQC tables for different depths in a region
+% Generate the "QAQC_Para_(W/C/E)Stations.mat" file
 % 
 % Calls GetCTDEEP_Clim_Data.m
-% 
-% Creates "QAQC_Para_(W/C/E)Stations.mat"
 % 
 
 clc; clear;
@@ -25,11 +24,11 @@ for ZT = 0:5:40
     % Select station group
     switch stns
         case 'WStations'
-            stnGroup = {'A2','A4','B3','C1','C2','D3','E1','09','15'};  
+            stnGrp = {'A2','A4','B3','C1','C2','D3','E1','09','15'};  
         case 'CStations'
-            stnGroup = {'F2','F3','H2','H4','H6'};
+            stnGrp = {'F2','F3','H2','H4','H6'};
         case 'EStations'
-            stnGroup = {'I2','J2','K2','M3'};
+            stnGrp = {'I2','J2','K2','M3'};
     end
     % Initialize climatology data structure in the depth range ZT to ZB
     d = struct();
@@ -37,8 +36,8 @@ for ZT = 0:5:40
         d.(fields{i}) = [];
     end
     % Get station group climatology data
-    for i = 1:length(stnGroup)
-        d0 = GetCTDEEP_Clim_Data(stnGroup{i}, ZT, ZB, 1);
+    for i = 1:length(stnGrp)
+        d0 = GetCTDEEP_Clim_Data(stnGrp{i}, ZT, ZB, 1);
         for j = 1:length(fields)
             if isfield(d0, fields{j})
                 d.(fields{j}) = [d.(fields{j}); d0.(fields{j})];

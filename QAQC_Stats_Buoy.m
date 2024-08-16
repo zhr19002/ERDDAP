@@ -1,5 +1,5 @@
 % 
-% Generate a statistics table of QAQC results from "buoy_QAQC.mat"
+% Generate a statistics table of QAQC results from "Buoy_buoy_QAQC.mat"
 % 
 
 clc; clear;
@@ -8,7 +8,7 @@ buoy = 'ARTG'; locs = {'btm1','btm2','sfc'};
 % buoy = 'EXRX'; locs = {'btm2','mid','sfc'};
 % buoy = 'CLIS'; locs = {'btm'};
 
-d = load([buoy '_QAQC.mat']);
+d = load(['Buoy_' buoy '_QAQC.mat']);
 avar = ["T";"S";"DO";"P";"C";"rho";"pH";"DOsat"];
 
 % Statistics of QAQC results

@@ -77,7 +77,7 @@ save(['Buoy_' buoy '_QAQC.mat'], 'BuoyQAQC');
 %%
 % Save all the data plotted in a structure that can be exported to NETCDF
 latlon = [mode(d.latitude), mode(d.longitude)];
-for i = 1:length(locs)
-    stnDep = max(BuoyQAQC.(locs{i}).depth);
-    WriteBuoyNETCDF(buoy, locs{i}, latlon, stnDep, BuoyQAQC.(locs{i}));
+for loc = locs
+    stnDep = max(BuoyQAQC.(loc{1}).depth);
+    WriteBuoyNETCDF(buoy, loc{1}, latlon, stnDep, BuoyQAQC.(loc{1}));
 end

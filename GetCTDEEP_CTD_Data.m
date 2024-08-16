@@ -29,15 +29,15 @@ for nc = 1:numel(CN)
         disp(['Getting data from ERDDAP on ' CN{nc} ' at ' Astn ' (' ZT 'm-' ZB 'm)']);
         try
             af = websave(afile, aurl, wopts);
-            d = load(af);
-            d = d.DEEP_WQ;
+            d{nc} = load(af);
+            d{nc} = d{nc}.DEEP_WQ;
             % Calculate rho
-            sw_S = d.sea_water_salinity;
-            sw_T = d.sea_water_temperature;
-            sw_P = d.sea_water_pressure;
-            d.sea_water_density = real(sw_dens(sw_S,sw_T,sw_P)-1000);
+            sw_S = d{nc}.sea_water_salinity;
+            sw_T = d{nc}.sea_water_temperature;
+            sw_P = d{nc}.sea_water_pressure;
+            d{nc}.sea_water_density = real(sw_dens(sw_S,sw_T,sw_P)-1000);
             % Save the updated .mat file
-            DEEP_WQ = d;
+            DEEP_WQ = d{nc};
             save(afile, 'DEEP_WQ');
             % Delete the generated .mat file
             if deletion == 1
@@ -45,7 +45,7 @@ for nc = 1:numel(CN)
             end
         catch
             disp(['No data on ' CN{nc} ' at ' Astn ' (' ZT 'm-' ZB 'm)']);
-            d = {};
+            d{nc} = {};
             % Delete the generated .mat file
             if deletion == 1
                 delete(afile);
@@ -53,10 +53,10 @@ for nc = 1:numel(CN)
         end
     else
         if ~isempty(dir(afile)) & dir(afile).bytes>0
-            d = load(afile);
-            d = d.DEEP_WQ;
+            d{nc} = load(afile);
+            d{nc} = d{nc}.DEEP_WQ;
         else
-            d = {};
+            d{nc} = {};
         end
     end
 end

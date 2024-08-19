@@ -7,7 +7,7 @@ clc; clear;
 % Set up parameters
 buoy = 'ARTG'; Ayear = 2022;
 
-d = load([buoy '_QAQC.mat']);
+d = load(['Buoy_' buoy '_QAQC.mat']);
 d = d.BuoyQAQC;
 
 figure; tiledlayout(3,1);

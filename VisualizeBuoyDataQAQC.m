@@ -1,5 +1,5 @@
 % 
-% Plot the time series of buoy data from "buoy_QAQC.mat"
+% Plot the time series of buoy data from "Buoy_buoy_QAQC.mat"
 % Highlight the marked outliers
 % 
 
@@ -7,16 +7,16 @@ clc; clear;
 
 % Set up parameters
 Astn = 'E1';
-buoy = 'ARTG'; loc = 'sfc'; Ayear = 2021;
+buoy = 'ARTG'; loc = 'sfc'; Ayear = 2022;
 av = 'T'; % {'T','S','DO','P','C','pH','rho','DOsat'}
 
-d = load([buoy '_QAQC.mat']);
+d = load(['Buoy_' buoy '_QAQC.mat']);
 d = d.BuoyQAQC;
 iu = find(year(d.(loc).time)==Ayear);
 d_tmp = d.(loc).(av).data;
 c_tmp = d.(loc).(av).QAQCTests;
 
-figure; hold on; grid on;
+figure('position',[321,180,623,420]); hold on; grid on;
 
 % Plot the time series of buoy data in Ayear
 plot(d.(loc).time(iu),d_tmp(iu),'b.','DisplayName',[buoy ' (' av ')']);
@@ -46,14 +46,8 @@ d_crs = d_crs.CruiseQAQC;
 crs = fieldnames(d_crs);
 
 % Determine the depth range ZT to ZB
-switch loc
-    case 'sfc'
-        ZT = 0; ZB = 5;
-    case 'mid'
-        ZT = 5; ZB = 15;
-    otherwise
-        ZT = 16; ZB = 30;
-end
+ZT = 5*floor((min(d.(loc).depth)-0.1)/5);
+ZB = ZT + 5;
 dpth = ['depth_' num2str(ZT) '_' num2str(ZB)];
 
 for i = 1:length(crs)

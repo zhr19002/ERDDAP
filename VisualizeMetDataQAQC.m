@@ -1,5 +1,5 @@
 % 
-% Plot the time series of buoy meteorology data from "buoy_Met_QAQC.mat"
+% Plot the time series of buoy meteorology data from "Buoy_buoy_Met_QAQC.mat"
 % Highlight the marked outliers
 % 
 
@@ -12,7 +12,7 @@ metVars = {'windSpd_Kts','windSpd_Max','fiveSecAvg_Max','windDir_M', ...
 buoy = buoys{1};
 av = metVars{1};
 
-d = load([buoy '_Met_QAQC.mat']);
+d = load(['Buoy_' buoy '_Met_QAQC.mat']);
 d = d.MetQAQC;
 uyears = unique(year(d.time));
 

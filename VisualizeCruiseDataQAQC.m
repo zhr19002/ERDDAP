@@ -6,7 +6,7 @@
 clc; clear;
 
 % Set up parameters
-Astn = 'E1'; Ayear = 2021;
+Astn = 'E1'; Ayear = 2022;
 av = 'T'; % {'T','S','DO','P','C','pH','rho','DOsat'}
 
 d = load(['Cruises_' num2str(Ayear) '_QAQC.mat']);

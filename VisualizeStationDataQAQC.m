@@ -15,32 +15,53 @@ dp_rng = fieldnames(d);
 
 figure; tiledlayout(ceil(length(dp_rng)/2),2);
 
+% Flags to avoid duplicate legends
+hasSus = false;
+hasFail = false;
+
 for i = 1:length(dp_rng)
     nexttile(i)
+    hold on; grid on;
+    
     d.(dp_rng{i}).time.Year = 0;
     dt = d.(dp_rng{i}).time;
     d_tmp = d.(dp_rng{i}).(av).data;
     c_tmp = d.(dp_rng{i}).(av).check;
-
+    
     % Plot the time series of station climatology data in all years
     plot(dt,d_tmp,'b.','HandleVisibility','off');
-    hold on; grid on;
     
     % Highlight the outliers
     iu1 = find(c_tmp==3);
-    plot(dt(iu1),d_tmp(iu1),'gs','DisplayName','Suspicious');
+    if ~isempty(iu1)
+        if ~hasSus
+            plot(dt(iu1),d_tmp(iu1),'gs','DisplayName','Suspicious');
+            hasSus = true;
+        else
+            plot(dt(iu1),d_tmp(iu1),'gs','HandleVisibility','off');
+        end
+    end
     iu2 = find(c_tmp==4);
-    plot(dt(iu2),d_tmp(iu2),'rs','DisplayName','Fail');
-
+    if ~isempty(iu2)
+        if ~hasFail
+            plot(dt(iu2),d_tmp(iu2),'rs','DisplayName','Fail');
+            hasFail = true;
+        else
+            plot(dt(iu2),d_tmp(iu2),'gs','HandleVisibility','off');
+        end
+    end
+    
     xticks(datetime(0,1:12,1));
     xtickformat('MMM/dd');
     ylabel(av);
     depth = replace(dp_rng{i}(7:end),'_','-');
     title([Astn ' (' depth 'm)']);
+    if i == 1
+        legend show;
+        lgd = legend('show');
+        lgd.Orientation = 'horizontal';
+        lgd.Layout.Tile = 'south';
+    end
 end
-
-ax = nexttile(1);
-lgd = legend('Orientation','horizontal');
-lgd.Layout.Tile = 'south';
 
 % saveas(gcf, [Astn '_QAQC (' av ').png']);

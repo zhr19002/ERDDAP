@@ -50,11 +50,15 @@ ZT = 5*floor((min(d.(loc).depth)-0.1)/5);
 ZB = ZT + 5;
 dpth = ['depth_' num2str(ZT) '_' num2str(ZB)];
 
+% Flags to avoid duplicate legends
+hasFlag = false;
+
 for i = 1:length(crs)
     crsT = d_crs.(crs{i}).(Astn).(dpth).time;
     crsD = d_crs.(crs{i}).(Astn).(dpth).(av).data;
-    if i == 1
+    if ~hasFlag
         plot(crsT,crsD,'gs','MarkerFaceColor','g','DisplayName',['Cruises (' av ')']);
+        hasFlag = true;
     else
         plot(crsT,crsD,'gs','MarkerFaceColor','g','HandleVisibility','off');
     end

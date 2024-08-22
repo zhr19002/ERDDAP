@@ -8,16 +8,15 @@ function d = ImplementPresRngTest(din, QAQC, loc)
 % Called from CheckBuoyDataQAQC.m
 % 
 
-switch loc
-    case 'sfc'
-        ptop = QAQC.PresRng(1,1);
-        pbot = QAQC.PresRng(1,2);
-    case 'mid'
-        ptop = QAQC.PresRng(2,1);
-        pbot = QAQC.PresRng(2,2);
-    case {'btm','btm1','btm2'}
-        ptop = QAQC.PresRng(3,1);
-        pbot = QAQC.PresRng(3,2);
+if contains(loc,'fc')
+    ptop = QAQC.PresRng(1,1);
+    pbot = QAQC.PresRng(1,2);
+elseif contains(loc,'id')
+    ptop = QAQC.PresRng(2,1);
+    pbot = QAQC.PresRng(2,2);
+else
+    ptop = QAQC.PresRng(3,1);
+    pbot = QAQC.PresRng(3,2);
 end
 
 d = ones(size(din));  % Set QAQC code to 1

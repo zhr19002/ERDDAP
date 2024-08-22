@@ -11,9 +11,11 @@
 
 clc; clear;
 
-stns = 'WStations'; buoy = 'ARTG'; locs = {'btm1','btm2','sfc'};
+% stns = 'WStations'; buoy = 'ARTG'; locs = {'btm1','btm2','sfc'};
 % stns = 'WStations'; buoy = 'EXRX'; locs = {'btm2','mid','sfc'};
 % stns = 'CStations'; buoy = 'CLIS'; locs = {'btm'};
+% stns = 'WStations'; buoy = 'WLIS'; locs = {'btm1','btm2','mid','sfc'};
+stns = 'CStations'; buoy = 'clis_cr1x'; locs = {'Btm','Sfc'};
 
 % Fixed parameters
 av_by = struct('T','degC','S','psu','DO','mg/L','P','dBars','C','S/m', ...
@@ -31,6 +33,9 @@ for loc = locs
     
     % Extract tables from database
     dbname = append(buoy,"_pb2_sbe37",loc{1});
+    if contains(buoy, '_')
+        dbname = append(buoy,"PB4_sbe37",loc{1});
+    end
     dT = sqlread(conn,append('"',dbname,'"'));
     dT = sortrows(dT,'TmStamp');
     close(conn);

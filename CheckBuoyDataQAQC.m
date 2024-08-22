@@ -16,7 +16,7 @@ QAQC = load(['QAQC_Para_' stns '.mat']);
 QAQC = QAQC.QAQC;
 QAQC.ExpectedTimeIncr = 0.25/24;    % Expected data sample period (days)
 QAQC.TolExpectedTimeIncr = 0.25/48; % Tolerance in sample period (days)
-QAQC.PresRng = [0 3; 5 15; 16 30];  % Expected depth range
+QAQC.PresRng = [0 3; 5 15; 15 30];  % Expected depth range
 
 % Run the threshold test
 c = ones(size(d,1), 1);

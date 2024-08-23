@@ -6,9 +6,9 @@
 clc; clear;
 
 % Set up parameters
-Astn = 'E1';
-buoy = 'WLIS'; loc = 'btm1'; Ayear = 2023;
-av = 'T'; % {'T','S','DO','P','C','pH','rho','DOsat'}
+Astn = 'C1';
+buoy = 'ARTG'; loc = 'sfc'; Ayear = 2023;
+av = 'P'; % {'T','S','DO','P','C','pH','rho','DOsat'}
 
 d = load(['Buoy_' buoy '_QAQC.mat']);
 d = d.BuoyQAQC;

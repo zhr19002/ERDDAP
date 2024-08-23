@@ -5,17 +5,19 @@
 % Calls sw_dens.m
 % Calls sw_satO2.m
 % Calls CleanBuoyData.m
+% Calls ImplementGapTest.m
+% Calls ImplementPresRngTest.m
 % Calls CheckBuoyDataQAQC.m
 % Calls WriteBuoyNETCDF.m
 % 
 
 clc; clear;
 
-% stns = 'WStations'; buoy = 'ARTG'; locs = {'btm1','btm2','sfc'};
+stns = 'WStations'; buoy = 'ARTG'; locs = {'btm1','btm2','sfc'};
 % stns = 'WStations'; buoy = 'EXRX'; locs = {'btm2','mid','sfc'};
 % stns = 'CStations'; buoy = 'CLIS'; locs = {'btm'};
 % stns = 'WStations'; buoy = 'WLIS'; locs = {'btm1','btm2','mid','sfc'};
-stns = 'CStations'; buoy = 'clis_cr1x'; locs = {'Btm','Sfc'};
+% stns = 'CStations'; buoy = 'clis_cr1x'; locs = {'Btm','Sfc'};
 
 % Fixed parameters
 av_by = struct('T','degC','S','psu','DO','mg/L','P','dBars','C','S/m', ...
@@ -65,13 +67,17 @@ for loc = locs
     % Clean buoy data
     d = CleanBuoyData(dT, av_by);
     
+    % Gap test
     BuoyQAQC.(loc{1}).time = d.TmStamp;
-    BuoyQAQC.(loc{1}).depth = d.depth;
+    BuoyQAQC.(loc{1}).timeQ = ImplementGapTest(d.TmStamp);
+    % Pressure range test
+    BuoyQAQC.(loc{1}).depth = d.dBars;
+    BuoyQAQC.(loc{1}).depthQ = ImplementPresRngTest(d.dBars, loc{1});
     for av = {'T','S','DO','P','C','pH','rho','DOsat'}
         tbvars = categorical(d.Properties.VariableNames);
         if iscategory(tbvars, av_by.(av{1}))
-            % QAQC tests
-            dQ = CheckBuoyDataQAQC(d, stns, loc{1}, av_by, av{1});
+            % Other QAQC tests
+            dQ = CheckBuoyDataQAQC(d, stns, av_by, av{1});
             BuoyQAQC.(loc{1}).(av{1}) = dQ;
         end
     end

@@ -43,6 +43,7 @@ netcdf.putAtt(ncid,varid,'Source','LISICOS-NERACOOS Observations');
 
 % DEFINE VARIABLES
 burstid = netcdf.defDim(ncid,'burst',size(d.time,1));
+Qid = netcdf.defDim(ncid,'Q',1);
 QAQCid = netcdf.defDim(ncid,'QAQC',2);
 
 timeid = netcdf.defVar(ncid,'time','NC_DOUBLE',burstid);
@@ -51,6 +52,18 @@ netcdf.putAtt(ncid,timeid,'units','days since midnight January 1, 1970');
 netcdf.putAtt(ncid,timeid,'calendar','julian');
 netcdf.putAtt(ncid,timeid,'time_zone',meta.time_zone);
 netcdf.putAtt(ncid,timeid,'axis','T');
+
+timeQid = netcdf.defVar(ncid,'time_status','NC_INT',[burstid,Qid]);
+netcdf.putAtt(ncid,timeQid,'long_name','time_status_flag');
+netcdf.putAtt(ncid,timeQid,'note',QAQCnote);
+
+depthid = netcdf.defVar(ncid,'depth','NC_FLOAT',burstid);
+netcdf.putAtt(ncid,depthid,'units','m');
+netcdf.putAtt(ncid,depthid,'long_name','depth');
+
+depthQid = netcdf.defVar(ncid,'depth_status','NC_INT',[burstid,Qid]);
+netcdf.putAtt(ncid,depthQid,'long_name','depth_status_flag');
+netcdf.putAtt(ncid,depthQid,'note',QAQCnote);
 
 tempid = netcdf.defVar(ncid,'temp','NC_FLOAT',burstid);
 netcdf.putAtt(ncid,tempid,'units','degC');
@@ -125,6 +138,7 @@ netcdf.endDef(ncid);
 
 % Put into data mode
 netcdf.putVar(ncid, timeid, days(d.time(:)-datetime(1970,1,1,0,0,0)));
+netcdf.putVar(ncid, depthid, d.depth);
 netcdf.putVar(ncid, tempid, d.T.data);
 netcdf.putVar(ncid, saltid, d.S.data);
 netcdf.putVar(ncid, DOid, d.DO.data);
@@ -134,6 +148,8 @@ netcdf.putVar(ncid, rhoid, d.rho.data);
 netcdf.putVar(ncid, DOsatid, d.DOsat.data);
 
 % Write Flags
+netcdf.putVar(ncid, timeQid, d.timeQ);
+netcdf.putVar(ncid, depthQid, d.depthQ);
 netcdf.putVar(ncid, tempQid, [d.T.QAQCTests,d.T.FailedTestsCount]);
 netcdf.putVar(ncid, saltQid, [d.S.QAQCTests,d.S.FailedTestsCount]);
 netcdf.putVar(ncid, DOQid, [d.DO.QAQCTests,d.DO.FailedTestsCount]);

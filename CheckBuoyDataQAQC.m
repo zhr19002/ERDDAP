@@ -1,4 +1,4 @@
-function dQ = CheckBuoyDataQAQC(d, stns, av_by, av)
+function dQ = CheckBuoyDataQAQC(d, QAQC, av_by, av)
 % 
 % Identify and flag failed QAQC tests of buoy data
 % 
@@ -9,20 +9,16 @@ function dQ = CheckBuoyDataQAQC(d, stns, av_by, av)
 % Called from WriteBuoyDataQAQC.m
 % 
 
-% Read station group QAQC parameters
-QAQC = load(['QAQC_Para_' stns '.mat']);
-QAQC = QAQC.QAQC;
-
 % Run the threshold test
+ZT = 5*floor((d.dBars-0.1)/5);
+ZT(ZT<0 | ZT>40 | isnan(ZT)) = mode(ZT);
+uZT = unique(ZT);
 c = ones(size(d,1), 1);
-udepth = unique(d.depth);
-for i = 1:length(udepth)
+for i = 1:length(uZT)
     % Determine the depth range ZT to ZB
-    ZT = 5*floor((udepth(i)-0.1)/5);
-    ZB = ZT + 5;
-    dpth = ['depth_' num2str(ZT) '_' num2str(ZB)];
-    % Locate rows of a specific depth
-    iu = find(d.depth==udepth(i));
+    dpth = ['depth_' num2str(uZT(i)) '_' num2str(uZT(i)+5)];
+    % Locate rows of a specific depth range
+    iu = find(ZT==uZT(i));
     c(iu) = ImplementThresholdTest(d.(av_by.(av))(iu), d.TmStamp(iu), QAQC, dpth, av);
 end
 d.('QAQCTests') = 100*c;

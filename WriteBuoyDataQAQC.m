@@ -23,6 +23,10 @@ stns = 'WStations'; buoy = 'ARTG'; locs = {'btm1','btm2','sfc'};
 av_by = struct('T','degC','S','psu','DO','mg/L','P','dBars','C','S/m', ...
                'pH','none','rho','kg/m^3','DOsat','percent');
 
+% Read station group QAQC parameters
+QAQC = load(['QAQC_Para_' stns '.mat']);
+QAQC = QAQC.QAQC;
+
 % Write buoy files with QAQC tests to NETCDF buoy files
 for loc = locs
     % Connect to database
@@ -77,7 +81,7 @@ for loc = locs
         tbvars = categorical(d.Properties.VariableNames);
         if iscategory(tbvars, av_by.(av{1}))
             % Other QAQC tests
-            dQ = CheckBuoyDataQAQC(d, stns, av_by, av{1});
+            dQ = CheckBuoyDataQAQC(d, QAQC, av_by, av{1});
             BuoyQAQC.(loc{1}).(av{1}) = dQ;
         end
     end

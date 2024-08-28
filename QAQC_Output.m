@@ -5,10 +5,7 @@
 % Calls sw_dens.m
 % Calls sw_satO2.m
 % Calls CleanBuoyData.m
-% Calls ImplementGapTest.m
-% Calls ImplementPresRngTest.m
-% Calls CheckBuoyDataQAQC.m
-% Calls WriteBuoyNETCDF.m
+% Calls CheckBuoyTableQAQC.m
 % 
 
 clc; clear;
@@ -34,8 +31,6 @@ for loc = locs
     password = 'vncq489';
     conn = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
         'DatabaseName','provLNDB','PortNumber',5432);
-    
-    % tbldata = sqlfind(conn,"")
     
     % Extract tables from database
     dbname = append(buoy,"_pb2_sbe37",loc{1});
@@ -68,33 +63,47 @@ for loc = locs
             dT.none(year(dT.TmStamp)==2021) = [d0.pH; d0.pH(end)];
     end
     
-    % Clean buoy data
+    % Eliminate outliers for specific columns
+    dT.latitude(:) = mode(dT.latitude);
+    dT.longitude(:) = mode(dT.longitude);
+    dT.station(:) = mode(categorical(dT.station));
+    dT.mooring_site_desc(:) = mode(categorical(dT.mooring_site_desc));
+    
+    % Clean buoy climatology data
     d = CleanBuoyData(dT, av_by);
     
-    % Gap test
-    BuoyQAQC.(loc{1}).time = d.TmStamp;
-    BuoyQAQC.(loc{1}).timeQ = ImplementGapTest(d.TmStamp);
-    % Pressure range test
-    BuoyQAQC.(loc{1}).depth = d.dBars;
-    BuoyQAQC.(loc{1}).depthQ = ImplementPresRngTest(d.dBars, loc{1});
+    % Initialize BuoyQAQC table
+    BuoyQAQC = table();
+    BuoyQAQC.TmStamp = d.TmStamp;
+    BuoyQAQC.depth = d.dBars;
+    
     for av = {'T','S','DO','P','C','pH','rho','DOsat'}
         tbvars = categorical(d.Properties.VariableNames);
         if iscategory(tbvars, av_by.(av{1}))
-            % Other QAQC tests
-            dQ = CheckBuoyDataQAQC(d, QAQC, av_by, av{1});
-            dQ.FailedTestsCount = (BuoyQAQC.(loc{1}).timeQ~=1) + (BuoyQAQC.(loc{1}).depthQ~=1) + dQ.FailedTestsCount;
-            BuoyQAQC.(loc{1}).(av{1}) = dQ;
+            % Run QAQC tests
+            [dQ, dC] = CheckBuoyTableQAQC(d, loc{1}, QAQC, av_by, av{1});
+            BuoyQAQC.(av{1}) = d.(av_by.(av{1}));
+            BuoyQAQC.([av{1} 'Q']) = dQ;
+            BuoyQAQC.(['Failed' av{1} 'Q']) = dC;
         end
     end
+    
+    BuoyQAQC.latitude = d.latitude;
+    BuoyQAQC.longitude = d.longitude;
+    BuoyQAQC.station = d.station;
+    BuoyQAQC.mooring_site_desc = d.mooring_site_desc;
+    
+    % Save the updated BuoyQAQC table
+    save([buoy '_' loc{1} '_QAQC.mat'], 'BuoyQAQC');
 end
-
-% Save QAQC results
-save(['Buoy_' buoy '_QAQC.mat'], 'BuoyQAQC');
 
 %%
-% Save all the data plotted in a structure that can be exported to NETCDF
-latlon = [mode(d.latitude), mode(d.longitude)];
-for loc = locs
-    stnDep = max(BuoyQAQC.(loc{1}).depth);
-    WriteBuoyNETCDF(buoy, loc{1}, latlon, stnDep, BuoyQAQC.(loc{1}));
-end
+clc; clear;
+
+% Connect to database
+username = 'lisicos';
+password = 'vncq489';
+conn = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
+    'DatabaseName','buoyQAQC','PortNumber',5432);
+
+% tbldata = sqlfind(conn,"")

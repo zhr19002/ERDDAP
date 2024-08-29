@@ -77,7 +77,7 @@ for av = metVars
     end
 end
 
-% Save QAQC resultsdui
+% Save QAQC results
 save(['Buoy_' buoy '_Met_QAQC.mat'], 'MetQAQC');
 
 %%

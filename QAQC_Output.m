@@ -98,12 +98,50 @@ for loc = locs
 end
 
 %%
-clc; clear;
+% Prepare the "BuoyQAQC" table to be inserted
+num = 3;
+load([buoy '_' locs{num} '_QAQC.mat'], 'BuoyQAQC');
+BuoyQAQC.TmStamp = datetime(BuoyQAQC.TmStamp);
+BuoyQAQC.depth = double(BuoyQAQC.depth);
+for av = {'T','S','DO','P','C','pH','rho','DOsat'}
+    BuoyQAQC.(av{1}) = double(BuoyQAQC.(av{1}));
+    BuoyQAQC.([av{1} 'Q']) = int32(BuoyQAQC.([av{1} 'Q']));
+    BuoyQAQC.(['Failed' av{1} 'Q']) = int32(BuoyQAQC.(['Failed' av{1} 'Q']));
+end
+BuoyQAQC.latitude = double(BuoyQAQC.latitude);
+BuoyQAQC.longitude = double(BuoyQAQC.longitude);
+BuoyQAQC.station = string(BuoyQAQC.station);
+BuoyQAQC.mooring_site_desc = string(BuoyQAQC.mooring_site_desc);
 
-% Connect to database
-username = 'lisicos';
-password = 'vncq489';
-conn = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
-    'DatabaseName','buoyQAQC','PortNumber',5432);
+% Connect to the "buoyQAQC" database
+driver = 'org.postgresql.Driver';
+url = 'jdbc:postgresql://merlin.dms.uconn.edu:5432/buoyQAQC';
+connQ = database('buoyQAQC', username, password, driver, url);
 
-% tbldata = sqlfind(conn,"")
+% Construct the SQL INSERT statement
+tblName = [buoy '_' locs{num} '_QAQC'];
+colNames = strjoin(BuoyQAQC.Properties.VariableNames, ', ');
+plcHolder = strjoin(repmat({'?'}, 1, width(BuoyQAQC)), ', ');
+query = sprintf('INSERT INTO public.%s (%s) VALUES (%s)', tblName, colNames, plcHolder);
+
+% Begin a transaction
+exec(connQ, 'BEGIN');
+
+% Insert data into PostgreSQL table row by row
+tblCell = table2cell(BuoyQAQC);
+for i = 1:5
+    rowData = tblCell(i,:);
+    exec(connQ, query, rowData{:});
+end
+
+% Commit the transaction
+exec(connQ, 'COMMIT');
+
+close(connQ);
+
+%%
+connQ = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
+     'DatabaseName','buoyQAQC','PortNumber',5432);
+tbldata = sqlfind(connQ, "")
+dT = sqlread(connQ, tblName);
+close(connQ);

@@ -43,7 +43,6 @@ netcdf.putAtt(ncid,varid,'Source','LISICOS-NERACOOS Observations');
 
 % DEFINE VARIABLES
 burstid = netcdf.defDim(ncid,'burst',size(d.time,1));
-Qid = netcdf.defDim(ncid,'Q',1);
 QAQCid = netcdf.defDim(ncid,'QAQC',2);
 
 timeid = netcdf.defVar(ncid,'time','NC_DOUBLE',burstid);
@@ -53,17 +52,9 @@ netcdf.putAtt(ncid,timeid,'calendar','julian');
 netcdf.putAtt(ncid,timeid,'time_zone',meta.time_zone);
 netcdf.putAtt(ncid,timeid,'axis','T');
 
-timeQid = netcdf.defVar(ncid,'time_status','NC_INT',[burstid,Qid]);
-netcdf.putAtt(ncid,timeQid,'long_name','time_status_flag');
-netcdf.putAtt(ncid,timeQid,'note',QAQCnote);
-
 depthid = netcdf.defVar(ncid,'depth','NC_FLOAT',burstid);
 netcdf.putAtt(ncid,depthid,'units','m');
 netcdf.putAtt(ncid,depthid,'long_name','depth');
-
-depthQid = netcdf.defVar(ncid,'depth_status','NC_INT',[burstid,Qid]);
-netcdf.putAtt(ncid,depthQid,'long_name','depth_status_flag');
-netcdf.putAtt(ncid,depthQid,'note',QAQCnote);
 
 tempid = netcdf.defVar(ncid,'temp','NC_FLOAT',burstid);
 netcdf.putAtt(ncid,tempid,'units','degC');
@@ -124,15 +115,13 @@ DOsatQid = netcdf.defVar(ncid,'DOsat_status','NC_INT',[burstid,QAQCid]);
 netcdf.putAtt(ncid,DOsatQid,'long_name','DO_sat_status_flag');
 netcdf.putAtt(ncid,DOsatQid,'note',QAQCnote);
 
-if isfield(d,'pH')
-    pHid = netcdf.defVar(ncid,'pH','NC_FLOAT',burstid);
-    netcdf.putAtt(ncid,pHid,'units','none');
-    netcdf.putAtt(ncid,pHid,'long_name','pH - acidity');
-    
-    pHQid = netcdf.defVar(ncid,'pH_status','NC_INT',[burstid,QAQCid]);
-    netcdf.putAtt(ncid,pHQid,'long_name','pH_status_flag');
-    netcdf.putAtt(ncid,pHQid,'note',QAQCnote);
-end
+pHid = netcdf.defVar(ncid,'pH','NC_FLOAT',burstid);
+netcdf.putAtt(ncid,pHid,'units','none');
+netcdf.putAtt(ncid,pHid,'long_name','pH - acidity');
+
+pHQid = netcdf.defVar(ncid,'pH_status','NC_INT',[burstid,QAQCid]);
+netcdf.putAtt(ncid,pHQid,'long_name','pH_status_flag');
+netcdf.putAtt(ncid,pHQid,'note',QAQCnote);
 
 netcdf.endDef(ncid);
 
@@ -146,10 +135,9 @@ netcdf.putVar(ncid, presid, d.P.data);
 netcdf.putVar(ncid, condid, d.C.data);
 netcdf.putVar(ncid, rhoid, d.rho.data);
 netcdf.putVar(ncid, DOsatid, d.DOsat.data);
+netcdf.putVar(ncid, pHid, d.pH.data);
 
 % Write Flags
-netcdf.putVar(ncid, timeQid, d.timeQ);
-netcdf.putVar(ncid, depthQid, d.depthQ);
 netcdf.putVar(ncid, tempQid, [d.T.QAQCTests,d.T.FailedTestsCount]);
 netcdf.putVar(ncid, saltQid, [d.S.QAQCTests,d.S.FailedTestsCount]);
 netcdf.putVar(ncid, DOQid, [d.DO.QAQCTests,d.DO.FailedTestsCount]);
@@ -157,11 +145,7 @@ netcdf.putVar(ncid, presQid, [d.P.QAQCTests,d.P.FailedTestsCount]);
 netcdf.putVar(ncid, condQid, [d.C.QAQCTests,d.C.FailedTestsCount]);
 netcdf.putVar(ncid, rhoQid, [d.rho.QAQCTests,d.rho.FailedTestsCount]);
 netcdf.putVar(ncid, DOsatQid, [d.DOsat.QAQCTests,d.DOsat.FailedTestsCount]);
-
-if isfield(d,'pH')
-    netcdf.putVar(ncid, pHid, d.pH.data);
-    netcdf.putVar(ncid, pHQid, [d.pH.QAQCTests,d.pH.FailedTestsCount]);
-end
+netcdf.putVar(ncid, pHQid, [d.pH.QAQCTests,d.pH.FailedTestsCount]);
 
 netcdf.close(ncid);
 

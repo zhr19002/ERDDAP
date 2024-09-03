@@ -10,7 +10,7 @@
 % 
 
 clc; clear;
-output = 1; % (1 = struct, 2 = table)
+output = 2; % (1 = struct, 2 = table)
 
 stns = 'WStations'; buoy = 'ARTG'; locs = {'btm1','btm2','sfc'};
 % stns = 'WStations'; buoy = 'EXRX'; locs = {'btm2','mid','sfc'};
@@ -78,7 +78,6 @@ for loc = locs
     
     if output == 1
         % Create the "BuoyQAQC" struct
-        BuoyQAQC = struct();
         BuoyQAQC.(loc{1}).time = d.TmStamp;
         BuoyQAQC.(loc{1}).depth = d.dBars;
         for av = {'T','S','DO','P','C','pH','rho','DOsat'}
@@ -116,9 +115,13 @@ for loc = locs
     end
 end
 
-%%
+% Save the updated "BuoyQAQC" struct to a .mat file
 if output == 1
     save(['Buoy_' buoy '_QAQC.mat'], 'BuoyQAQC');
+end
+
+%%
+if output == 1
     % Save all the data plotted in a structure that can be exported to NETCDF
     latlon = [mode(d.latitude), mode(d.longitude)];
     for loc = locs

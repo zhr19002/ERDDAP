@@ -7,8 +7,8 @@ clc; clear;
 
 % Set up parameters
 Astn = 'C1';
-buoy = 'ARTG'; loc = 'btm1'; Ayear = 2023;
-av = 'P'; % {'T','S','DO','P','C','pH','rho','DOsat'}
+buoy = 'ARTG'; loc = 'sfc'; Ayear = 2021;
+av = 'T'; % {'T','S','DO','P','C','pH','rho','DOsat'}
 
 d = load(['Buoy_' buoy '_QAQC.mat']);
 d = d.BuoyQAQC;
@@ -22,16 +22,16 @@ figure('position',[321,180,623,420]); hold on; grid on;
 plot(d.(loc).time(iu),d_tmp(iu),'b.','DisplayName',[buoy ' (' av ')']);
 
 % Highlight the outliers
-iu1 = find(year(d.(loc).time)==Ayear & floor(c_tmp/100)~=1);
+iu1 = find(year(d.(loc).time)==Ayear & floor(c_tmp/10000)~=1);
 plot(d.(loc).time(iu1),d_tmp(iu1),'rs','DisplayName','1-Threshold');
-iu2 = find(year(d.(loc).time)==Ayear & mod(floor(c_tmp/10),10)~=1);
+iu2 = find(year(d.(loc).time)==Ayear & mod(floor(c_tmp/1000),10)~=1);
 plot(d.(loc).time(iu2),d_tmp(iu2),'ro','DisplayName','2-JumpLim');
-iu3 = find(year(d.(loc).time)==Ayear & mod(c_tmp,10)~=1);
-plot(d.(loc).time(iu3),d_tmp(iu3),'r^','DisplayName','3-Spike');
-iu4 = find(year(d.(loc).time)==Ayear & d.(loc).timeQ~=1);
-plot(d.(loc).time(iu4),d_tmp(iu4),'gd','DisplayName','Gap');
-iu5 = find(year(d.(loc).time)==Ayear & d.(loc).depthQ~=1);
-plot(d.(loc).time(iu5),d_tmp(iu5),'gp','DisplayName','PresRng');
+iu3 = find(year(d.(loc).time)==Ayear & mod(floor(c_tmp/100),10)~=1);
+plot(d.(loc).time(iu3),d_tmp(iu3),'gd','DisplayName','3-Gap');
+iu4 = find(year(d.(loc).time)==Ayear & mod(floor(c_tmp/10),10)~=1);
+plot(d.(loc).time(iu4),d_tmp(iu4),'gp','DisplayName','4-PresRng');
+iu5 = find(year(d.(loc).time)==Ayear & mod(c_tmp,10)~=1);
+plot(d.(loc).time(iu5),d_tmp(iu5),'r^','DisplayName','5-Spike');
 
 xticks(datetime(Ayear,1:12,1));
 xtickformat('MMM/dd');

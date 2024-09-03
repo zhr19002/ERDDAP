@@ -8,8 +8,7 @@
 
 clc; clear;
 buoy = 'CLIS'; % {'CLIS','EXRX','WLIS'}
-waveVars = {'Hsig_m','Hmax_m','Tdom_s','Tavg_s','DP1','DP2', ...
-            'waveDir','meanDir','rmsTilt','maxTilt','GN','chksum'};
+waveVars = {'Hsig_m','Hmax_m','Tdom_s','Tavg_s','waveDir','meanDir'};
 
 % Read wave QAQC parameters
 QAQC = readtable('QAQC_Para_Wave.csv', ReadRowNames=true);

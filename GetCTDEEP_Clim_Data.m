@@ -29,6 +29,8 @@ if ~exist(afile, 'file')
         af = websave(afile, aurl, wopts);
         d = load(af);
         d = d.DEEP_WQ;
+        % Correct P (convert psi to dBars)
+        d.sea_water_pressure = d.depth;
         % Calculate rho
         sw_S = d.sea_water_salinity;
         sw_T = d.sea_water_temperature;

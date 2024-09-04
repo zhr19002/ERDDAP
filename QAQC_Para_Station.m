@@ -6,7 +6,7 @@
 % 
 
 clc; clear;
-stns = 'WStations'; % {'WStations','CStations','EStations'}
+stns = 'CStations'; % {'WStations','CStations','EStations'}
 
 fields = {'station_name','time','latitude','longitude','depth', ...
           'sea_water_temperature','sea_water_salinity', ...
@@ -81,7 +81,7 @@ for i = 1:length(dp_rng)
                 case 'DO'
                     rng = [0 20];
                 case 'P'
-                    rng = [0 70];
+                    rng = [0 50];
                 case 'C'
                     rng = [0 50];
                 case 'pH'

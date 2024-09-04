@@ -13,7 +13,7 @@ waveVars = {'Hsig_m','Hmax_m','Tdom_s','Tavg_s','waveDir','meanDir'};
 % Read wave QAQC parameters
 QAQC = readtable('QAQC_Para_Wave.csv', ReadRowNames=true);
 
-% Connect to database
+% Connect to PostgreSQL
 username = 'lisicos';
 password = 'vncq489';
 conn = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
@@ -21,21 +21,21 @@ conn = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
 
 % tbldata = sqlfind(conn,"")
 
-% Extract tables from database
+% Extract tables from PostgreSQL
 switch buoy
     case 'CLIS'
-        dbname = "clis_cr1xPB4_waveDat";
-        dT = sqlread(conn, append('"', dbname, '"'));
+        dbname = '"clis_cr1xPB4_waveDat"';
+        dT = sqlread(conn, dbname);
         % Covert string values to numeric values
         for av = waveVars
             dT.(av{1}) = str2double(dT.(av{1}));
         end
     case 'EXRX'
-        dbname = "EXRX_pb3_svs603hr";
-        dT = sqlread(conn, append('"', dbname, '"'));
+        dbname = '"EXRX_pb3_svs603hr"';
+        dT = sqlread(conn, dbname);
     case 'WLIS'
-        dbname = "WLIS_pb3_svs603HR";
-        dT = sqlread(conn, append('"', dbname, '"'));
+        dbname = '"WLIS_pb3_svs603HR"';
+        dT = sqlread(conn, dbname);
 end
 
 dT = sortrows(dT, 'TmStamp');

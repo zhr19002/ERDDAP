@@ -15,7 +15,7 @@ tVars = [{'TmStamp','RecNum'}, metVars, {'longitude','latitude','depth'}];
 % Read meteorology QAQC parameters
 QAQC = readtable('QAQC_Para_Met.csv', ReadRowNames=true);
 
-% Connect to database
+% Connect to PostgreSQL
 username = 'lisicos';
 password = 'vncq489';
 conn = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
@@ -23,32 +23,32 @@ conn = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
 
 % tbldata = sqlfind(conn,"")
 
-% Extract tables from database
+% Extract tables from PostgreSQL
 switch buoy
     case 'ARTG'
-        dbname = "ARTG_pb2_metDat";
-        dT = sqlread(conn, append('"', dbname, '"'));
+        dbname = '"ARTG_pb2_metDat"';
+        dT = sqlread(conn, dbname);
     case 'CLIS1'
-        dbname = "clis_cr1xPB4_metDat";
-        dT = sqlread(conn, append('"', dbname, '"'));
+        dbname = '"clis_cr1xPB4_metDat"';
+        dT = sqlread(conn, dbname);
         dT = renamevars(dT,'windSpd_kts','windSpd_Kts');
     case 'CLIS2'
-        dbname = "clis_cr1xPB4_metRO";
-        dT = sqlread(conn, append('"', dbname, '"'));
+        dbname = '"clis_cr1xPB4_metRO"';
+        dT = sqlread(conn, dbname);
         dT = renamevars(dT,'windSpd_kts','windSpd_Kts');
     case 'EXRX'
-        dbname1 = "EXRX_pb2_metDat_arch1";
-        buoyMet1 = sqlread(conn, append('"', dbname1, '"'));
-        dbname2 = "EXRX_pb1_metRO";
-        buoyMet2 = sqlread(conn, append('"', dbname2, '"'));
+        dbname1 = '"EXRX_pb2_metDat_arch1"';
+        buoyMet1 = sqlread(conn, dbname1);
+        dbname2 = '"EXRX_pb1_metRO"';
+        buoyMet2 = sqlread(conn, dbname2);
         buoyMet2 = renamevars(buoyMet2,'dewPt_Avg','dewPT_Avg');
         dT = [buoyMet1(:,tVars); buoyMet2(:,tVars)];
     case 'WLIS'
-        dbname = "WLIS_pb1_metDat";
-        dT = sqlread(conn, append('"', dbname, '"'));
+        dbname = '"WLIS_pb1_metDat"';
+        dT = sqlread(conn, dbname);
 end
 
-dT = dT(:,tVars);
+dT = dT(:, tVars);
 dT = sortrows(dT, 'TmStamp');
 close(conn);
 

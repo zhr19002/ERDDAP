@@ -31,7 +31,7 @@ if ~exist(afile, 'file')
         d = d.DEEP_WQ;
         % Correct P (convert psi to dBars)
         d.sea_water_pressure = d.depth;
-        % Calculate rho
+        % Correct rho
         sw_S = d.sea_water_salinity;
         sw_T = d.sea_water_temperature;
         sw_P = d.sea_water_pressure;

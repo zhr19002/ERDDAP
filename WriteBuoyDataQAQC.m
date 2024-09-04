@@ -28,7 +28,7 @@ QAQC = QAQC.QAQC;
 
 % Write buoy files with QAQC tests
 for loc = locs
-    % Connect to database
+    % Connect to PostgreSQL
     username = 'lisicos';
     password = 'vncq489';
     conn = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
@@ -36,13 +36,13 @@ for loc = locs
     
     % tbldata = sqlfind(conn,"")
     
-    % Extract tables from database
-    dbname = append(buoy,"_pb2_sbe37",loc{1});
+    % Extract tables from PostgreSQL
+    dbname = strcat('"',[buoy '_pb2_sbe37' loc{1}],'"');
     if contains(buoy, '_')
-        dbname = append(buoy,"PB4_sbe37",loc{1});
+        dbname = strcat('"',[buoy 'PB4_sbe37' loc{1}],'"');
     end
-    dT = sqlread(conn,append('"',dbname,'"'));
-    dT = sortrows(dT,'TmStamp');
+    dT = sqlread(conn, dbname);
+    dT = sortrows(dT, 'TmStamp');
     close(conn);
     
     % Calculate rho
@@ -100,9 +100,9 @@ for loc = locs
             if iscategory(tbvars, av_by.(av{1}))
                 % Run QAQC tests
                 [dQ, dC] = CheckBuoyDataQAQC(d, loc{1}, QAQC, av_by, av{1});
-                BuoyQAQC.(av{1}) = d.(av_by.(av{1}));
-                BuoyQAQC.([av{1} 'Q']) = dQ;
-                BuoyQAQC.(['Failed' av{1} 'Q']) = dC;
+                BuoyQAQC.([av{1} '_data']) = d.(av_by.(av{1}));
+                BuoyQAQC.([av{1} '_Q']) = dQ;
+                BuoyQAQC.([av{1} '_FailedCount']) = dC;
             end
         end
         BuoyQAQC.latitude = d.latitude;
@@ -131,30 +131,31 @@ if output == 1
 else
     % Read the CSV file into a table
     num = 3;
-    tblName = [buoy '_' locs{num} '_QAQC'];
-    BuoyQAQC = readtable(tblName);
+    tbl = [buoy '_' locs{num} '_QAQC'];
+    opts = detectImportOptions([tbl '.csv']);
+    opts = setvaropts(opts,'TmStamp','InputFormat','MM/dd/yyyy HH:mm');
+    BuoyQAQC = readtable([tbl '.csv'], opts);
     
-    % Connect to the "buoyQAQC" database
-    driver = 'org.postgresql.Driver';
-    url = 'jdbc:postgresql://merlin.dms.uconn.edu:5432/buoyQAQC';
-    connQ = database('buoyQAQC', username, password, driver, url);
+    % Quoted to preserve case sensitivity
+    tblName = strcat('"',tbl,'"');
+    colNames = strcat('"',BuoyQAQC.Properties.VariableNames,'"');
+    BuoyQAQC.Properties.VariableNames = colNames;
     
-    % Construct and execute the COPY command
-    query = sprintf('COPY public.%s FROM ''%s'' WITH (FORMAT csv, HEADER true)', tblName, tblName);
+    % Write the table to PostgreSQL
+    connQ = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
+         'DatabaseName','buoyQAQC','PortNumber',5432);
     try
-        exec(connQ, query);
-        disp('Data successfully copied into PostgreSQL table.');
+        sqlwrite(connQ, tblName, BuoyQAQC);
+        disp([tblName ' written to PostgreSQL successfully.']);
     catch ME
-        disp('Error executing COPY command:');
         disp(ME.message);
     end
     
+    % % Check the table in PostgreSQL
+    % tbldata = sqlfind(connQ, "");
+    % dT = sqlread(connQ, tblName);
+    % % Drop the table from PostgreSQL
+    % execute(connQ, strcat("DROP TABLE ",tblName));
+    
     close(connQ);
 end
-
-%%
-connQ = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
-     'DatabaseName','buoyQAQC','PortNumber',5432);
-tbldata = sqlfind(connQ, "");
-dT = sqlread(connQ, tblName);
-close(connQ);

@@ -56,22 +56,22 @@ depthid = netcdf.defVar(ncid,'depth','NC_FLOAT',burstid);
 netcdf.putAtt(ncid,depthid,'units','m');
 netcdf.putAtt(ncid,depthid,'long_name','depth');
 
-tempid = netcdf.defVar(ncid,'temp','NC_FLOAT',burstid);
-netcdf.putAtt(ncid,tempid,'units','degC');
-netcdf.putAtt(ncid,tempid,'long_name','sea_water_temperature');
+Tid = netcdf.defVar(ncid,'T','NC_FLOAT',burstid);
+netcdf.putAtt(ncid,Tid,'units','degC');
+netcdf.putAtt(ncid,Tid,'long_name','sea_water_temperature');
 
-tempQid = netcdf.defVar(ncid,'temp_status','NC_INT',[burstid,QAQCid]);
-netcdf.putAtt(ncid,tempQid,'long_name','temperature_status_flag');
-netcdf.putAtt(ncid,tempQid,'note',QAQCnote);
+TQid = netcdf.defVar(ncid,'T_status','NC_INT',[burstid,QAQCid]);
+netcdf.putAtt(ncid,TQid,'long_name','temperature_status_flag');
+netcdf.putAtt(ncid,TQid,'note',QAQCnote);
 
-saltid = netcdf.defVar(ncid,'salt','NC_FLOAT',burstid);
-netcdf.putAtt(ncid,saltid,'units','psu');
-netcdf.putAtt(ncid,saltid,'long_name','sea_water_salinity');
-netcdf.putAtt(ncid,saltid,'note','constant used, not measured');
+Sid = netcdf.defVar(ncid,'S','NC_FLOAT',burstid);
+netcdf.putAtt(ncid,Sid,'units','psu');
+netcdf.putAtt(ncid,Sid,'long_name','sea_water_salinity');
+netcdf.putAtt(ncid,Sid,'note','constant used, not measured');
 
-saltQid = netcdf.defVar(ncid,'salt_status','NC_INT',[burstid,QAQCid]);
-netcdf.putAtt(ncid,saltQid,'long_name','salinity_status_flag');
-netcdf.putAtt(ncid,saltQid,'note',QAQCnote);
+SQid = netcdf.defVar(ncid,'S_status','NC_INT',[burstid,QAQCid]);
+netcdf.putAtt(ncid,SQid,'long_name','salinity_status_flag');
+netcdf.putAtt(ncid,SQid,'note',QAQCnote);
 
 DOid = netcdf.defVar(ncid,'DO','NC_FLOAT',burstid);
 netcdf.putAtt(ncid,DOid,'units','mg/L');
@@ -81,22 +81,22 @@ DOQid = netcdf.defVar(ncid,'DO_status','NC_INT',[burstid,QAQCid]);
 netcdf.putAtt(ncid,DOQid,'long_name','DO_status_flag');
 netcdf.putAtt(ncid,DOQid,'note',QAQCnote);
 
-presid = netcdf.defVar(ncid,'pres','NC_FLOAT',burstid);
-netcdf.putAtt(ncid,presid,'units','dbar');
-netcdf.putAtt(ncid,presid,'long_name','sea_water_pressure');
-netcdf.putAtt(ncid,presid,'note','pressure at transducer, relative to 1 atm.');
+Pid = netcdf.defVar(ncid,'P','NC_FLOAT',burstid);
+netcdf.putAtt(ncid,Pid,'units','dbar');
+netcdf.putAtt(ncid,Pid,'long_name','sea_water_pressure');
+netcdf.putAtt(ncid,Pid,'note','pressure at transducer, relative to 1 atm.');
 
-presQid = netcdf.defVar(ncid,'pres_status','NC_INT',[burstid,QAQCid]);
-netcdf.putAtt(ncid,presQid,'long_name','sea_water_pressure_status_flag');
-netcdf.putAtt(ncid,presQid,'note',QAQCnote);
+PQid = netcdf.defVar(ncid,'P_status','NC_INT',[burstid,QAQCid]);
+netcdf.putAtt(ncid,PQid,'long_name','sea_water_pressure_status_flag');
+netcdf.putAtt(ncid,PQid,'note',QAQCnote);
 
-condid = netcdf.defVar(ncid,'cond','NC_FLOAT',burstid);
-netcdf.putAtt(ncid,condid,'units','S/m');
-netcdf.putAtt(ncid,condid,'long_name','sea_water_electrical_conductivity');
+Cid = netcdf.defVar(ncid,'C','NC_FLOAT',burstid);
+netcdf.putAtt(ncid,Cid,'units','S/m');
+netcdf.putAtt(ncid,Cid,'long_name','sea_water_electrical_conductivity');
 
-condQid = netcdf.defVar(ncid,'cond_status','NC_INT',[burstid,QAQCid]);
-netcdf.putAtt(ncid,condQid,'long_name','sea_water_conductivity_status_flag');
-netcdf.putAtt(ncid,condQid,'note',QAQCnote);
+CQid = netcdf.defVar(ncid,'C_status','NC_INT',[burstid,QAQCid]);
+netcdf.putAtt(ncid,CQid,'long_name','sea_water_conductivity_status_flag');
+netcdf.putAtt(ncid,CQid,'note',QAQCnote);
 
 rhoid = netcdf.defVar(ncid,'rho','NC_FLOAT',burstid);
 netcdf.putAtt(ncid,rhoid,'units','kg/m^3');
@@ -128,24 +128,24 @@ netcdf.endDef(ncid);
 % Put into data mode
 netcdf.putVar(ncid, timeid, days(d.time(:)-datetime(1970,1,1,0,0,0)));
 netcdf.putVar(ncid, depthid, d.depth);
-netcdf.putVar(ncid, tempid, d.T.data);
-netcdf.putVar(ncid, saltid, d.S.data);
+netcdf.putVar(ncid, Tid, d.T.data);
+netcdf.putVar(ncid, Sid, d.S.data);
 netcdf.putVar(ncid, DOid, d.DO.data);
-netcdf.putVar(ncid, presid, d.P.data);
-netcdf.putVar(ncid, condid, d.C.data);
+netcdf.putVar(ncid, Pid, d.P.data);
+netcdf.putVar(ncid, Cid, d.C.data);
 netcdf.putVar(ncid, rhoid, d.rho.data);
 netcdf.putVar(ncid, DOsatid, d.DOsat.data);
 netcdf.putVar(ncid, pHid, d.pH.data);
 
 % Write Flags
-netcdf.putVar(ncid, tempQid, [d.T.QAQCTests,d.T.FailedTestsCount]);
-netcdf.putVar(ncid, saltQid, [d.S.QAQCTests,d.S.FailedTestsCount]);
-netcdf.putVar(ncid, DOQid, [d.DO.QAQCTests,d.DO.FailedTestsCount]);
-netcdf.putVar(ncid, presQid, [d.P.QAQCTests,d.P.FailedTestsCount]);
-netcdf.putVar(ncid, condQid, [d.C.QAQCTests,d.C.FailedTestsCount]);
-netcdf.putVar(ncid, rhoQid, [d.rho.QAQCTests,d.rho.FailedTestsCount]);
-netcdf.putVar(ncid, DOsatQid, [d.DOsat.QAQCTests,d.DOsat.FailedTestsCount]);
-netcdf.putVar(ncid, pHQid, [d.pH.QAQCTests,d.pH.FailedTestsCount]);
+netcdf.putVar(ncid, TQid, [d.T.QAQC,d.T.FailedCount]);
+netcdf.putVar(ncid, SQid, [d.S.QAQC,d.S.FailedCount]);
+netcdf.putVar(ncid, DOQid, [d.DO.QAQC,d.DO.FailedCount]);
+netcdf.putVar(ncid, PQid, [d.P.QAQC,d.P.FailedCount]);
+netcdf.putVar(ncid, CQid, [d.C.QAQC,d.C.FailedCount]);
+netcdf.putVar(ncid, rhoQid, [d.rho.QAQC,d.rho.FailedCount]);
+netcdf.putVar(ncid, DOsatQid, [d.DOsat.QAQC,d.DOsat.FailedCount]);
+netcdf.putVar(ncid, pHQid, [d.pH.QAQC,d.pH.FailedCount]);
 
 netcdf.close(ncid);
 

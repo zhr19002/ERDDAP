@@ -10,7 +10,6 @@
 % 
 
 clc; clear;
-output = 2; % (1 = struct, 2 = table)
 
 stns = 'WStations'; buoy = 'ARTG'; locs = {'btm1','btm2','sfc'};
 % stns = 'WStations'; buoy = 'EXRX'; locs = {'btm2','mid','sfc'};
@@ -26,7 +25,7 @@ av_by = struct('T','degC','S','psu','DO','mg/L','P','dBars','C','S/m', ...
 QAQC = load(['QAQC_Para_' stns '.mat']);
 QAQC = QAQC.QAQC;
 
-% Write buoy files with QAQC tests
+% Write QAQCed buoy files
 for loc = locs
     % Connect to PostgreSQL
     username = 'lisicos';
@@ -76,86 +75,92 @@ for loc = locs
     % Clean buoy data
     d = CleanBuoyData(dT, av_by);
     
-    if output == 1
-        % Create the "BuoyQAQC" struct
-        BuoyQAQC.(loc{1}).time = d.TmStamp;
-        BuoyQAQC.(loc{1}).depth = d.dBars;
-        for av = {'T','S','DO','P','C','pH','rho','DOsat'}
-            tbvars = categorical(d.Properties.VariableNames);
-            if iscategory(tbvars, av_by.(av{1}))
-                % Run QAQC tests
-                [dQ, dC] = CheckBuoyDataQAQC(d, loc{1}, QAQC, av_by, av{1});
-                BuoyQAQC.(loc{1}).(av{1}).data = d.(av_by.(av{1}));
-                BuoyQAQC.(loc{1}).(av{1}).QAQCTests = dQ;
-                BuoyQAQC.(loc{1}).(av{1}).FailedTestsCount = dC;
-            end
+    % Create the "BuoyQAQC" table
+    BuoyQAQC = table();
+    BuoyQAQC.TmStamp = d.TmStamp;
+    BuoyQAQC.depth = d.dBars;
+    for av = {'T','S','DO','P','C','pH','rho','DOsat'}
+        tbvars = categorical(d.Properties.VariableNames);
+        if iscategory(tbvars, av_by.(av{1}))
+            % Run QAQC tests
+            [dQ, dC] = CheckBuoyDataQAQC(d, loc{1}, QAQC, av_by, av{1});
+            BuoyQAQC.([av{1} '_data']) = d.(av_by.(av{1}));
+            BuoyQAQC.([av{1} '_Q']) = dQ;
+            BuoyQAQC.([av{1} '_FailedCount']) = dC;
         end
-    else
-        % Create the "BuoyQAQC" table
-        BuoyQAQC = table();
-        BuoyQAQC.TmStamp = d.TmStamp;
-        BuoyQAQC.depth = d.dBars;
-        for av = {'T','S','DO','P','C','pH','rho','DOsat'}
-            tbvars = categorical(d.Properties.VariableNames);
-            if iscategory(tbvars, av_by.(av{1}))
-                % Run QAQC tests
-                [dQ, dC] = CheckBuoyDataQAQC(d, loc{1}, QAQC, av_by, av{1});
-                BuoyQAQC.([av{1} '_data']) = d.(av_by.(av{1}));
-                BuoyQAQC.([av{1} '_Q']) = dQ;
-                BuoyQAQC.([av{1} '_FailedCount']) = dC;
-            end
-        end
-        BuoyQAQC.latitude = d.latitude;
-        BuoyQAQC.longitude = d.longitude;
-        BuoyQAQC.station = d.station;
-        BuoyQAQC.mooring_site_desc = d.mooring_site_desc;
+    end
+    BuoyQAQC.latitude = d.latitude;
+    BuoyQAQC.longitude = d.longitude;
+    BuoyQAQC.station = d.station;
+    BuoyQAQC.mooring_site_desc = d.mooring_site_desc;
+    
+    % Save the updated "BuoyQAQC" table to a CSV file
+    writetable(BuoyQAQC, [buoy '_' loc{1} '_QAQC.csv']);
+end
 
-        % Save the updated "BuoyQAQC" table to a CSV file
-        writetable(BuoyQAQC, [buoy '_' loc{1} '_QAQC.csv']);
+%%
+% Read the CSV file into a table
+num = 3;
+tbl = [buoy '_' locs{num} '_QAQC'];
+opts = detectImportOptions([tbl '.csv']);
+opts = setvaropts(opts,'TmStamp','InputFormat','dd-MMM-yyyy HH:mm:ss');
+BuoyQAQC = readtable([tbl '.csv'], opts);
+
+% Quoted to preserve case sensitivity
+tblName = strcat('"',tbl,'"');
+colNames = strcat('"',BuoyQAQC.Properties.VariableNames,'"');
+BuoyQAQC.Properties.VariableNames = colNames;
+
+% Write the table to PostgreSQL
+username = 'lisicos';
+password = 'vncq489';
+connQ = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
+     'DatabaseName','buoyQAQC','PortNumber',5432);
+try
+    batchSize = 10000;
+    for i = 1:ceil(height(BuoyQAQC)/batchSize)
+        startRow = (i-1)*batchSize + 1;
+        endRow = min(i*batchSize, height(BuoyQAQC));
+        batchData = BuoyQAQC(startRow:endRow, :);
+        % Write the batch to PostgreSQL
+        sqlwrite(connQ, tblName, batchData);
+        disp(['Row ' num2str(startRow) '-' num2str(endRow) ' written to PostgreSQL successfully.']);
+    end
+catch ME
+    disp(ME.message);
+end
+
+% % Check the table in PostgreSQL
+% tbldata = sqlfind(connQ, "");
+% dT = sqlread(connQ, tblName);
+% % Drop the table from PostgreSQL
+% execute(connQ, strcat("DROP TABLE ",tblName));
+
+close(connQ);
+
+%%
+% Create the "BuoyQAQC" struct
+BuoyQAQC = struct();
+for loc = locs
+    opts = detectImportOptions([buoy '_' loc{1} '_QAQC.csv']);
+    opts = setvaropts(opts,'TmStamp','InputFormat','dd-MMM-yyyy HH:mm:ss');
+    d = readtable([buoy '_' loc{1} '_QAQC.csv'], opts);
+    BuoyQAQC.(loc{1}).time = d.TmStamp;
+    BuoyQAQC.(loc{1}).depth = d.depth;
+    for av = {'T','S','DO','P','C','pH','rho','DOsat'}
+        BuoyQAQC.(loc{1}).(av{1}).data = d.([av{1} '_data']);
+        BuoyQAQC.(loc{1}).(av{1}).QAQC = d.([av{1} '_Q']);
+        BuoyQAQC.(loc{1}).(av{1}).FailedCount = d.([av{1} '_FailedCount']);
     end
 end
 
 % Save the updated "BuoyQAQC" struct to a .mat file
-if output == 1
-    save(['Buoy_' buoy '_QAQC.mat'], 'BuoyQAQC');
-end
+save(['Buoy_' buoy '_QAQC.mat'], 'BuoyQAQC');
 
 %%
-if output == 1
-    % Save all the data plotted in a structure that can be exported to NETCDF
-    latlon = [mode(d.latitude), mode(d.longitude)];
-    for loc = locs
-        stnDep = max(BuoyQAQC.(loc{1}).depth);
-        WriteBuoyNETCDF(buoy, loc{1}, latlon, stnDep, BuoyQAQC.(loc{1}));
-    end
-else
-    % Read the CSV file into a table
-    num = 3;
-    tbl = [buoy '_' locs{num} '_QAQC'];
-    opts = detectImportOptions([tbl '.csv']);
-    opts = setvaropts(opts,'TmStamp','InputFormat','MM/dd/yyyy HH:mm');
-    BuoyQAQC = readtable([tbl '.csv'], opts);
-    
-    % Quoted to preserve case sensitivity
-    tblName = strcat('"',tbl,'"');
-    colNames = strcat('"',BuoyQAQC.Properties.VariableNames,'"');
-    BuoyQAQC.Properties.VariableNames = colNames;
-    
-    % Write the table to PostgreSQL
-    connQ = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
-         'DatabaseName','buoyQAQC','PortNumber',5432);
-    try
-        sqlwrite(connQ, tblName, BuoyQAQC);
-        disp([tblName ' written to PostgreSQL successfully.']);
-    catch ME
-        disp(ME.message);
-    end
-    
-    % % Check the table in PostgreSQL
-    % tbldata = sqlfind(connQ, "");
-    % dT = sqlread(connQ, tblName);
-    % % Drop the table from PostgreSQL
-    % execute(connQ, strcat("DROP TABLE ",tblName));
-    
-    close(connQ);
+% Save all the data plotted in a structure that can be exported to NETCDF
+latlon = [d.latitude(1), d.longitude(1)];
+for loc = locs
+    stnDep = max(BuoyQAQC.(loc{1}).depth);
+    WriteBuoyNETCDF(buoy, loc{1}, latlon, stnDep, BuoyQAQC.(loc{1}));
 end

@@ -14,7 +14,7 @@ d = load(['Buoy_' buoy '_QAQC.mat']);
 d = d.BuoyQAQC;
 iu = find(year(d.(loc).time)==Ayear);
 d_tmp = d.(loc).(av).data;
-c_tmp = d.(loc).(av).QAQCTests;
+c_tmp = d.(loc).(av).QAQC;
 
 figure('position',[321,180,623,420]); hold on; grid on;
 

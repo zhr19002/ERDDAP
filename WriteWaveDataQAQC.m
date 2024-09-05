@@ -41,30 +41,103 @@ end
 dT = sortrows(dT, 'TmStamp');
 close(conn);
 
-waveQAQC.time = dT.TmStamp;
+% Eliminate outliers for specific columns
+dT.depth(:) = mode(dT.depth);
+dT.latitude(:) = mode(dT.latitude);
+dT.longitude(:) = mode(dT.longitude);
+dT.station(:) = mode(categorical(dT.station));
+dT.mooring_site_desc(:) = mode(categorical(dT.mooring_site_desc));
+
+% Create the "waveQAQC" table
+waveQAQC = table();
+waveQAQC.TmStamp = dT.TmStamp;
 for av = waveVars
-    % Form QAQC structure
-    waveQAQC.(av{1}).data = dT.(av{1});
+    % Run QAQC tests
+    waveQAQC.(av{1}) = dT.(av{1});
     if ismember(av{1}, ["waveDir","meanDir"])
         % Jump limit test
         d_tmp = cos(dT.(av{1})*pi/180);
-        waveQAQC.(av{1}).jumpCheck = ImplementJumpLimTest(d_tmp);
+        waveQAQC.([av{1} '_jumpQ']) = ImplementJumpLimTest(d_tmp);
     else
-        d_tmp = waveQAQC.(av{1}).data;
-        waveQAQC.(av{1}).check = ones(size(dT.TmStamp));
+        d_tmp = dT.(av{1});
+        waveQAQC.([av{1} '_Q']) = ones(size(dT.TmStamp));
         % Threshold test
         iu = find(d_tmp<QAQC.(av{1})('min_val') | d_tmp>QAQC.(av{1})('max_val') | isnan(d_tmp));
         if ~isempty(iu)
-            waveQAQC.(av{1}).check(iu) = 4;
+            waveQAQC.([av{1} '_Q']) = 4;
         end
     end
 end
+waveQAQC.depth = dT.depth;
+waveQAQC.latitude = dT.latitude;
+waveQAQC.longitude = dT.longitude;
+waveQAQC.station = dT.station;
+waveQAQC.mooring_site_desc = dT.mooring_site_desc;
 
-% Save QAQC results
+% Save the updated "MetQAQC" table to a CSV file
+writetable(waveQAQC, [buoy '_Wave_QAQC.csv']);
+
+%%
+% Read the CSV file into a table
+tbl = [buoy '_Wave_QAQC'];
+opts = detectImportOptions([tbl '.csv']);
+opts = setvaropts(opts,'TmStamp','InputFormat','dd-MMM-yyyy HH:mm:ss');
+waveQAQC = readtable([tbl '.csv'], opts);
+
+% Quoted to preserve case sensitivity
+tblName = strcat('"',tbl,'"');
+colNames = strcat('"',waveQAQC.Properties.VariableNames,'"');
+waveQAQC.Properties.VariableNames = colNames;
+
+% Write the table to PostgreSQL
+username = 'lisicos';
+password = 'vncq489';
+connQ = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
+     'DatabaseName','buoyQAQC','PortNumber',5432);
+try
+    batchSize = 10000;
+    for i = 1:ceil(height(waveQAQC)/batchSize)
+        startRow = (i-1)*batchSize + 1;
+        endRow = min(i*batchSize, height(waveQAQC));
+        batchData = waveQAQC(startRow:endRow, :);
+        % Write the batch to PostgreSQL
+        sqlwrite(connQ, tblName, batchData);
+        disp(['Row ' num2str(startRow) '-' num2str(endRow) ' written to PostgreSQL successfully.']);
+    end
+catch ME
+    disp(ME.message);
+end
+
+% % Check the table in PostgreSQL
+% tbldata = sqlfind(connQ, "");
+% dT = sqlread(connQ, tblName);
+% % Drop the table from PostgreSQL
+% execute(connQ, strcat("DROP TABLE ",tblName));
+
+close(connQ);
+
+%%
+opts = detectImportOptions([buoy '_Wave_QAQC.csv']);
+opts = setvaropts(opts,'TmStamp','InputFormat','dd-MMM-yyyy HH:mm:ss');
+d = readtable([buoy '_Wave_QAQC.csv'], opts);
+
+% Create the "waveQAQC" struct
+waveQAQC = struct();
+waveQAQC.time = d.TmStamp;
+for av = waveVars
+    waveQAQC.(av{1}).data = d.(av{1});
+    if ismember(av{1}, ["waveDir","meanDir"])
+        waveQAQC.(av{1}).jumpCheck = d.([av{1} '_jumpQ']);
+    else
+        waveQAQC.(av{1}).check = d.([av{1} '_Q']);
+    end
+end
+
+% Save the updated "waveQAQC" struct to a .mat file
 save(['Buoy_' buoy '_Wave_QAQC.mat'], 'waveQAQC');
 
 %%
 % Save all the data plotted in a structure that can be exported to NETCDF
-latlon = [mode(dT.latitude), mode(dT.longitude)];
-stnDep = mode(dT.depth);
+latlon = [d.latitude(1), d.longitude(1)];
+stnDep = d.depth(1);
 WriteWaveNETCDF(buoy, latlon, stnDep, waveQAQC);

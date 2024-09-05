@@ -15,9 +15,9 @@ d = load(['Buoy_' buoy '_QAQC.mat']);
 avar = ["T";"S";"DO";"P";"C";"rho";"pH";"DOsat"];
 
 % Statistics of QAQC results
-stats_tbl = table((0:5)','VariableNames',{'FailedTestsCount'});
+stats_tbl = table((0:5)','VariableNames',{'FailedCount'});
 for av = 1:length(avar)
-    tmp = tabulate(d.BuoyQAQC.(locs{iloc}).(avar{av}).FailedTestsCount);
+    tmp = tabulate(d.BuoyQAQC.(locs{iloc}).(avar{av}).FailedCount);
     for n = 0:5
         if ~ismember(n,tmp(:,1))
             tmp = [tmp; [n 0 0]];

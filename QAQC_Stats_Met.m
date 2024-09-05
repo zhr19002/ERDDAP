@@ -15,7 +15,7 @@ d = d.MetQAQC;
 stats_tbl = table((1:4)','VariableNames',{'Flag'});
 for i = 1:length(metVars)
     if ismember(metVars{i}, "windSpd_Delta")
-        tmp = tabulate(d.(metVars{1}).jumpCheck);
+        tmp = tabulate(d.(metVars{i}).jumpCheck);
     elseif ismember(metVars{i}, "windDir_M")
         tmp = tabulate(d.(metVars{i}).jumpCheck);
     else

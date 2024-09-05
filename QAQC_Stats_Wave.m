@@ -13,7 +13,7 @@ d = d.waveQAQC;
 stats_tbl = table((1:4)','VariableNames',{'Flag'});
 for i = 1:length(waveVars)
     if ismember(waveVars{i}, ["waveDir","meanDir"])
-        tmp = tabulate(d.(waveVars{1}).jumpCheck);
+        tmp = tabulate(d.(waveVars{i}).jumpCheck);
     else
         tmp = tabulate(d.(waveVars{i}).check);
     end

@@ -18,6 +18,7 @@ stns = 'WStations'; buoy = 'ARTG'; locs = {'btm1','btm2','sfc'};
 % stns = 'CStations'; buoy = 'clis_cr1x'; locs = {'Btm','Sfc'};
 
 % Fixed parameters
+avars = {'T','S','DO','P','C','pH','rho','DOsat'};
 av_by = struct('T','degC','S','psu','DO','mg/L','P','dBars','C','S/m', ...
                'pH','none','rho','kg/m^3','DOsat','percent');
 
@@ -79,7 +80,7 @@ for loc = locs
     BuoyQAQC = table();
     BuoyQAQC.TmStamp = d.TmStamp;
     BuoyQAQC.depth = d.dBars;
-    for av = {'T','S','DO','P','C','pH','rho','DOsat'}
+    for av = avars
         tbvars = categorical(d.Properties.VariableNames);
         if iscategory(tbvars, av_by.(av{1}))
             % Run QAQC tests
@@ -111,11 +112,25 @@ tblName = strcat('"',tbl,'"');
 colNames = strcat('"',BuoyQAQC.Properties.VariableNames,'"');
 BuoyQAQC.Properties.VariableNames = colNames;
 
+% Define data type for each column
+vNames = cell(1, 3*length(avars));
+for i = 1:length(avars)
+    vNames{3*i-2} = sprintf('"%s_data" %s',avars{i},'FLOAT');
+    vNames{3*i-1} = sprintf('"%s_Q" %s',avars{i},'INTEGER');
+    vNames{3*i} = sprintf('"%s_FailedCount" %s',avars{i},'INTEGER');
+end
+query = strjoin(vNames, ', ');
+query = ['CREATE TABLE ' tblName ' (' ...
+         '"TmStamp" TIMESTAMP, "depth" FLOAT, ', query, ... 
+         ', "latitude" FLOAT, "longitude" FLOAT, ' ...
+         '"station" VARCHAR, "mooring_site_desc" VARCHAR);'];
+
 % Write the table to PostgreSQL
 username = 'lisicos';
 password = 'vncq489';
 connQ = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
      'DatabaseName','buoyQAQC','PortNumber',5432);
+execute(connQ, query);
 try
     batchSize = 10000;
     for i = 1:ceil(height(BuoyQAQC)/batchSize)
@@ -147,7 +162,7 @@ for loc = locs
     d = readtable([buoy '_' loc{1} '_QAQC.csv'], opts);
     BuoyQAQC.(loc{1}).time = d.TmStamp;
     BuoyQAQC.(loc{1}).depth = d.depth;
-    for av = {'T','S','DO','P','C','pH','rho','DOsat'}
+    for av = avars
         BuoyQAQC.(loc{1}).(av{1}).data = d.([av{1} '_data']);
         BuoyQAQC.(loc{1}).(av{1}).QAQC = d.([av{1} '_Q']);
         BuoyQAQC.(loc{1}).(av{1}).FailedCount = d.([av{1} '_FailedCount']);

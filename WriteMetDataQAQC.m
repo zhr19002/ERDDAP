@@ -77,7 +77,7 @@ for av = metVars
         % Threshold test
         iu = find(d_tmp<QAQC.(av{1})('min_val') | d_tmp>QAQC.(av{1})('max_val') | isnan(d_tmp));
         if ~isempty(iu)
-            MetQAQC.([av{1} '_Q']) = 4;
+            MetQAQC.([av{1} '_Q'])(iu) = 4;
         end
         % Jump limit test
         if ismember(av{1}, "windSpd_Kts")
@@ -106,11 +106,34 @@ tblName = strcat('"',tbl,'"');
 colNames = strcat('"',MetQAQC.Properties.VariableNames,'"');
 MetQAQC.Properties.VariableNames = colNames;
 
+% Define data type for each column
+vNames = cell(1, 2*length(metVars)+1);
+for i = 1:length(metVars)
+    if ismember(metVars{i}, "windSpd_Kts")
+        vNames{1} = '"windSpd_Kts" FLOAT';
+        vNames{2} = '"windSpd_Kts_Q" INTEGER';
+        vNames{3} = '"windSpd_Kts_jumpQ" INTEGER';
+    else
+        vNames{2*i} = sprintf('"%s" %s',metVars{i},'FLOAT');
+        if ismember(metVars{i}, "windDir_M")
+            vNames{2*i+1} = '"windDir_M_jumpQ" INTEGER';
+        else
+            vNames{2*i+1} = sprintf('"%s_Q" %s',metVars{i},'INTEGER');
+        end
+    end
+end
+query = strjoin(vNames, ', ');
+query = ['CREATE TABLE ' tblName ' (' ...
+         '"TmStamp" TIMESTAMP, ', query, ... 
+         ', "depth" FLOAT, "latitude" FLOAT, "longitude" FLOAT, ' ...
+         '"station" VARCHAR, "mooring_site_desc" VARCHAR);'];
+
 % Write the table to PostgreSQL
 username = 'lisicos';
 password = 'vncq489';
 connQ = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
      'DatabaseName','buoyQAQC','PortNumber',5432);
+execute(connQ, query);
 try
     batchSize = 10000;
     for i = 1:ceil(height(MetQAQC)/batchSize)

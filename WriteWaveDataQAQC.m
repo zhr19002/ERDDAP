@@ -64,7 +64,7 @@ for av = waveVars
         % Threshold test
         iu = find(d_tmp<QAQC.(av{1})('min_val') | d_tmp>QAQC.(av{1})('max_val') | isnan(d_tmp));
         if ~isempty(iu)
-            waveQAQC.([av{1} '_Q']) = 4;
+            waveQAQC.([av{1} '_Q'])(iu) = 4;
         end
     end
 end
@@ -89,11 +89,28 @@ tblName = strcat('"',tbl,'"');
 colNames = strcat('"',waveQAQC.Properties.VariableNames,'"');
 waveQAQC.Properties.VariableNames = colNames;
 
+% Define data type for each column
+vNames = cell(1, 2*length(waveVars));
+for i = 1:length(waveVars)
+    vNames{2*i-1} = sprintf('"%s" %s',waveVars{i},'FLOAT');
+    if ismember(waveVars{i}, ["waveDir","meanDir"])
+        vNames{2*i} = sprintf('"%s_jumpQ" %s',waveVars{i},'INTEGER');
+    else
+        vNames{2*i} = sprintf('"%s_Q" %s',waveVars{i},'INTEGER');
+    end
+end
+query = strjoin(vNames, ', ');
+query = ['CREATE TABLE ' tblName ' (' ...
+         '"TmStamp" TIMESTAMP, ', query, ... 
+         ', "depth" FLOAT, "latitude" FLOAT, "longitude" FLOAT, ' ...
+         '"station" VARCHAR, "mooring_site_desc" VARCHAR);'];
+
 % Write the table to PostgreSQL
 username = 'lisicos';
 password = 'vncq489';
 connQ = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
      'DatabaseName','buoyQAQC','PortNumber',5432);
+execute(connQ, query);
 try
     batchSize = 10000;
     for i = 1:ceil(height(waveQAQC)/batchSize)

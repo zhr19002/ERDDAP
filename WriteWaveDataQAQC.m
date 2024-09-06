@@ -74,7 +74,7 @@ waveQAQC.longitude = dT.longitude;
 waveQAQC.station = dT.station;
 waveQAQC.mooring_site_desc = dT.mooring_site_desc;
 
-% Save the updated "MetQAQC" table to a CSV file
+% Save the updated "waveQAQC" table to a CSV file
 writetable(waveQAQC, [buoy '_Wave_QAQC.csv']);
 
 %%

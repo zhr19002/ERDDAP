@@ -13,9 +13,8 @@ clc; clear;
 
 stns = 'WStations'; buoy = 'ARTG'; locs = {'btm1','btm2','sfc'};
 % stns = 'WStations'; buoy = 'EXRX'; locs = {'btm2','mid','sfc'};
-% stns = 'CStations'; buoy = 'CLIS'; locs = {'btm'};
 % stns = 'WStations'; buoy = 'WLIS'; locs = {'btm1','btm2','mid','sfc'};
-% stns = 'CStations'; buoy = 'clis_cr1x'; locs = {'Btm','Sfc'};
+% stns = 'CStations'; buoy = 'CLIS'; locs = {'btm','sfc'};
 
 % Fixed parameters
 avars = {'T','S','DO','P','C','pH','rho','DOsat'};
@@ -37,11 +36,19 @@ for loc = locs
     % tbldata = sqlfind(conn,"")
     
     % Extract tables from PostgreSQL
-    dbname = strcat('"',[buoy '_pb2_sbe37' loc{1}],'"');
-    if contains(buoy, '_')
-        dbname = strcat('"',[buoy 'PB4_sbe37' loc{1}],'"');
+    switch buoy
+        case 'CLIS'
+            if strcmp(loc{1},'btm')
+                dT1 = sqlread(conn, '"CLIS_pb2_sbe37btm"');
+                dT2 = sqlread(conn, '"clis_cr1xPB4_sbe37Btm"');
+                dT = [dT1(:,:); dT2(:,:)];
+            else
+                dT = sqlread(conn, '"clis_cr1xPB4_sbe37Sfc"');
+            end
+        otherwise
+            dbname = strcat('"',[buoy '_pb2_sbe37' loc{1}],'"');
+            dT = sqlread(conn, dbname);
     end
-    dT = sqlread(conn, dbname);
     dT = sortrows(dT, 'TmStamp');
     close(conn);
     
@@ -101,7 +108,7 @@ end
 
 %%
 % Read the CSV file into a table
-num = 3;
+num = 1;
 tbl = [buoy '_' locs{num} '_QAQC'];
 opts = detectImportOptions([tbl '.csv']);
 opts = setvaropts(opts,'TmStamp','InputFormat','dd-MMM-yyyy HH:mm:ss');

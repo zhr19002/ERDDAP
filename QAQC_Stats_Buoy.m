@@ -7,9 +7,8 @@ iloc = 1;
 
 buoy = 'ARTG'; locs = {'btm1','btm2','sfc'};
 % buoy = 'EXRX'; locs = {'btm2','mid','sfc'};
-% buoy = 'CLIS'; locs = {'btm'};
 % buoy = 'WLIS'; locs = {'btm1','btm2','mid','sfc'};
-% buoy = 'clis_cr1x'; locs = {'Btm','Sfc'};
+% buoy = 'CLIS'; locs = {'btm','sfc'};
 
 d = load(['Buoy_' buoy '_QAQC.mat']);
 avar = ["T";"S";"DO";"P";"C";"rho";"pH";"DOsat"];

@@ -24,18 +24,15 @@ conn = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
 % Extract tables from PostgreSQL
 switch buoy
     case 'CLIS'
-        dbname = '"clis_cr1xPB4_waveDat"';
-        dT = sqlread(conn, dbname);
+        dT = sqlread(conn, '"clis_cr1xPB4_waveDat"');
         % Covert string values to numeric values
         for av = waveVars
             dT.(av{1}) = str2double(dT.(av{1}));
         end
     case 'EXRX'
-        dbname = '"EXRX_pb3_svs603hr"';
-        dT = sqlread(conn, dbname);
+        dT = sqlread(conn, '"EXRX_pb3_svs603hr"');
     case 'WLIS'
-        dbname = '"WLIS_pb3_svs603HR"';
-        dT = sqlread(conn, dbname);
+        dT = sqlread(conn, '"WLIS_pb3_svs603HR"');
 end
 
 dT = sortrows(dT, 'TmStamp');

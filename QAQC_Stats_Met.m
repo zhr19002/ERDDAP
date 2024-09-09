@@ -5,7 +5,7 @@
 clc; clear;
 
 buoy = 'ARTG'; % {'ARTG','CLIS1','CLIS2','EXRX','WLIS'}
-metVars = ["windSpd_Kts";"windSpd_Delta";"windSpd_Max";"fiveSecAvg_Max"; ...
+metVars = ["windSpd_Kts";"windSpd_jump";"windSpd_Max";"fiveSecAvg_Max"; ...
            "windDir_M";"airTemp_Avg";"relHumid_Avg";"baroPress_Avg";"dewPT_Avg"];
 
 d = load(['Buoy_' buoy '_Met_QAQC.mat']);
@@ -14,10 +14,10 @@ d = d.MetQAQC;
 % Statistics of QAQC results
 stats_tbl = table((1:4)','VariableNames',{'Flag'});
 for i = 1:length(metVars)
-    if ismember(metVars{i}, "windSpd_Delta")
-        tmp = tabulate(d.(metVars{i}).jumpCheck);
+    if ismember(metVars{i}, "windSpd_jump")
+        tmp = tabulate(d.('windSpd_Kts').jumpCheck);
     elseif ismember(metVars{i}, "windDir_M")
-        tmp = tabulate(d.(metVars{i}).jumpCheck);
+        tmp = tabulate(d.('windDir_M').jumpCheck);
     else
         tmp = tabulate(d.(metVars{i}).check);
     end

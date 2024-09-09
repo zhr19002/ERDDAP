@@ -11,10 +11,10 @@
 
 clc; clear;
 
-stns = 'WStations'; buoy = 'ARTG'; locs = {'btm1','btm2','sfc'};
-% stns = 'WStations'; buoy = 'EXRX'; locs = {'btm2','mid','sfc'};
-% stns = 'WStations'; buoy = 'WLIS'; locs = {'btm1','btm2','mid','sfc'};
-% stns = 'CStations'; buoy = 'CLIS'; locs = {'btm','sfc'};
+buoy = 'ARTG'; locs = {'btm1','btm2','sfc'};
+% buoy = 'CLIS'; locs = {'btm','sfc'};
+% buoy = 'EXRX'; locs = {'btm2','mid','sfc'};
+% buoy = 'WLIS'; locs = {'btm1','btm2','mid','sfc'};
 
 % Fixed parameters
 avars = {'T','S','DO','P','C','pH','rho','DOsat'};
@@ -22,7 +22,12 @@ av_by = struct('T','degC','S','psu','DO','mg/L','P','dBars','C','S/m', ...
                'pH','none','rho','kg/m^3','DOsat','percent');
 
 % Read station group QAQC parameters
-QAQC = load(['QAQC_Para_' stns '.mat']);
+switch buoy
+    case 'CLIS'
+        QAQC = load('QAQC_Para_CStations.mat'); 
+    otherwise
+        QAQC = load('QAQC_Para_WStations.mat');
+end
 QAQC = QAQC.QAQC;
 
 % Write QAQCed buoy files
@@ -38,7 +43,7 @@ for loc = locs
     % Extract tables from PostgreSQL
     switch buoy
         case 'CLIS'
-            if strcmp(loc{1},'btm')
+            if strcmp(loc{1}, 'btm')
                 dT1 = sqlread(conn, '"CLIS_pb2_sbe37btm"');
                 dT2 = sqlread(conn, '"clis_cr1xPB4_sbe37Btm"');
                 dT = [dT1(:,:); dT2(:,:)];

@@ -26,26 +26,26 @@ conn = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
 % Extract tables from PostgreSQL
 switch buoy
     case 'ARTG'
-        dbname = '"ARTG_pb2_metDat"';
-        dT = sqlread(conn, dbname);
+        dT1 = sqlread(conn, '"ARTG_pb2_metDat"');
+        dT2 = sqlread(conn, '"ARTG_pb1_metSens"');
+        dT2 = renamevars(dT2,'dewPt_Avg','dewPT_Avg');
+        dT = [dT1(:,tVars); dT2(:,tVars)];
     case 'CLIS1'
-        dbname = '"clis_cr1xPB4_metDat"';
-        dT = sqlread(conn, dbname);
+        dT = sqlread(conn, '"clis_cr1xPB4_metDat"');
         dT = renamevars(dT,'windSpd_kts','windSpd_Kts');
     case 'CLIS2'
-        dbname = '"clis_cr1xPB4_metRO"';
-        dT = sqlread(conn, dbname);
+        dT = sqlread(conn, '"clis_cr1xPB4_metRO"');
         dT = renamevars(dT,'windSpd_kts','windSpd_Kts');
     case 'EXRX'
-        dbname1 = '"EXRX_pb2_metDat_arch1"';
-        buoyMet1 = sqlread(conn, dbname1);
-        dbname2 = '"EXRX_pb1_metRO"';
-        buoyMet2 = sqlread(conn, dbname2);
-        buoyMet2 = renamevars(buoyMet2,'dewPt_Avg','dewPT_Avg');
-        dT = [buoyMet1(:,tVars); buoyMet2(:,tVars)];
+        dT1 = sqlread(conn, '"EXRX_pb2_metDat_arch1"');
+        dT2 = sqlread(conn, '"EXRX_pb1_metRO"');
+        dT2 = renamevars(dT2,'dewPt_Avg','dewPT_Avg');
+        dT = [dT1(:,tVars); dT2(:,tVars)];
     case 'WLIS'
-        dbname = '"WLIS_pb1_metDat"';
-        dT = sqlread(conn, dbname);
+        dT1 = sqlread(conn, '"WLIS_pb1_metDat"');
+        dT2 = sqlread(conn, '"WLIS_pb4_metSens"');
+        dT2 = renamevars(dT2,'dewPt_Avg','dewPT_Avg');
+        dT = [dT1(:,tVars); dT2(:,tVars)];
 end
 
 dT = dT(:, tVars);

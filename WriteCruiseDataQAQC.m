@@ -40,7 +40,7 @@ for Astn = stnGrp
         else
             Amonth = sprintf('%i', nn);
         end
-        [~, CruiseNames{nn}] = GetCTDEEP_Cruises(Ayear, Amonth);
+        CruiseNames{nn} = GetCTDEEP_Cruises(Ayear, Amonth);
     end
     
     % Store each cruise name in the "CN" structure

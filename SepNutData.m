@@ -1,4 +1,4 @@
-function [ds, db] = SepCTDEEP_NutData(d, CruiseDay)
+function [ds, db] = SepNutData(d, CruiseDay)
 % 
 % All data is from a single month and a single station
 % The need is to seperate data by the S/B level and vars
@@ -36,7 +36,7 @@ for i = 1:2
                 res.(dl{i}).(vars{nv}).result(nvar,:) = str2double(dd.(dl{i}).Result(nn,:));
                 res.(dl{i}).(vars{nv}).depth(nvar,:) = str2double(dd.(dl{i}).([level{i} '_Sample_Depth'])(nn,:));
                 res.(dl{i}).(vars{nv}).startCruiseDay(nvar,:) = CruiseDay{1}(1);
-                res.(dl{i}).(vars{nv}).middleCruiseDay(nvar,:) = CruiseDay{1}(3);
+                res.(dl{i}).(vars{nv}).endCruiseDay(nvar,:) = CruiseDay{1}(2);
                 % Convert station time to EST
                 startStationDay = dd.(dl{i}).time(nn)/(24*3600) + datetime(1970,1,1);
                 startStationDay = datetime(startStationDay,'Format','yyyy-MM-dd');

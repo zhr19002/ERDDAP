@@ -5,7 +5,7 @@ function WriteMetNETCDF(buoy, latlon, stnDep, d)
 % Called from WriteMetDataQAQC.m
 % 
 
-meta.Processing_Notes = 'Screened with WriteBuoyMetQAQC.m';
+meta.Processing_Notes = 'Screened with WriteMetDataQAQC.m';
 meta.mooring_name = buoy;
 meta.lat = latlon(1,1);
 meta.lon = latlon(1,2);

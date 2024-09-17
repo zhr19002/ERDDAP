@@ -5,7 +5,7 @@ function WriteCruiseNETCDF(cruise, Astn, dp_rng, latlon, stnDep, d)
 % Called from WriteCruiseDataQAQC.m
 % 
 
-meta.Processing_Notes = 'Screened with WriteShipSurveyDataQAQC.m';
+meta.Processing_Notes = 'Screened with WriteCruiseDataQAQC.m';
 meta.cruise_name = cruise;
 meta.mooring_name = Astn;
 meta.lat = latlon(1,1);

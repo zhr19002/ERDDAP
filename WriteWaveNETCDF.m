@@ -1,6 +1,6 @@
 function WriteWaveNETCDF(buoy, latlon, stnDep, d)
 % 
-% Write wave QAQC data to NC files
+% Write buoy wave QAQC data to NC files
 % 
 % Called from WriteWaveDataQAQC.m
 % 
@@ -16,12 +16,14 @@ meta.processed_by = 'James O''Donnell, james.odonnell@uconn.edu';
 meta.lab = 'Data from LISICOS moored sensors';
 meta.time_zone = 'EST';
 
-QAQCnote = '1 = pass; 3 = beyond 98% data range; 4 = beyond max-min range';
+QAQCnote = ['QAQC Tests: (1) threshold, (2) jump limit, (3) time gap, ' ...
+            '(4) spike; 1 = pass; 3 = questionable; 4 = fail. ' ...
+            'Last column is the number of failed tests.'];
 
-% Make NC file
+% Make NC files
 ncid = netcdf.create([buoy '_Wave.nc'],'64BIT_OFFSET');
 
-% GLOBAL ATTRIBUTES
+% Global attributes
 varid = netcdf.getConstant('NC_GLOBAL');
 netcdf.putAtt(ncid,varid,'Processing_Notes',meta.Processing_Notes);
 netcdf.putAtt(ncid,varid,'mooring_name',meta.mooring_name);
@@ -39,8 +41,9 @@ netcdf.putAtt(ncid,varid,'CreationDate',ad);
 netcdf.putAtt(ncid,varid,'Institution','UConn, Marine Sciences');
 netcdf.putAtt(ncid,varid,'Source','LISICOS-NERACOOS Observations');
 
-% DEFINE VARIABLES
+% Define variables
 burstid = netcdf.defDim(ncid,'burst',size(d.time,1));
+QAQCid = netcdf.defDim(ncid,'QAQC',2);
 
 timeid = netcdf.defVar(ncid,'time','NC_DOUBLE',burstid);
 netcdf.putAtt(ncid,timeid,'standard_name','time');
@@ -48,75 +51,26 @@ netcdf.putAtt(ncid,timeid,'units','days since midnight January 1, 1970');
 netcdf.putAtt(ncid,timeid,'calendar','julian');
 netcdf.putAtt(ncid,timeid,'time_zone',meta.time_zone);
 netcdf.putAtt(ncid,timeid,'axis','T');
+netcdf.putVar(ncid,timeid,days(d.time(:)-datetime(1970,1,1,0,0,0)));
 
-Hsigid = netcdf.defVar(ncid,'Hsig','NC_FLOAT',burstid);
-netcdf.putAtt(ncid,Hsigid,'units','m');
-netcdf.putAtt(ncid,Hsigid,'long_name','significant_wave_height');
+waveVars = {'Hsig_m','Hmax_m','Tdom_s','Tavg_s','waveDir','meanDir'};
+units = {'m','m','s','s','degrees','degrees'};
+names = {'significant_wave_height','max_wave_height','dominant_wave_period', ...
+         'average_wave_period','principal_wave_direction','mean_wave_direction'};
 
-HsigQid = netcdf.defVar(ncid,'HsigQ','NC_INT',burstid);
-netcdf.putAtt(ncid,HsigQid,'long_name','significant_wave_height_flag');
-netcdf.putAtt(ncid,HsigQid,'note',QAQCnote);
-
-Hmaxid = netcdf.defVar(ncid,'Hmax','NC_FLOAT',burstid);
-netcdf.putAtt(ncid,Hmaxid,'units','m');
-netcdf.putAtt(ncid,Hmaxid,'long_name','max_wave_height');
-
-HmaxQid = netcdf.defVar(ncid,'HmaxQ','NC_INT',burstid);
-netcdf.putAtt(ncid,HmaxQid,'long_name','max_wave_height_flag');
-netcdf.putAtt(ncid,HmaxQid,'note',QAQCnote);
-
-Tdomid = netcdf.defVar(ncid,'Tdom','NC_FLOAT',burstid);
-netcdf.putAtt(ncid,Tdomid,'units','s');
-netcdf.putAtt(ncid,Tdomid,'long_name','dominant_wave_period');
-
-TdomQid = netcdf.defVar(ncid,'TdomQ','NC_INT',burstid);
-netcdf.putAtt(ncid,TdomQid,'long_name','dominant_wave_period_flag');
-netcdf.putAtt(ncid,TdomQid,'note',QAQCnote);
-
-Tavgid = netcdf.defVar(ncid,'Tavg','NC_FLOAT',burstid);
-netcdf.putAtt(ncid,Tavgid,'units','s');
-netcdf.putAtt(ncid,Tavgid,'long_name','average_wave_period');
-
-TavgQid = netcdf.defVar(ncid,'TavgQ','NC_INT',burstid);
-netcdf.putAtt(ncid,TavgQid,'long_name','average_wave_period_flag');
-netcdf.putAtt(ncid,TavgQid,'note',QAQCnote);
-
-waveDirid = netcdf.defVar(ncid,'waveDir','NC_FLOAT',burstid);
-netcdf.putAtt(ncid,waveDirid,'units','degrees');
-netcdf.putAtt(ncid,waveDirid,'long_name','principal_wave_direction');
-netcdf.putAtt(ncid,waveDirid,'note','convert angle value to cos value');
-
-waveDirQid = netcdf.defVar(ncid,'waveDirQ','NC_INT',burstid);
-netcdf.putAtt(ncid,waveDirQid,'long_name','principal_wave_direction_flag');
-netcdf.putAtt(ncid,waveDirQid,'note',QAQCnote);
-
-meanDirid = netcdf.defVar(ncid,'meanDir','NC_FLOAT',burstid);
-netcdf.putAtt(ncid,meanDirid,'units','degrees');
-netcdf.putAtt(ncid,meanDirid,'long_name','mean_wave_direction');
-netcdf.putAtt(ncid,meanDirid,'note','convert angle value to cos value');
-
-meanDirQid = netcdf.defVar(ncid,'meanDirQ','NC_INT',burstid);
-netcdf.putAtt(ncid,meanDirQid,'long_name','mean_wave_direction_flag');
-netcdf.putAtt(ncid,meanDirQid,'note',QAQCnote);
-
-netcdf.endDef(ncid);
-
-% Put into data mode
-netcdf.putVar(ncid, timeid, days(d.time(:)-datetime(1970,1,1,0,0,0)));
-netcdf.putVar(ncid, Hsigid, d.Hsig_m.data);
-netcdf.putVar(ncid, Hmaxid, d.Hmax_m.data);
-netcdf.putVar(ncid, Tdomid, d.Tdom_s.data);
-netcdf.putVar(ncid, Tavgid, d.Tavg_s.data);
-netcdf.putVar(ncid, waveDirid, d.waveDir.data);
-netcdf.putVar(ncid, meanDirid, d.meanDir.data);
-
-% Write Flags
-netcdf.putVar(ncid, HsigQid, d.Hsig_m.check);
-netcdf.putVar(ncid, HmaxQid, d.Hmax_m.check);
-netcdf.putVar(ncid, TdomQid, d.Tdom_s.check);
-netcdf.putVar(ncid, TavgQid, d.Tavg_s.check);
-netcdf.putVar(ncid, waveDirQid, d.waveDir.jumpCheck);
-netcdf.putVar(ncid, meanDirQid, d.meanDir.jumpCheck);
+for i = 1:length(waveVars)
+    % Define variable
+    id = netcdf.defVar(ncid, waveVars{i}, 'NC_FLOAT', burstid);
+    netcdf.putAtt(ncid, id, 'units', units{i});
+    netcdf.putAtt(ncid, id, 'long_name', names{i});
+    idQ = netcdf.defVar(ncid, [waveVars{i} '_Q'], 'NC_INT', [burstid,QAQCid]);
+    netcdf.putAtt(ncid, idQ, 'long_name', [names{i} '_flag']);
+    netcdf.putAtt(ncid, idQ, 'note', QAQCnote);
+    % Put into data mode
+    netcdf.putVar(ncid, id, d.(waveVars{i}).data);
+    % Write flag
+    netcdf.putVar(ncid, idQ, [d.(waveVars{i}).QAQC,d.(waveVars{i}).FailedCount]);
+end
 
 netcdf.close(ncid);
 

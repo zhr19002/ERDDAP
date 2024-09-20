@@ -5,8 +5,8 @@
 
 clc; clear;
 
-% buoy = 'ARTG'; locs = {'btm1','btm2','sfc'};
-buoy = 'CLIS'; locs = {'sfc'};
+buoy = 'ARTG'; locs = {'btm1','btm2'};
+% buoy = 'CLIS'; locs = {'sfc'};
 % buoy = 'EXRX'; locs = {'btm1','btm2','mid','sfc'};
 % buoy = 'WLIS'; locs = {'btm1','btm2','mid','sfc'};
 
@@ -45,6 +45,12 @@ for loc = locs
             dbname = strcat('"',['artg_sbe_' loc{1}],'"');
             dT = sqlread(conn, dbname);
             dT = renamevars(dT, cols_old1, cols_new);
+            if strcmp(loc{1}, 'btm1')
+                dT = dT(dT.TmStamp >= datetime('01-Jan-2016 00:00:00','TimeZone','UTC'), :);
+                dT = dT(dT.TmStamp <= datetime('30-Jan-2016 23:59:59','TimeZone','UTC'), :);
+            else
+                dT = dT(dT.TmStamp >= datetime('01-Jan-2018 00:00:00','TimeZone','UTC'), :);
+            end
         case 'CLIS'
             dT1 = sqlread(conn, '"clis_ysi_sfc"');
             dT1 = renamevars(dT1, cols_old2, cols_new);
@@ -58,6 +64,7 @@ for loc = locs
             dT = sqlread(conn, dbname);
             dT = renamevars(dT, cols_old3, cols_new);
     end
+    % Filter TmStamp outliers
     dT(dT.TmStamp <= datetime('01-Jan-1904','TimeZone','UTC'), :) = [];
     dT = sortrows(dT, 'TmStamp');
     close(conn);
@@ -75,21 +82,17 @@ for loc = locs
     % Add the pH column
     dT.none(:) = NaN;
     
-    % Eliminate outliers for specific columns
+    % Add specific columns
     connQ = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
          'DatabaseName','buoyQAQC','PortNumber',5432);
-    if strcmp([buoy '_' loc{1}], 'EXRX_btm1')
-        dbname0 = '"EXRX_btm2_QAQC"';
-    else
-        dbname0 = strcat('"',[buoy '_' loc{1} '_QAQC'],'"');
-    end
+    dbname0 = strcat('"',[buoy '_' loc{1} '_QAQC'],'"');
     dT0 = sqlread(connQ, dbname0);
     dT.latitude(:) = dT0.latitude(1);
     dT.longitude(:) = dT0.longitude(1);
     dT.station(:) = dT0.station(1);
     dT.mooring_site_desc(:) = dT0.mooring_site_desc(1);
     close(connQ);
-
+    
     % Clean buoy data
     d = CleanBuoyData(dT, av_by);
     
@@ -107,7 +110,7 @@ for loc = locs
             BuoyQAQC.([av{1} '_FailedCount']) = dC;
         end
     end
-
+    
     BuoyQAQC.latitude = d.latitude;
     BuoyQAQC.longitude = d.longitude;
     BuoyQAQC.station = d.station;
@@ -115,7 +118,6 @@ for loc = locs
     
     % Save the updated "BuoyQAQC" table to a CSV file
     writetable(BuoyQAQC, [buoy '_' loc{1} '_QAQC.csv']);
-    %%%%%%
     fprintf('%s   %s\n', min(d.TmStamp), max(d.TmStamp));
 end
 
@@ -156,3 +158,11 @@ end
 % dT = sqlread(connQ, tblName);
 
 close(connQ);
+
+%%
+% Sort the "TmStamp" column
+tblName = '"ARTG_btm1_QAQC"';
+query = ['SELECT * FROM ' tblName ' ORDER BY "TmStamp";'];
+execute(connQ, query);
+
+dT = sqlread(connQ, tblName);

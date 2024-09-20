@@ -2,7 +2,7 @@
 % Identify and flag buoy meteorology data outliers
 % (1 = pass; 3 = beyond 98% data range; 4 = beyond max-min range)
 % 
-% Calls ImplementJumpLimTest.m
+% Calls CheckMetWaveQAQC.m
 % Calls WriteMetNETCDF.m
 % 
 
@@ -10,7 +10,7 @@ clc; clear;
 buoy = 'ARTG'; % {'ARTG','CLIS1','CLIS2','EXRX','WLIS'}
 metVars = {'windSpd_Kts','windSpd_Max','fiveSecAvg_Max','windDir_M', ...
            'airTemp_Avg','relHumid_Avg','baroPress_Avg','dewPT_Avg'};
-tVars = [{'TmStamp'}, metVars,{'longitude','latitude','station','mooring_site_desc','depth'}];
+tVars = [{'TmStamp'},metVars,{'longitude','latitude','station','mooring_site_desc','depth'}];
 
 % Read meteorology QAQC parameters
 QAQC = readtable('QAQC_Para_Met.csv', ReadRowNames=true);
@@ -66,24 +66,10 @@ for av = metVars
     % Clean meteorology data
     dT.(av{1})(dT.(av{1}) < -1000) = NaN;
     % Run QAQC tests
+    [dQ, dC] = CheckMetWaveQAQC(dT, QAQC, av{1});
     MetQAQC.(av{1}) = dT.(av{1});
-    if ismember(av{1}, "windDir_M")
-        % Jump limit test
-        d_tmp = cos(dT.(av{1})*pi/180);
-        MetQAQC.([av{1} '_jumpQ']) = ImplementJumpLimTest(d_tmp);
-    else
-        d_tmp = dT.(av{1});
-        MetQAQC.([av{1} '_Q']) = ones(size(dT.TmStamp));
-        % Threshold test
-        iu = find(d_tmp<QAQC.(av{1})('min_val') | d_tmp>QAQC.(av{1})('max_val') | isnan(d_tmp));
-        if ~isempty(iu)
-            MetQAQC.([av{1} '_Q'])(iu) = 4;
-        end
-        % Jump limit test
-        if ismember(av{1}, "windSpd_Kts")
-            MetQAQC.([av{1} '_jumpQ']) = ImplementJumpLimTest(d_tmp);
-        end
-    end
+    MetQAQC.([av{1} '_Q']) = dQ;
+    MetQAQC.([av{1} '_FailedCount']) = dC;
 end
 MetQAQC.depth = dT.depth;
 MetQAQC.latitude = dT.latitude;
@@ -107,20 +93,11 @@ colNames = strcat('"',MetQAQC.Properties.VariableNames,'"');
 MetQAQC.Properties.VariableNames = colNames;
 
 % Define data type for each column
-vNames = cell(1, 2*length(metVars)+1);
+vNames = cell(1, 3*length(metVars));
 for i = 1:length(metVars)
-    if ismember(metVars{i}, "windSpd_Kts")
-        vNames{1} = '"windSpd_Kts" FLOAT';
-        vNames{2} = '"windSpd_Kts_Q" INTEGER';
-        vNames{3} = '"windSpd_Kts_jumpQ" INTEGER';
-    else
-        vNames{2*i} = sprintf('"%s" %s',metVars{i},'FLOAT');
-        if ismember(metVars{i}, "windDir_M")
-            vNames{2*i+1} = '"windDir_M_jumpQ" INTEGER';
-        else
-            vNames{2*i+1} = sprintf('"%s_Q" %s',metVars{i},'INTEGER');
-        end
-    end
+    vNames{3*i-2} = sprintf('"%s" %s',metVars{i},'FLOAT');
+    vNames{3*i-1} = sprintf('"%s_Q" %s',metVars{i},'INTEGER');
+    vNames{3*i} = sprintf('"%s_FailedCount" %s',metVars{i},'INTEGER');
 end
 query = strjoin(vNames, ', ');
 query = ['CREATE TABLE ' tblName ' (' ...
@@ -166,14 +143,8 @@ MetQAQC = struct();
 MetQAQC.time = d.TmStamp;
 for av = metVars
     MetQAQC.(av{1}).data = d.(av{1});
-    if ismember(av{1}, "windDir_M")
-        MetQAQC.(av{1}).jumpCheck = d.([av{1} '_jumpQ']);
-    else
-        MetQAQC.(av{1}).check = d.([av{1} '_Q']);
-        if ismember(av{1}, "windSpd_Kts")
-            MetQAQC.(av{1}).jumpCheck = d.([av{1} '_jumpQ']);
-        end
-    end
+    MetQAQC.(av{1}).QAQC = d.([av{1} '_Q']);
+    MetQAQC.(av{1}).FailedCount = d.([av{1} '_FailedCount']);
 end
 
 % Save the updated "MetQAQC" struct to a .mat file

@@ -2,7 +2,7 @@
 % Identify and flag buoy wave data outliers
 % (1 = pass; 3 = beyond 98% data range; 4 = beyond max-min range)
 % 
-% Calls ImplementJumpLimTest.m
+% Calls CheckMetWaveQAQC.m
 % Calls WriteWaveNETCDF.m
 % 
 
@@ -50,20 +50,10 @@ waveQAQC = table();
 waveQAQC.TmStamp = dT.TmStamp;
 for av = waveVars
     % Run QAQC tests
+    [dQ, dC] = CheckMetWaveQAQC(dT, QAQC, av{1});
     waveQAQC.(av{1}) = dT.(av{1});
-    if ismember(av{1}, ["waveDir","meanDir"])
-        % Jump limit test
-        d_tmp = cos(dT.(av{1})*pi/180);
-        waveQAQC.([av{1} '_jumpQ']) = ImplementJumpLimTest(d_tmp);
-    else
-        d_tmp = dT.(av{1});
-        waveQAQC.([av{1} '_Q']) = ones(size(dT.TmStamp));
-        % Threshold test
-        iu = find(d_tmp<QAQC.(av{1})('min_val') | d_tmp>QAQC.(av{1})('max_val') | isnan(d_tmp));
-        if ~isempty(iu)
-            waveQAQC.([av{1} '_Q'])(iu) = 4;
-        end
-    end
+    waveQAQC.([av{1} '_Q']) = dQ;
+    waveQAQC.([av{1} '_FailedCount']) = dC;
 end
 waveQAQC.depth = dT.depth;
 waveQAQC.latitude = dT.latitude;
@@ -87,14 +77,11 @@ colNames = strcat('"',waveQAQC.Properties.VariableNames,'"');
 waveQAQC.Properties.VariableNames = colNames;
 
 % Define data type for each column
-vNames = cell(1, 2*length(waveVars));
+vNames = cell(1, 3*length(waveVars));
 for i = 1:length(waveVars)
-    vNames{2*i-1} = sprintf('"%s" %s',waveVars{i},'FLOAT');
-    if ismember(waveVars{i}, ["waveDir","meanDir"])
-        vNames{2*i} = sprintf('"%s_jumpQ" %s',waveVars{i},'INTEGER');
-    else
-        vNames{2*i} = sprintf('"%s_Q" %s',waveVars{i},'INTEGER');
-    end
+    vNames{3*i-2} = sprintf('"%s" %s',waveVars{i},'FLOAT');
+    vNames{3*i-1} = sprintf('"%s_Q" %s',waveVars{i},'INTEGER');
+    vNames{3*i} = sprintf('"%s_FailedCount" %s',waveVars{i},'INTEGER');
 end
 query = strjoin(vNames, ', ');
 query = ['CREATE TABLE ' tblName ' (' ...
@@ -140,11 +127,8 @@ waveQAQC = struct();
 waveQAQC.time = d.TmStamp;
 for av = waveVars
     waveQAQC.(av{1}).data = d.(av{1});
-    if ismember(av{1}, ["waveDir","meanDir"])
-        waveQAQC.(av{1}).jumpCheck = d.([av{1} '_jumpQ']);
-    else
-        waveQAQC.(av{1}).check = d.([av{1} '_Q']);
-    end
+    waveQAQC.(av{1}).QAQC = d.([av{1} '_Q']);
+    waveQAQC.(av{1}).FailedCount = d.([av{1} '_FailedCount']);
 end
 
 % Save the updated "waveQAQC" struct to a .mat file

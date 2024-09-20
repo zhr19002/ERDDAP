@@ -1,3 +1,3 @@
-﻿,Hsig_m,Hmax_m,Tdom_s,Tavg_s
-max_val,7,7,10,10
-min_val,0,0,0,0
+﻿,Hsig_m,Hmax_m,Tdom_s,Tavg_s,waveDir,meanDir
+max_val,7,7,10,10,360,360
+min_val,0,0,0,0,0,0

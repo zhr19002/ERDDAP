@@ -11,10 +11,8 @@ buoy = 'ARTG'; locs = {'btm1','btm2'};
 % buoy = 'WLIS'; locs = {'btm1','btm2','mid','sfc'};
 
 % Fixed parameters
-cols_old1 = ["timestamp","degC","sal","DOconc","decibars","cond"];
-cols_old2 = ["timestamp","degC","sal","DOconc","meters","cond"];
-cols_old3 = ["timestamp","degC","sal","DOconc","decibars","cond_Spm"];
-cols_new = ["TmStamp","degC","psu","mg/L","dBars","S/m"];
+cols_old = {'timestamp','degC','sal','DOconc','decibars','cond_Spm'};
+cols_new = {'TmStamp','degC','psu','mg/L','dBars','S/m'};
 
 avars = {'T','S','DO','P','C','pH','rho','DOsat'};
 av_by = struct('T','degC','S','psu','DO','mg/L','P','dBars','C','S/m', ...
@@ -44,7 +42,8 @@ for loc = locs
         case 'ARTG'
             dbname = strcat('"',['artg_sbe_' loc{1}],'"');
             dT = sqlread(conn, dbname);
-            dT = renamevars(dT, cols_old1, cols_new);
+            cols_old{6} = 'cond';
+            dT = renamevars(dT, cols_old, cols_new);
             if strcmp(loc{1}, 'btm1')
                 dT = dT(dT.TmStamp >= datetime('01-Jan-2016 00:00:00','TimeZone','UTC'), :);
                 dT = dT(dT.TmStamp <= datetime('30-Jan-2016 23:59:59','TimeZone','UTC'), :);
@@ -52,17 +51,18 @@ for loc = locs
                 dT = dT(dT.TmStamp >= datetime('01-Jan-2018 00:00:00','TimeZone','UTC'), :);
             end
         case 'CLIS'
-            dT1 = sqlread(conn, '"clis_ysi_sfc"');
-            dT1 = renamevars(dT1, cols_old2, cols_new);
-            dT2 = sqlread(conn, '"clis_sbe37sfc"');
-            dT2 = renamevars(dT2, cols_old3, cols_new);
             dT3 = sqlread(conn, '"CLIS_pb2_sbe37Sfc"');
             dT3.TmStamp.TimeZone = 'UTC';
+            dT2 = sqlread(conn, '"clis_sbe37sfc"');
+            dT2 = renamevars(dT2, cols_old, cols_new);
+            dT1 = sqlread(conn, '"clis_ysi_sfc"');
+            cols_old{5} = 'meters'; cols_old{6} = 'cond';
+            dT1 = renamevars(dT1, cols_old, cols_new);
             dT = [dT1(:,cols_new); dT2(:,cols_new); dT3(:,cols_new)];
         otherwise
             dbname = strcat('"',[lower(buoy) '_sbe37' loc{1}],'"');
             dT = sqlread(conn, dbname);
-            dT = renamevars(dT, cols_old3, cols_new);
+            dT = renamevars(dT, cols_old, cols_new);
     end
     % Filter TmStamp outliers
     dT(dT.TmStamp <= datetime('01-Jan-1904','TimeZone','UTC'), :) = [];

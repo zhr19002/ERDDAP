@@ -89,25 +89,11 @@ tblName = strcat('"',tbl,'"');
 colNames = strcat('"',waveQAQC.Properties.VariableNames,'"');
 waveQAQC.Properties.VariableNames = colNames;
 
-% Define data type for each column
-vNames = cell(1, 3*length(waveVars));
-for i = 1:length(waveVars)
-    vNames{3*i-2} = sprintf('"%s" %s',waveVars{i},'FLOAT');
-    vNames{3*i-1} = sprintf('"%s_Q" %s',waveVars{i},'INTEGER');
-    vNames{3*i} = sprintf('"%s_FailedCount" %s',waveVars{i},'INTEGER');
-end
-query = strjoin(vNames, ', ');
-query = ['CREATE TABLE ' tblName ' (' ...
-         '"TmStamp" TIMESTAMP, ', query, ... 
-         ', "depth" FLOAT, "latitude" FLOAT, "longitude" FLOAT, ' ...
-         '"station" VARCHAR, "mooring_site_desc" VARCHAR);'];
-
 % Write the table to PostgreSQL
 username = 'lisicos';
 password = 'vncq489';
 connQ = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
      'DatabaseName','buoyQAQC','PortNumber',5432);
-execute(connQ, query);
 try
     batchSize = 10000;
     for i = 1:ceil(height(waveQAQC)/batchSize)

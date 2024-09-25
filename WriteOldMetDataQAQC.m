@@ -4,7 +4,7 @@
 % 
 
 clc; clear;
-buoy = 'ARTG'; % {'ARTG','CLIS1','CLIS2','EXRX','WLIS'}
+buoy = 'CLIS1'; % {'CLIS1','EXRX','WLIS'}
 metVars = {'windSpd_Kts','windSpd_Max','fiveSecAvg_Max','windDir_M', ...
            'airTemp_Avg','relHumid_Avg','baroPress_Avg','dewPT_Avg'};
 
@@ -26,19 +26,16 @@ conn = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
 
 % Extract tables from PostgreSQL
 switch buoy
-    case 'ARTG'
-        dT = sqlread(conn, '"artg_wx"');
-        dT = renamevars(dT, cols_old, cols_new);
     case 'CLIS1'
-        dT = sqlread(conn, '"clis_wx"');
+        dT1 = sqlread(conn, '"clis_wx"');
         cols_old{4} = 'windGust3sec';
-        dT = renamevars(dT, cols_old, cols_new);
-    case 'CLIS2'
-        dT = sqlread(conn, '"CLIS_pb1_metDat"');
-        dT = renamevars(dT, {'WindSpd','maxWindSpd','WindDir','AirTemp', ...
+        dT1 = renamevars(dT1, cols_old, cols_new);
+        dT2 = sqlread(conn, '"CLIS_pb1_metDat"');
+        dT2 = renamevars(dT2, {'WindSpd','maxWindSpd','WindDir','AirTemp', ...
              'RelHumidity','BaroPress','DewPt'}, [metVars(1:2),metVars(4:8)]);
-        dT.TmStamp.TimeZone = 'UTC';
-        dT.('fiveSecAvg_Max')(:) = NaN;
+        dT2.TmStamp.TimeZone = 'UTC';
+        dT2.('fiveSecAvg_Max')(:) = NaN;
+        dT = [dT1(:,cols_new); dT2(:,cols_new)];
     case 'EXRX'
         dT = sqlread(conn, '"exrx_wx"');
         dT = renamevars(dT, cols_old, cols_new);
@@ -47,7 +44,7 @@ switch buoy
         dT = renamevars(dT, cols_old, cols_new);
 end
 % Filter TmStamp outliers
-% dT(dT.TmStamp <= datetime('01-Jan-1904','TimeZone','UTC'), :) = [];
+dT(dT.TmStamp <= datetime('01-Jan-1904','TimeZone','UTC'), :) = [];
 dT = sortrows(dT, 'TmStamp');
 close(conn);
 
@@ -97,25 +94,11 @@ tblName = strcat('"',tbl,'"');
 colNames = strcat('"',MetQAQC.Properties.VariableNames,'"');
 MetQAQC.Properties.VariableNames = colNames;
 
-% Define data type for each column
-vNames = cell(1, 3*length(metVars));
-for i = 1:length(metVars)
-    vNames{3*i-2} = sprintf('"%s" %s',metVars{i},'FLOAT');
-    vNames{3*i-1} = sprintf('"%s_Q" %s',metVars{i},'INTEGER');
-    vNames{3*i} = sprintf('"%s_FailedCount" %s',metVars{i},'INTEGER');
-end
-query = strjoin(vNames, ', ');
-query = ['CREATE TABLE ' tblName ' (' ...
-         '"TmStamp" TIMESTAMP, ', query, ... 
-         ', "depth" FLOAT, "latitude" FLOAT, "longitude" FLOAT, ' ...
-         '"station" VARCHAR, "mooring_site_desc" VARCHAR);'];
-
 % Write the table to PostgreSQL
 username = 'lisicos';
 password = 'vncq489';
 connQ = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
      'DatabaseName','buoyQAQC','PortNumber',5432);
-execute(connQ, query);
 try
     batchSize = 10000;
     for i = 1:ceil(height(MetQAQC)/batchSize)

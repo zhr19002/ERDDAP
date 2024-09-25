@@ -50,6 +50,7 @@ netcdf.putAtt(ncid,timeid,'units','days since midnight January 1, 1970');
 netcdf.putAtt(ncid,timeid,'calendar','julian');
 netcdf.putAtt(ncid,timeid,'time_zone',meta.time_zone);
 netcdf.putAtt(ncid,timeid,'axis','T');
+netcdf.endDef(ncid);
 netcdf.putVar(ncid,timeid,days(d.time(:)-datetime(1970,1,1,0,0,0)));
 
 avars = {'T','S','DO','P','C','pH','rho','DOsat'};
@@ -66,6 +67,7 @@ for i = 1:length(avars)
     idQ = netcdf.defVar(ncid, [avars{i} '_Q'], 'NC_INT', burstid);
     netcdf.putAtt(ncid, idQ, 'long_name', [names{i} '_flag']);
     netcdf.putAtt(ncid, idQ, 'note', QAQCnote);
+    netcdf.endDef(ncid);
     % Put into data mode
     netcdf.putVar(ncid, id, d.(avars{i}).data);
     % Write flag

@@ -110,7 +110,6 @@ for loc = locs
             BuoyQAQC.([av{1} '_FailedCount']) = dC;
         end
     end
-    
     BuoyQAQC.latitude = d.latitude;
     BuoyQAQC.longitude = d.longitude;
     BuoyQAQC.station = d.station;

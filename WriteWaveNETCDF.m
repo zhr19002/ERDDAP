@@ -51,27 +51,29 @@ netcdf.putAtt(ncid,timeid,'units','days since midnight January 1, 1970');
 netcdf.putAtt(ncid,timeid,'calendar','julian');
 netcdf.putAtt(ncid,timeid,'time_zone',meta.time_zone);
 netcdf.putAtt(ncid,timeid,'axis','T');
-netcdf.endDef(ncid);
-netcdf.putVar(ncid,timeid,days(d.time(:)-datetime(1970,1,1,0,0,0)));
 
 waveVars = {'Hsig_m','Hmax_m','Tdom_s','Tavg_s','waveDir','meanDir'};
 units = {'m','m','s','s','degrees','degrees'};
 names = {'significant_wave_height','max_wave_height','dominant_wave_period', ...
          'average_wave_period','principal_wave_direction','mean_wave_direction'};
 
+id = cell(1,length(waveVars)); idQ = cell(1,length(waveVars));
 for i = 1:length(waveVars)
-    % Define variable
-    id = netcdf.defVar(ncid, waveVars{i}, 'NC_FLOAT', burstid);
-    netcdf.putAtt(ncid, id, 'units', units{i});
-    netcdf.putAtt(ncid, id, 'long_name', names{i});
-    idQ = netcdf.defVar(ncid, [waveVars{i} '_Q'], 'NC_INT', [burstid,QAQCid]);
-    netcdf.putAtt(ncid, idQ, 'long_name', [names{i} '_flag']);
-    netcdf.putAtt(ncid, idQ, 'note', QAQCnote);
-    netcdf.endDef(ncid);
-    % Put into data mode
-    netcdf.putVar(ncid, id, d.(waveVars{i}).data);
-    % Write flag
-    netcdf.putVar(ncid, idQ, [d.(waveVars{i}).QAQC,d.(waveVars{i}).FailedCount]);
+    id{i} = netcdf.defVar(ncid, waveVars{i}, 'NC_FLOAT', burstid);
+    netcdf.putAtt(ncid, id{i}, 'units', units{i});
+    netcdf.putAtt(ncid, id{i}, 'long_name', names{i});
+    idQ{i} = netcdf.defVar(ncid, [waveVars{i} '_Q'], 'NC_INT', [burstid,QAQCid]);
+    netcdf.putAtt(ncid, idQ{i}, 'long_name', [names{i} '_flag']);
+    netcdf.putAtt(ncid, idQ{i}, 'note', QAQCnote);
+end
+
+netcdf.endDef(ncid);
+
+% Put into data mode
+netcdf.putVar(ncid,timeid,days(d.time(:)-datetime(1970,1,1,0,0,0)));
+for i = 1:length(waveVars)
+    netcdf.putVar(ncid, id{i}, d.(waveVars{i}).data);
+    netcdf.putVar(ncid, idQ{i}, [d.(waveVars{i}).QAQC,d.(waveVars{i}).FailedCount]);
 end
 
 netcdf.close(ncid);

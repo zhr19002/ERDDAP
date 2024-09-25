@@ -51,8 +51,6 @@ netcdf.putAtt(ncid,timeid,'units','days since midnight January 1, 1970');
 netcdf.putAtt(ncid,timeid,'calendar','julian');
 netcdf.putAtt(ncid,timeid,'time_zone',meta.time_zone);
 netcdf.putAtt(ncid,timeid,'axis','T');
-netcdf.endDef(ncid);
-netcdf.putVar(ncid,timeid,days(d.time(:)-datetime(1970,1,1,0,0,0)));
 
 metVars = {'windSpd_Kts','windSpd_Max','fiveSecAvg_Max','windDir_M', ...
            'airTemp_Avg','relHumid_Avg','baroPress_Avg','dewPT_Avg'};
@@ -60,19 +58,23 @@ units = {'Kts','Kts','Kts','degrees','celsius','percent','millibars','celsius'};
 names = {'wind_speed','wind_speed_of_gust','five_seconds_wind_speed_average','wind_direction', ...
          'air_temperature','relative_humidity','barometric_pressure','dew_point_temperature'};
 
+id = cell(1,length(metVars)); idQ = cell(1,length(metVars));
 for i = 1:length(metVars)
-    % Define variable
-    id = netcdf.defVar(ncid, metVars{i}, 'NC_FLOAT', burstid);
-    netcdf.putAtt(ncid, id, 'units', units{i});
-    netcdf.putAtt(ncid, id, 'long_name', names{i});
-    idQ = netcdf.defVar(ncid, [metVars{i} '_Q'], 'NC_INT', [burstid,QAQCid]);
-    netcdf.putAtt(ncid, idQ, 'long_name', [names{i} '_flag']);
-    netcdf.putAtt(ncid, idQ, 'note', QAQCnote);
-    netcdf.endDef(ncid);
-    % Put into data mode
-    netcdf.putVar(ncid, id, d.(metVars{i}).data);
-    % Write flag
-    netcdf.putVar(ncid, idQ, [d.(metVars{i}).QAQC,d.(metVars{i}).FailedCount]);
+    id{i} = netcdf.defVar(ncid, metVars{i}, 'NC_FLOAT', burstid);
+    netcdf.putAtt(ncid, id{i}, 'units', units{i});
+    netcdf.putAtt(ncid, id{i}, 'long_name', names{i});
+    idQ{i} = netcdf.defVar(ncid, [metVars{i} '_Q'], 'NC_INT', [burstid,QAQCid]);
+    netcdf.putAtt(ncid, idQ{i}, 'long_name', [names{i} '_flag']);
+    netcdf.putAtt(ncid, idQ{i}, 'note', QAQCnote);
+end
+
+netcdf.endDef(ncid);
+
+% Put into data mode
+netcdf.putVar(ncid,timeid,days(d.time(:)-datetime(1970,1,1,0,0,0)));
+for i = 1:length(metVars)
+    netcdf.putVar(ncid, id{i}, d.(metVars{i}).data);
+    netcdf.putVar(ncid, idQ{i}, [d.(metVars{i}).QAQC,d.(metVars{i}).FailedCount]);
 end
 
 netcdf.close(ncid);

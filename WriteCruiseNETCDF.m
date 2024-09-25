@@ -50,8 +50,6 @@ netcdf.putAtt(ncid,timeid,'units','days since midnight January 1, 1970');
 netcdf.putAtt(ncid,timeid,'calendar','julian');
 netcdf.putAtt(ncid,timeid,'time_zone',meta.time_zone);
 netcdf.putAtt(ncid,timeid,'axis','T');
-netcdf.endDef(ncid);
-netcdf.putVar(ncid,timeid,days(d.time(:)-datetime(1970,1,1,0,0,0)));
 
 avars = {'T','S','DO','P','C','pH','rho','DOsat'};
 units = {'celsius','psu','mg/L','dBars','S/m','none','kg/m^3','percent'};
@@ -59,19 +57,23 @@ names = {'sea_water_temperature','sea_water_salinity', ...
          'oxygen_concentration_in_sea_water','sea_water_pressure', ...
          'sea_water_conductivity','pH','sea_water_density','percent_saturation'};
 
+id = cell(1,length(avars)); idQ = cell(1,length(avars));
 for i = 1:length(avars)
-    % Define variable
-    id = netcdf.defVar(ncid, avars{i}, 'NC_FLOAT', burstid);
-    netcdf.putAtt(ncid, id, 'units', units{i});
-    netcdf.putAtt(ncid, id, 'long_name', names{i});
-    idQ = netcdf.defVar(ncid, [avars{i} '_Q'], 'NC_INT', burstid);
-    netcdf.putAtt(ncid, idQ, 'long_name', [names{i} '_flag']);
-    netcdf.putAtt(ncid, idQ, 'note', QAQCnote);
-    netcdf.endDef(ncid);
-    % Put into data mode
-    netcdf.putVar(ncid, id, d.(avars{i}).data);
-    % Write flag
-    netcdf.putVar(ncid, idQ, d.(avars{i}).check);
+    id{i} = netcdf.defVar(ncid, avars{i}, 'NC_FLOAT', burstid);
+    netcdf.putAtt(ncid, id{i}, 'units', units{i});
+    netcdf.putAtt(ncid, id{i}, 'long_name', names{i});
+    idQ{i} = netcdf.defVar(ncid, [avars{i} '_Q'], 'NC_INT', burstid);
+    netcdf.putAtt(ncid, idQ{i}, 'long_name', [names{i} '_flag']);
+    netcdf.putAtt(ncid, idQ{i}, 'note', QAQCnote);
+end
+
+netcdf.endDef(ncid);
+
+% Put into data mode
+netcdf.putVar(ncid,timeid,days(d.time(:)-datetime(1970,1,1,0,0,0)));
+for i = 1:length(avars)
+    netcdf.putVar(ncid, id{i}, d.(avars{i}).data);
+    netcdf.putVar(ncid, idQ{i}, d.(avars{i}).check);
 end
 
 netcdf.close(ncid);

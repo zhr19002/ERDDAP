@@ -49,7 +49,7 @@ for i = 1:length(dp_rng)
                     plot(dt(iu2),d_tmp(iu2),'rs','DisplayName','Fail');
                     hasFail = true;
                 else
-                    plot(dt(iu2),d_tmp(iu2),'gs','HandleVisibility','off');
+                    plot(dt(iu2),d_tmp(iu2),'rs','HandleVisibility','off');
                 end
             end
         end

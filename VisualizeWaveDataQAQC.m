@@ -25,15 +25,9 @@ for i = 1:length(uyears)
         dt = datetime(0,mm,dd);
         d_tmp = d.(av).data(iu1);
         plot(dt,d_tmp,'.','DisplayName',num2str(uyears(i)));
-        if ~ismember(av, ["waveDir","meanDir"])
-            c_tmp = d.(av).check(iu1);
-            iu2 = find(c_tmp==4);
-            plot(dt(iu2),d_tmp(iu2),'rd','HandleVisibility','off');
-        else
-            c_jump = d.(av).jumpCheck(iu1);
-            iu3 = find(c_jump==4);
-            plot(dt(iu3),d_tmp(iu3),'ro','HandleVisibility','off');
-        end
+        c_tmp = d.(av).QAQC(iu1);
+        iu2 = find(floor(c_tmp/1000)~=1);
+        plot(dt(iu2),d_tmp(iu2),'ro','HandleVisibility','off');
     end
 end
 

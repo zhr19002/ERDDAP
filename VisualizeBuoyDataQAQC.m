@@ -46,7 +46,7 @@ d_crs = d_crs.CruiseQAQC;
 crs = fieldnames(d_crs);
 
 % Determine the depth range ZT to ZB
-ZT = 5*floor((min(d.(loc).depth)-0.1)/5);
+ZT = 5*floor((min(d.(loc).depth)-0.01)/5);
 ZB = ZT + 5;
 dpth = ['depth_' num2str(ZT) '_' num2str(ZB)];
 

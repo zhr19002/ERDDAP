@@ -1,4 +1,4 @@
-function [QAQCTests, FailedTestsCount] = CheckBuoyDataQAQC(d, loc, QAQC, av_by, av)
+function [QAQCTests, FailedTestsCount] = CheckBuoyDataQAQC(d, loc, QAQC, av)
 % 
 % Identify and flag failed QAQC tests of buoy data
 % 
@@ -12,7 +12,7 @@ function [QAQCTests, FailedTestsCount] = CheckBuoyDataQAQC(d, loc, QAQC, av_by, 
 % 
 
 % Run the threshold test
-ZT = 5*floor((d.dBars-0.1)/5);
+ZT = 5*floor((d.P-0.01)/5);
 ZT(ZT<0 | ZT>40 | isnan(ZT)) = mode(ZT);
 uZT = unique(ZT);
 c = ones(size(d,1), 1);
@@ -21,13 +21,13 @@ for i = 1:length(uZT)
     dpth = ['depth_' num2str(uZT(i)) '_' num2str(uZT(i)+5)];
     % Locate rows of a specific depth range
     iu = find(ZT==uZT(i));
-    c(iu) = ImplementThresholdTest(d.(av_by.(av))(iu), d.TmStamp(iu), QAQC, dpth, av);
+    c(iu) = ImplementThresholdTest(d.(av)(iu), d.TmStamp(iu), QAQC, dpth, av);
 end
 d.('QAQCTests') = 10000*c;
 d.('FailedTestsCount') = (c~=1);
 
 % Run the jump limit test
-c = ImplementJumpLimTest(d.(av_by.(av)));
+c = ImplementJumpLimTest(d.(av));
 d.('QAQCTests') = 1000*c + d.('QAQCTests');
 d.('FailedTestsCount') = (c~=1) + d.('FailedTestsCount');
 
@@ -37,12 +37,12 @@ d.('QAQCTests') = 100*c + d.('QAQCTests');
 d.('FailedTestsCount') = (c~=1) + d.('FailedTestsCount');
 
 % Run the pressure range test
-c = ImplementPresRngTest(d.dBars, loc);
+c = ImplementPresRngTest(d.P, loc);
 d.('QAQCTests') = 10*c + d.('QAQCTests');
 d.('FailedTestsCount') = (c~=1) + d.('FailedTestsCount');
 
 % Run the spike test
-c = ImplementSpikeTest(d.(av_by.(av)));
+c = ImplementSpikeTest(d.(av));
 d.('QAQCTests') = c + d.('QAQCTests');
 d.('FailedTestsCount') = (c~=1) + d.('FailedTestsCount');
 

@@ -11,12 +11,9 @@ buoy = 'ARTG'; locs = {'btm1','btm2'};
 % buoy = 'WLIS'; locs = {'btm1','btm2','mid','sfc'};
 
 % Fixed parameters
-cols_old = {'timestamp','degC','sal','DOconc','decibars','cond_Spm'};
-cols_new = {'TmStamp','degC','psu','mg/L','dBars','S/m'};
-
 avars = {'T','S','DO','P','C','pH','rho','DOsat'};
-av_by = struct('T','degC','S','psu','DO','mg/L','P','dBars','C','S/m', ...
-               'pH','none','rho','kg/m^3','DOsat','percent');
+cols_old = {'timestamp','degC','sal','DOconc','decibars','cond_Spm'};
+cols_new = [{'TmStamp'}, avars(1:5)];
 
 % Read station group QAQC parameters
 switch buoy
@@ -53,6 +50,7 @@ for loc = locs
         case 'CLIS'
             dT3 = sqlread(conn, '"CLIS_pb2_sbe37Sfc"');
             dT3.TmStamp.TimeZone = 'UTC';
+            dT3 = renamevars(dT3, {'degC','psu','mg/L','dBars','S/m'}, avars(1:5));
             dT2 = sqlread(conn, '"clis_sbe37sfc"');
             dT2 = renamevars(dT2, cols_old, cols_new);
             dT1 = sqlread(conn, '"clis_ysi_sfc"');
@@ -70,17 +68,13 @@ for loc = locs
     close(conn);
     
     % Calculate rho
-    sw_S = dT.('psu');
-    sw_T = dT.('degC');
-    sw_P = dT.('dBars');
-    dT.('kg/m^3') = real(sw_dens(sw_S,sw_T,sw_P)-1000);
-    % Calculate DOsat
-    sat = sw_satO2(dT.('psu'),dT.('degC'))*1.33; % Converted to mg/L
-    dT.('percent') = 100*dT.('mg/L')./sat;
+    dT.('rho') = real(sw_dens(dT.S,dT.T,dT.P)-1000);
+    % Calculate DOsat (convert to mg/L)
+    dT.('DOsat') = 100*dT.DO ./ (sw_satO2(dT.S,dT.T)*1.33);
     % Replace DOsat values greater than 1000 with NaN
-    dT.('percent')(dT.('percent') > 1000) = NaN;
+    dT.('DOsat')(dT.('DOsat') > 1000) = NaN;
     % Add the pH column
-    dT.none(:) = NaN;
+    dT.('pH')(:) = NaN;
     
     % Add specific columns
     connQ = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
@@ -94,21 +88,18 @@ for loc = locs
     close(connQ);
     
     % Clean buoy data
-    d = CleanBuoyData(dT, av_by);
+    d = CleanBuoyData(dT, avars);
     
     % Create the "BuoyQAQC" table
     BuoyQAQC = table();
     BuoyQAQC.TmStamp = d.TmStamp;
-    BuoyQAQC.depth = d.dBars;
+    BuoyQAQC.depth = d.P;
     for av = avars
-        tbvars = categorical(d.Properties.VariableNames);
-        if iscategory(tbvars, av_by.(av{1}))
-            % Run QAQC tests
-            [dQ, dC] = CheckBuoyDataQAQC(d, loc{1}, QAQC, av_by, av{1});
-            BuoyQAQC.([av{1} '_data']) = d.(av_by.(av{1}));
-            BuoyQAQC.([av{1} '_Q']) = dQ;
-            BuoyQAQC.([av{1} '_FailedCount']) = dC;
-        end
+        % Run QAQC tests
+        [dQ, dC] = CheckBuoyDataQAQC(d, loc{1}, QAQC, av{1});
+        BuoyQAQC.([av{1} '_data']) = d.(av{1});
+        BuoyQAQC.([av{1} '_Q']) = dQ;
+        BuoyQAQC.([av{1} '_FailedCount']) = dC;
     end
     BuoyQAQC.latitude = d.latitude;
     BuoyQAQC.longitude = d.longitude;
@@ -157,11 +148,3 @@ end
 % dT = sqlread(connQ, tblName);
 
 close(connQ);
-
-%%
-% Sort the "TmStamp" column
-tblName = '"ARTG_btm1_QAQC"';
-query = ['SELECT * FROM ' tblName ' ORDER BY "TmStamp";'];
-execute(connQ, query);
-
-dT = sqlread(connQ, tblName);

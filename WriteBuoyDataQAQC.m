@@ -18,8 +18,6 @@ buoy = 'ARTG'; locs = {'btm1','btm2','sfc'};
 
 % Fixed parameters
 avars = {'T','S','DO','P','C','pH','rho','DOsat'};
-av_by = struct('T','degC','S','psu','DO','mg/L','P','dBars','C','S/m', ...
-               'pH','none','rho','kg/m^3','DOsat','percent');
 
 % Read station group QAQC parameters
 switch buoy
@@ -54,29 +52,26 @@ for loc = locs
             dbname = strcat('"',[buoy '_pb2_sbe37' loc{1}],'"');
             dT = sqlread(conn, dbname);
     end
+    dT = renamevars(dT, {'degC','psu','mg/L','dBars','S/m'}, avars(1:5));
     dT = sortrows(dT, 'TmStamp');
     close(conn);
     
     % Calculate rho
-    sw_S = dT.('psu');
-    sw_T = dT.('degC');
-    sw_P = dT.('dBars');
-    dT.('kg/m^3') = real(sw_dens(sw_S,sw_T,sw_P)-1000);
-    % Calculate DOsat
-    sat = sw_satO2(dT.('psu'),dT.('degC'))*1.33; % Converted to mg/L
-    dT.('percent') = 100*dT.('mg/L')./sat;
+    dT.('rho') = real(sw_dens(dT.S,dT.T,dT.P)-1000);
+    % Calculate DOsat (convert to mg/L)
+    dT.('DOsat') = 100*dT.DO ./ (sw_satO2(dT.S,dT.T)*1.33);
     % Replace DOsat values greater than 1000 with NaN
-    dT.('percent')(dT.('percent') > 1000) = NaN;
+    dT.('DOsat')(dT.('DOsat') > 1000) = NaN;
     
     % Add the pH column
     switch strcmp([buoy '_' loc{1}], 'ARTG_btm1')
         case 0
-            dT.none(:) = NaN;
+            dT.('pH')(:) = NaN;
         case 1
-            dT.none(:) = NaN;
+            dT.('pH')(:) = NaN;
             d0 = load('artg_sbe37_2013-2021_tablesrev.mat'); 
             d0 = d0.d.artgbtm2_21; d0 = sortrows(d0,'EST');
-            dT.none(year(dT.TmStamp)==2021) = [d0.pH; d0.pH(end)];
+            dT.('pH')(year(dT.TmStamp)==2021) = [d0.pH; d0.pH(end)];
     end
     
     % Eliminate outliers for specific columns
@@ -86,21 +81,18 @@ for loc = locs
     dT.mooring_site_desc(:) = mode(categorical(dT.mooring_site_desc));
     
     % Clean buoy data
-    d = CleanBuoyData(dT, av_by);
+    d = CleanBuoyData(dT, avars);
     
     % Create the "BuoyQAQC" table
     BuoyQAQC = table();
     BuoyQAQC.TmStamp = d.TmStamp;
-    BuoyQAQC.depth = d.dBars;
+    BuoyQAQC.depth = d.P;
     for av = avars
-        tbvars = categorical(d.Properties.VariableNames);
-        if iscategory(tbvars, av_by.(av{1}))
-            % Run QAQC tests
-            [dQ, dC] = CheckBuoyDataQAQC(d, loc{1}, QAQC, av_by, av{1});
-            BuoyQAQC.([av{1} '_data']) = d.(av_by.(av{1}));
-            BuoyQAQC.([av{1} '_Q']) = dQ;
-            BuoyQAQC.([av{1} '_FailedCount']) = dC;
-        end
+        % Run QAQC tests
+        [dQ, dC] = CheckBuoyDataQAQC(d, loc{1}, QAQC, av{1});
+        BuoyQAQC.([av{1} '_data']) = d.(av{1});
+        BuoyQAQC.([av{1} '_Q']) = dQ;
+        BuoyQAQC.([av{1} '_FailedCount']) = dC;
     end
     BuoyQAQC.latitude = d.latitude;
     BuoyQAQC.longitude = d.longitude;

@@ -1,6 +1,6 @@
 clc; clear;
 
-tblName = '"EXRX_btm2_QAQC"';
+tblName = '"ARTG_btm1_QAQC"';
 
 % Fixed parameters
 avars = {'T','S','DO','P','C','pH','rho','DOsat'};
@@ -96,11 +96,16 @@ tblNames = {'ARTG_btm1_QAQC','ARTG_btm2_QAQC','ARTG_sfc_QAQC', ...
             'CLIS2_Met_QAQC','EXRX_Met_QAQC', 'WLIS_Met_QAQC', ...
             'CLIS_Wave_QAQC','EXRX_Wave_QAQC','WLIS_Wave_QAQC'};
 
-for tbl = tblNames
+for tbl = tblNames(1:5)
     d1 = sqlread(connQ, strcat('"',tbl{1},'"'));
     fprintf('%s   %s   %d\n', min(d1.TmStamp), max(d1.TmStamp), height(d1));
     d2 = sqlread(connQ, strcat('"',[tbl{1} '_new'],'"'));
     fprintf('%s   %s   %d\n', d2.TmStamp(1), d2.TmStamp(end), height(d2));
+    if min(d1.TmStamp)==d2.TmStamp(1) && max(d1.TmStamp)==d2.TmStamp(end) && height(d1)==height(d2)
+        fprintf('%s correct\n', tbl{1});
+    else
+        fprintf('%s wrong\n', tbl{1});
+    end
 
     % Drop the table from PostgreSQL
     % execute(connQ, ['DROP TABLE "' tbl{1} '";']);

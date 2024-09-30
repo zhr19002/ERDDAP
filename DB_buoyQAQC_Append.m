@@ -1,7 +1,5 @@
 clc; clear;
 
-tblName = '"EXRX_btm2_QAQC"';
-
 % Fixed parameters
 avars = {'T','S','DO','P','C','pH','rho','DOsat'};
 avars_data = {'T_data','S_data','DO_data','P_data','C_data','pH_data','rho_data','DOsat_data'};
@@ -12,13 +10,34 @@ waveVars = {'Hsig_m','Hmax_m','Tdom_s','Tavg_s','waveDir','meanDir'};
 % Connect to PostgreSQL
 username = 'lisicos';
 password = 'vncq489';
+conn = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
+     'DatabaseName','provLNDB','PortNumber',5432);
 connQ = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
      'DatabaseName','buoyQAQC','PortNumber',5432);
 
-% Sort the "TmStamp" column
-dT0 = sqlread(connQ, tblName);
-dT = sortrows(dT0, 'TmStamp');
+% Extract tables
+tblNames = {'ARTG_pb2_sbe37btm1', 'ARTG_pb2_sbe37btm2', 'ARTG_pb2_sbe37sfc' ...
+            'clis_cr1xPB4_sbe37Btm', 'clis_cr1xPB4_sbe37Sfc', ...
+            'EXRX_pb2_sbe37btm2','EXRX_pb2_sbe37mid','EXRX_pb2_sbe37sfc', ...
+            'WLIS_pb2_sbe37btm1','WLIS_pb2_sbe37btm2','WLIS_pb2_sbe37mid','WLIS_pb2_sbe37sfc'};
+
+for tbl = tblNames
+    dT = sqlread(conn, strcat('"',tbl{1},'"'));
+    dT = renamevars(dT, {'degC','psu','mg/L','dBars','S/m'}, avars(1:5));
+    dT = sortrows(dT, 'TmStamp');
+    
+    % Calculate rho
+    dT.('rho') = real(sw_dens(dT.S,dT.T,dT.P)-1000);
+    % Calculate DOsat (convert to mg/L)
+    dT.('DOsat') = 100*dT.DO ./ (sw_satO2(dT.S,dT.T)*1.33);
+    % Replace DOsat values greater than 1000 with NaN
+    dT.('DOsat')(dT.('DOsat') > 1000) = NaN;
+    % Add the pH column
+    dT.('pH')(:) = NaN;
+end
+
 fprintf('%s   %s\n', min(dT.TmStamp), max(dT.TmStamp));
+writetable(dT, [buoy '_' loc{1} '_QAQC.csv']);
 
 %%
 % QAQC checks

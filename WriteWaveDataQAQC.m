@@ -38,13 +38,6 @@ end
 dT = sortrows(dT, 'TmStamp');
 close(conn);
 
-% Eliminate outliers for specific columns
-dT.depth(:) = mode(dT.depth);
-dT.latitude(:) = mode(dT.latitude);
-dT.longitude(:) = mode(dT.longitude);
-dT.station(:) = mode(categorical(dT.station));
-dT.mooring_site_desc(:) = mode(categorical(dT.mooring_site_desc));
-
 % Create the "waveQAQC" table
 waveQAQC = table();
 waveQAQC.TmStamp = dT.TmStamp;
@@ -55,11 +48,13 @@ for av = waveVars
     waveQAQC.([av{1} '_Q']) = dQ;
     waveQAQC.([av{1} '_FailedCount']) = dC;
 end
-waveQAQC.depth = dT.depth;
-waveQAQC.latitude = dT.latitude;
-waveQAQC.longitude = dT.longitude;
-waveQAQC.station = dT.station;
-waveQAQC.mooring_site_desc = dT.mooring_site_desc;
+
+% Add specific columns
+waveQAQC.depth(:) = mode(dT.depth);
+waveQAQC.latitude(:) = mode(dT.latitude);
+waveQAQC.longitude(:) = mode(dT.longitude);
+waveQAQC.station(:) = mode(categorical(dT.station));
+waveQAQC.mooring_site_desc(:) = mode(categorical(dT.mooring_site_desc));
 
 % Save the updated "waveQAQC" table to a CSV file
 writetable(waveQAQC, [buoy '_Wave_QAQC.csv']);

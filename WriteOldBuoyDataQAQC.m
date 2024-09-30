@@ -62,6 +62,7 @@ for loc = locs
             dT = sqlread(conn, dbname);
             dT = renamevars(dT, cols_old, cols_new);
     end
+    
     % Filter TmStamp outliers
     dT(dT.TmStamp <= datetime('01-Jan-1904','TimeZone','UTC'), :) = [];
     dT = sortrows(dT, 'TmStamp');
@@ -75,17 +76,6 @@ for loc = locs
     dT.('DOsat')(dT.('DOsat') > 1000) = NaN;
     % Add the pH column
     dT.('pH')(:) = NaN;
-    
-    % Add specific columns
-    connQ = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
-         'DatabaseName','buoyQAQC','PortNumber',5432);
-    dbname0 = strcat('"',[buoy '_' loc{1} '_QAQC'],'"');
-    dT0 = sqlread(connQ, dbname0);
-    dT.latitude(:) = dT0.latitude(1);
-    dT.longitude(:) = dT0.longitude(1);
-    dT.station(:) = dT0.station(1);
-    dT.mooring_site_desc(:) = dT0.mooring_site_desc(1);
-    close(connQ);
     
     % Clean buoy data
     d = CleanBuoyData(dT, avars);
@@ -101,10 +91,16 @@ for loc = locs
         BuoyQAQC.([av{1} '_Q']) = dQ;
         BuoyQAQC.([av{1} '_FailedCount']) = dC;
     end
-    BuoyQAQC.latitude = d.latitude;
-    BuoyQAQC.longitude = d.longitude;
-    BuoyQAQC.station = d.station;
-    BuoyQAQC.mooring_site_desc = d.mooring_site_desc;
+    
+    % Add specific columns
+    connQ = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
+         'DatabaseName','buoyQAQC','PortNumber',5432);
+    dTQ = sqlread(connQ, strcat('"',[buoy '_' loc{1} '_QAQC'],'"'));
+    BuoyQAQC.latitude(:) = dTQ.latitude(1);
+    BuoyQAQC.longitude(:) = dTQ.longitude(1);
+    BuoyQAQC.station(:) = dTQ.station(1);
+    BuoyQAQC.mooring_site_desc(:) = dTQ.mooring_site_desc(1);
+    close(connQ);
     
     % Save the updated "BuoyQAQC" table to a CSV file
     writetable(BuoyQAQC, [buoy '_' loc{1} '_QAQC.csv']);

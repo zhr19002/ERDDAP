@@ -43,22 +43,11 @@ switch buoy
         dT = sqlread(conn, '"wlis_wx"');
         dT = renamevars(dT, cols_old, cols_new);
 end
+
 % Filter TmStamp outliers
 dT(dT.TmStamp <= datetime('01-Jan-1904','TimeZone','UTC'), :) = [];
 dT = sortrows(dT, 'TmStamp');
 close(conn);
-
-% Add specific columns
-connQ = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
-         'DatabaseName','buoyQAQC','PortNumber',5432);
-dbname0 = strcat('"',[buoy '_Met_QAQC'],'"');
-dT0 = sqlread(connQ, dbname0);
-dT.depth(:) = dT0.depth(1);
-dT.latitude(:) = dT0.latitude(1);
-dT.longitude(:) = dT0.longitude(1);
-dT.station(:) = dT0.station(1);
-dT.mooring_site_desc(:) = dT0.mooring_site_desc(1);
-close(connQ);
 
 % Create the "MetQAQC" table
 MetQAQC = table();
@@ -72,11 +61,17 @@ for av = metVars
     MetQAQC.([av{1} '_Q']) = dQ;
     MetQAQC.([av{1} '_FailedCount']) = dC;
 end
-MetQAQC.depth = dT.depth;
-MetQAQC.latitude = dT.latitude;
-MetQAQC.longitude = dT.longitude;
-MetQAQC.station = dT.station;
-MetQAQC.mooring_site_desc = dT.mooring_site_desc;
+
+% Add specific columns
+connQ = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
+     'DatabaseName','buoyQAQC','PortNumber',5432);
+dTQ = sqlread(connQ, strcat('"',[buoy '_Met_QAQC'],'"'));
+MetQAQC.depth(:) = dTQ.depth(1);
+MetQAQC.latitude(:) = dTQ.latitude(1);
+MetQAQC.longitude(:) = dTQ.longitude(1);
+MetQAQC.station(:) = dTQ.station(1);
+MetQAQC.mooring_site_desc(:) = dTQ.mooring_site_desc(1);
+close(connQ);
 
 % Save the updated "MetQAQC" table to a CSV file
 writetable(MetQAQC, [buoy '_Met_QAQC.csv']);

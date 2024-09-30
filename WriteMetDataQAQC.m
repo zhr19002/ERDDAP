@@ -52,13 +52,6 @@ dT = dT(:, tVars);
 dT = sortrows(dT, 'TmStamp');
 close(conn);
 
-% Eliminate outliers for specific columns
-dT.depth(:) = mode(dT.depth);
-dT.latitude(:) = mode(dT.latitude);
-dT.longitude(:) = mode(dT.longitude);
-dT.station(:) = mode(categorical(dT.station));
-dT.mooring_site_desc(:) = mode(categorical(dT.mooring_site_desc));
-
 % Create the "MetQAQC" table
 MetQAQC = table();
 MetQAQC.TmStamp = dT.TmStamp;
@@ -71,11 +64,13 @@ for av = metVars
     MetQAQC.([av{1} '_Q']) = dQ;
     MetQAQC.([av{1} '_FailedCount']) = dC;
 end
-MetQAQC.depth = dT.depth;
-MetQAQC.latitude = dT.latitude;
-MetQAQC.longitude = dT.longitude;
-MetQAQC.station = dT.station;
-MetQAQC.mooring_site_desc = dT.mooring_site_desc;
+
+% Add specific columns
+MetQAQC.depth(:) = mode(dT.depth);
+MetQAQC.latitude(:) = mode(dT.latitude);
+MetQAQC.longitude(:) = mode(dT.longitude);
+MetQAQC.station(:) = mode(categorical(dT.station));
+MetQAQC.mooring_site_desc(:) = mode(categorical(dT.mooring_site_desc));
 
 % Save the updated "MetQAQC" table to a CSV file
 writetable(MetQAQC, [buoy '_Met_QAQC.csv']);

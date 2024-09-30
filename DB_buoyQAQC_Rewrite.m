@@ -1,5 +1,13 @@
+% 
+% Rewrite the "buoyQAQC" database when adding new data to tables:
+% Step 1: Retrieve a table and sort it by "TmStamp"
+% Step 2: Update QAQC columns by re-running QAQC checks
+% Step 3: Store the updated table and rename it in PostgreSQL
+% 
+
 clc; clear;
 
+% Change the table name
 tblName = '"ARTG_btm1_QAQC"';
 
 % Fixed parameters
@@ -18,7 +26,7 @@ connQ = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
 % Sort the "TmStamp" column
 dT0 = sqlread(connQ, tblName);
 dT = sortrows(dT0, 'TmStamp');
-fprintf('%s   %s\n', min(dT.TmStamp), max(dT.TmStamp));
+fprintf('%s   %s   %d\n', min(dT.TmStamp), max(dT.TmStamp), height(dT));
 
 %%
 % QAQC checks
@@ -96,7 +104,7 @@ tblNames = {'ARTG_btm1_QAQC','ARTG_btm2_QAQC','ARTG_sfc_QAQC', ...
             'CLIS2_Met_QAQC','EXRX_Met_QAQC', 'WLIS_Met_QAQC', ...
             'CLIS_Wave_QAQC','EXRX_Wave_QAQC','WLIS_Wave_QAQC'};
 
-for tbl = tblNames(1:5)
+for tbl = tblNames
     d1 = sqlread(connQ, strcat('"',tbl{1},'"'));
     fprintf('%s   %s   %d\n', min(d1.TmStamp), max(d1.TmStamp), height(d1));
     d2 = sqlread(connQ, strcat('"',[tbl{1} '_new'],'"'));

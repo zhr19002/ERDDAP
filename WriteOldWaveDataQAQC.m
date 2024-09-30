@@ -40,22 +40,11 @@ switch buoy
         dT.('waveDir')(:) = NaN;
         dT.('meanDir')(:) = NaN;
 end
+
 % Filter TmStamp outliers
 dT(dT.TmStamp <= datetime('01-Jan-1904','TimeZone','UTC'), :) = [];
 dT = sortrows(dT, 'TmStamp');
 close(conn);
-
-% Add specific columns
-connQ = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
-         'DatabaseName','buoyQAQC','PortNumber',5432);
-dbname0 = strcat('"',[buoy '_Wave_QAQC'],'"');
-dT0 = sqlread(connQ, dbname0);
-dT.depth(:) = dT0.depth(1);
-dT.latitude(:) = dT0.latitude(1);
-dT.longitude(:) = dT0.longitude(1);
-dT.station(:) = dT0.station(1);
-dT.mooring_site_desc(:) = dT0.mooring_site_desc(1);
-close(connQ);
 
 % Create the "waveQAQC" table
 waveQAQC = table();
@@ -67,11 +56,17 @@ for av = waveVars
     waveQAQC.([av{1} '_Q']) = dQ;
     waveQAQC.([av{1} '_FailedCount']) = dC;
 end
-waveQAQC.depth = dT.depth;
-waveQAQC.latitude = dT.latitude;
-waveQAQC.longitude = dT.longitude;
-waveQAQC.station = dT.station;
-waveQAQC.mooring_site_desc = dT.mooring_site_desc;
+
+% Add specific columns
+connQ = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
+     'DatabaseName','buoyQAQC','PortNumber',5432);
+dTQ = sqlread(connQ, strcat('"',[buoy '_Wave_QAQC'],'"'));
+waveQAQC.depth(:) = dTQ.depth(1);
+waveQAQC.latitude(:) = dTQ.latitude(1);
+waveQAQC.longitude(:) = dTQ.longitude(1);
+waveQAQC.station(:) = dTQ.station(1);
+waveQAQC.mooring_site_desc(:) = dTQ.mooring_site_desc(1);
+close(connQ);
 
 % Save the updated "waveQAQC" table to a CSV file
 writetable(waveQAQC, [buoy '_Wave_QAQC.csv']);

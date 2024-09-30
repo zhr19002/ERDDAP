@@ -74,12 +74,6 @@ for loc = locs
             dT.('pH')(year(dT.TmStamp)==2021) = [d0.pH; d0.pH(end)];
     end
     
-    % Eliminate outliers for specific columns
-    dT.latitude(:) = mode(dT.latitude);
-    dT.longitude(:) = mode(dT.longitude);
-    dT.station(:) = mode(categorical(dT.station));
-    dT.mooring_site_desc(:) = mode(categorical(dT.mooring_site_desc));
-    
     % Clean buoy data
     d = CleanBuoyData(dT, avars);
     
@@ -94,10 +88,12 @@ for loc = locs
         BuoyQAQC.([av{1} '_Q']) = dQ;
         BuoyQAQC.([av{1} '_FailedCount']) = dC;
     end
-    BuoyQAQC.latitude = d.latitude;
-    BuoyQAQC.longitude = d.longitude;
-    BuoyQAQC.station = d.station;
-    BuoyQAQC.mooring_site_desc = d.mooring_site_desc;
+    
+    % Add specific columns
+    BuoyQAQC.latitude(:) = mode(dT.latitude);
+    BuoyQAQC.longitude(:) = mode(dT.longitude);
+    BuoyQAQC.station(:) = mode(categorical(dT.station));
+    BuoyQAQC.mooring_site_desc(:) = mode(categorical(dT.mooring_site_desc));
     
     % Save the updated "BuoyQAQC" table to a CSV file
     writetable(BuoyQAQC, [buoy '_' loc{1} '_QAQC.csv']);

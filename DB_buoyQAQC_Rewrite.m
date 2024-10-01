@@ -24,9 +24,9 @@ connQ = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
      'DatabaseName','buoyQAQC','PortNumber',5432);
 
 % Sort the "TmStamp" column
-dT0 = sqlread(connQ, tblName);
-dT = sortrows(dT0, 'TmStamp');
-fprintf('%s   %s   %d\n', min(dT.TmStamp), max(dT.TmStamp), height(dT));
+dTQ = sqlread(connQ, tblName);
+dT = sortrows(dTQ, 'TmStamp');
+fprintf('%s   %s   %s   %d\n', tblName, min(dT.TmStamp), max(dT.TmStamp), height(dT));
 
 %%
 % QAQC checks
@@ -106,15 +106,15 @@ tblNames = {'ARTG_btm1_QAQC','ARTG_btm2_QAQC','ARTG_sfc_QAQC', ...
 
 for tbl = tblNames
     d1 = sqlread(connQ, strcat('"',tbl{1},'"'));
-    fprintf('%s   %s   %d\n', min(d1.TmStamp), max(d1.TmStamp), height(d1));
-    d2 = sqlread(connQ, strcat('"',[tbl{1} '_new'],'"'));
-    fprintf('%s   %s   %d\n', d2.TmStamp(1), d2.TmStamp(end), height(d2));
-    if min(d1.TmStamp)==d2.TmStamp(1) && max(d1.TmStamp)==d2.TmStamp(end) && height(d1)==height(d2)
-        fprintf('%s correct\n', tbl{1});
-    else
-        fprintf('%s wrong\n', tbl{1});
-    end
-
+    fprintf('%s   %s   %s   %d\n', tbl{1}, min(d1.TmStamp), max(d1.TmStamp), height(d1));
+    % d2 = sqlread(connQ, strcat('"',[tbl{1} '_new'],'"'));
+    % fprintf('%s   %s   %s   %d\n', tbl{1}, d2.TmStamp(1), d2.TmStamp(end), height(d2));
+    % if min(d1.TmStamp)==d2.TmStamp(1) && max(d1.TmStamp)==d2.TmStamp(end) && height(d1)==height(d2)
+    %     fprintf('%s correct\n', tbl{1});
+    % else
+    %     fprintf('%s wrong\n', tbl{1});
+    % end
+    
     % Drop the table from PostgreSQL
     % execute(connQ, ['DROP TABLE "' tbl{1} '";']);
     % Rename the table

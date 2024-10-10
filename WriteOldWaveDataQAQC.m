@@ -28,7 +28,8 @@ switch buoy
         dT1 = renamevars(dT1,'timestamp','TmStamp');
         dT1.('waveDir')(:) = NaN;
         dT2 = sqlread(conn, '"CLIS_pb3_WaveStat"');
-        dT2.TmStamp.TimeZone = 'UTC';
+        dT2.TmStamp.TimeZone = 'America/New_York';
+        dT2.TmStamp = datetime(dT2.TmStamp,'TimeZone','UTC');
         dT2.('waveDir')(:) = NaN;
         dT = [dT1(:,cols); dT2(:,cols)];
         dT = renamevars(dT, cols(2:7), waveVars);
@@ -69,8 +70,9 @@ waveQAQC.mooring_site_desc(:) = dTQ.mooring_site_desc(1);
 close(connQ);
 
 % Save the updated "waveQAQC" table to a CSV file
+waveQAQC.TmStamp.TimeZone = 'America/New_York';
 writetable(waveQAQC, [buoy '_Wave_QAQC.csv']);
-fprintf('%s   %s\n', min(dT.TmStamp), max(dT.TmStamp));
+fprintf('%s   %s   %s\n', min(waveQAQC.TmStamp), max(waveQAQC.TmStamp), waveQAQC.TmStamp.TimeZone);
 
 %%
 % Read the CSV file into a table

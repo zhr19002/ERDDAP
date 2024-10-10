@@ -5,9 +5,9 @@
 
 clc; clear;
 
-buoy = 'ARTG'; locs = {'btm1','btm2'};
+% buoy = 'ARTG'; locs = {'btm1','btm2'};
 % buoy = 'CLIS'; locs = {'sfc'};
-% buoy = 'EXRX'; locs = {'btm1','btm2','mid','sfc'};
+buoy = 'EXRX'; locs = {'btm1','btm2','mid','sfc'};
 % buoy = 'WLIS'; locs = {'btm1','btm2','mid','sfc'};
 
 % Fixed parameters
@@ -49,7 +49,8 @@ for loc = locs
             end
         case 'CLIS'
             dT3 = sqlread(conn, '"CLIS_pb2_sbe37Sfc"');
-            dT3.TmStamp.TimeZone = 'UTC';
+            dT3.TmStamp.TimeZone = 'America/New_York';
+            dT3.TmStamp = datetime(dT3.TmStamp,'TimeZone','UTC');
             dT3 = renamevars(dT3, {'degC','psu','mg/L','dBars','S/m'}, avars(1:5));
             dT2 = sqlread(conn, '"clis_sbe37sfc"');
             dT2 = renamevars(dT2, cols_old, cols_new);
@@ -103,8 +104,9 @@ for loc = locs
     close(connQ);
     
     % Save the updated "BuoyQAQC" table to a CSV file
+    BuoyQAQC.TmStamp.TimeZone = 'America/New_York';
     writetable(BuoyQAQC, [buoy '_' loc{1} '_QAQC.csv']);
-    fprintf('%s   %s\n', min(d.TmStamp), max(d.TmStamp));
+    fprintf('%s   %s   %s\n', min(BuoyQAQC.TmStamp), max(BuoyQAQC.TmStamp), BuoyQAQC.TmStamp.TimeZone);
 end
 
 %%

@@ -58,6 +58,7 @@ waveQAQC.mooring_site_desc(:) = mode(categorical(dT.mooring_site_desc));
 
 % Save the updated "waveQAQC" table to a CSV file
 writetable(waveQAQC, [buoy '_Wave_QAQC.csv']);
+fprintf('%s   %s   %s\n', min(waveQAQC.TmStamp), max(waveQAQC.TmStamp), waveQAQC.TmStamp.TimeZone);
 
 %%
 % Read the CSV file into a table

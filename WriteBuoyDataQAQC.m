@@ -97,6 +97,7 @@ for loc = locs
     
     % Save the updated "BuoyQAQC" table to a CSV file
     writetable(BuoyQAQC, [buoy '_' loc{1} '_QAQC.csv']);
+    fprintf('%s   %s   %s\n', min(BuoyQAQC.TmStamp), max(BuoyQAQC.TmStamp), BuoyQAQC.TmStamp.TimeZone);
 end
 
 %%

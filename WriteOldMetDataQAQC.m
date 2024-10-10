@@ -33,14 +33,13 @@ switch buoy
         dT2 = sqlread(conn, '"CLIS_pb1_metDat"');
         dT2 = renamevars(dT2, {'WindSpd','maxWindSpd','WindDir','AirTemp', ...
              'RelHumidity','BaroPress','DewPt'}, [metVars(1:2),metVars(4:8)]);
-        dT2.TmStamp.TimeZone = 'UTC';
+        dT2.TmStamp.TimeZone = 'America/New_York';
+        dT2.TmStamp = datetime(dT2.TmStamp,'TimeZone','UTC');
         dT2.('fiveSecAvg_Max')(:) = NaN;
         dT = [dT1(:,cols_new); dT2(:,cols_new)];
-    case 'EXRX'
-        dT = sqlread(conn, '"exrx_wx"');
-        dT = renamevars(dT, cols_old, cols_new);
-    case 'WLIS'
-        dT = sqlread(conn, '"wlis_wx"');
+    otherwise
+        dbname = strcat('"',[lower(buoy) '_wx'],'"');
+        dT = sqlread(conn, dbname);
         dT = renamevars(dT, cols_old, cols_new);
 end
 
@@ -55,6 +54,7 @@ MetQAQC.TmStamp = dT.TmStamp;
 for av = metVars
     % Clean meteorology data
     dT.(av{1})(dT.(av{1}) < -1000) = NaN;
+    
     % Run QAQC tests
     [dQ, dC] = CheckMetWaveQAQC(dT, QAQC, av{1});
     MetQAQC.(av{1}) = dT.(av{1});
@@ -74,8 +74,9 @@ MetQAQC.mooring_site_desc(:) = dTQ.mooring_site_desc(1);
 close(connQ);
 
 % Save the updated "MetQAQC" table to a CSV file
+MetQAQC.TmStamp.TimeZone = 'America/New_York';
 writetable(MetQAQC, [buoy '_Met_QAQC.csv']);
-fprintf('%s   %s\n', min(dT.TmStamp), max(dT.TmStamp));
+fprintf('%s   %s   %s\n', min(MetQAQC.TmStamp), max(MetQAQC.TmStamp), MetQAQC.TmStamp.TimeZone);
 
 %%
 % Read the CSV file into a table

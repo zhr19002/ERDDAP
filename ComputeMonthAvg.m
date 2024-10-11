@@ -1,11 +1,11 @@
-function res = ComputeMonthlyAverages(daten, d)
+function res = ComputeMonthAvg(daten, d)
 % 
-% Average by month and return the mean and anomalies
+% Average by months and return the mean and anomalies
 % 
 % Called from GetDEEPStationSurfaceData.m
 % 
 
-[~,mnth,~] = datevec(daten);
+[~, mnth, ~] = datevec(daten);
 res.anom = NaN*ones(length(daten),1);
 
 for nm = 1:12

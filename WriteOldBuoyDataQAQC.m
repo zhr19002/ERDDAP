@@ -5,9 +5,9 @@
 
 clc; clear;
 
-% buoy = 'ARTG'; locs = {'btm1','btm2'};
+buoy = 'ARTG'; locs = {'btm1','btm2'};
 % buoy = 'CLIS'; locs = {'sfc'};
-buoy = 'EXRX'; locs = {'btm1','btm2','mid','sfc'};
+% buoy = 'EXRX'; locs = {'btm1','btm2','mid','sfc'};
 % buoy = 'WLIS'; locs = {'btm1','btm2','mid','sfc'};
 
 % Fixed parameters

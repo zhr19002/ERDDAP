@@ -1,9 +1,11 @@
-function [ds, db] = GetCTDEEP_Nut_Data(Astn, Ayear)
+% function [ds, db] = GetCTDEEP_Nut_Data(Astn, Ayear, deletion)
 % 
 % Get Astn nutrient data in Ayear from ERDDAP
 % 
 % Calls CTDEEP_Sep_Nut_Data.m
 % 
+clc; clear;
+Astn = 'E1'; Ayear = 2021; deletion = 1;
 
 Ayear = num2str(Ayear);
 wopts = weboptions; wopts.Timeout = 120;
@@ -38,9 +40,17 @@ for nn = 1:12
             % Save the updated .mat file
             DEEP_Nutrient = d{nn};
             save(afile, 'DEEP_Nutrient');
+            % Delete the generated .mat file
+            if deletion == 1
+                delete(afile);
+            end
         catch
             disp(['No data at ' Astn ' in ' Ayear '-' Amonth]);
             d{nn} = {};
+            % Delete the generated .mat file
+            if deletion == 1
+                delete(afile);
+            end
         end
     else
         if ~isempty(dir(afile)) & dir(afile).bytes>0
@@ -52,6 +62,7 @@ for nn = 1:12
     end
 end
 
+%%
 % Seperate the dataset base on locations (surface/bottom)
 ds = cell(12,1); db = cell(12,1);
 for nn = 1:12

@@ -43,12 +43,8 @@ for i = 1:length(stnGrp)
 end
 
 % Seperate data based on depth_code
-for dp = {'S','M','B'}
-    if dp{1} == 'S'
-        iu1 = startsWith(d.Depth_Code, 'S');
-    else
-        iu1 = strcmp(d.Depth_Code, dp{1});
-    end
+for dp = {'S','B'}
+    iu1 = find(startsWith(d.Depth_Code, dp{1}));
     for field = fieldnames(d)'
         dd.(dp{1}).(field{1}) = d.(field{1})(iu1);
     end
@@ -63,7 +59,7 @@ for dp = {'S','M','B'}
 end
 
 %%
-for dp = {'S','M','B'}
+for dp = {'S','B'}
     for av = paras
         var = replace(av{1},'#-','_');
         var = replace(var,'-','_');
@@ -75,15 +71,16 @@ for dp = {'S','M','B'}
             iu = find(month(nut.(dp{1}).(var).time)==nm);
             if ~isempty(iu)
                 data = nut.(dp{1}).(var).data(iu);
+                data = data(~isnan(data));
             else
                 data = 0;
             end
-
+            
             para{1,nm} = length(iu);
-            para{2,nm} = min(prctile(data,99.99), rng(2));
-            para{3,nm} = max(prctile(data,0.01), rng(1));
-            para{4,nm} = min(prctile(data,99), rng(2));
-            para{5,nm} = max(prctile(data,1), rng(1));
+            para{2,nm} = prctile(data,99.99);
+            para{3,nm} = prctile(data,0.01);
+            para{4,nm} = prctile(data,99);
+            para{5,nm} = prctile(data,1);
         end
         QAQC.(dp{1}).(var) = para;
     end

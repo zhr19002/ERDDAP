@@ -1,4 +1,7 @@
 % 
+% Identify and flag station nutrient data outliers
+% (1 = pass; 3 = beyond 98% data range; 4 = beyond max-min range)
+% 
 % Calls GetCTDEEP_Nut_Data.m
 % 
 
@@ -13,6 +16,17 @@ Astn = 'E1';
 paras = {'BIOSI-LC','CHLA','DIP','DOC','NH#-LC','NOX-LC', ...
          'PC','PN','PP-LC','SIO2-LC','TDN-LC','TDP','TSS'};
 
+% Read station group nutrients QAQC parameters
+if ismember(Astn, {'A2','A4','B3','C1','C2','D3','E1','09','15'})
+    stnGroup = 'WStations';
+elseif ismember(Astn, {'F2','F3','H2','H4','H6'})
+    stnGroup = 'CStations';
+else
+    stnGroup = 'EStations';
+end
+QAQC = load(['QAQC_Para_' stnGroup(1) 'Nutrients.mat']);
+QAQC = QAQC.QAQC;
+
 % Get station nutrient data
 d = GetCTDEEP_Nut_Data(Astn, 1);
 if ~isempty(d)
@@ -24,12 +38,8 @@ if ~isempty(d)
     nut.latitude = mode(d.latitude);
     nut.longitude = mode(d.longitude);
     % Seperate data based on depth_code
-    for dp = {'S','M','B'}
-        if dp{1} == 'S'
-            iu1 = startsWith(d.Depth_Code, 'S');
-        else
-            iu1 = strcmp(d.Depth_Code, dp{1});
-        end
+    for dp = {'S','B'}
+        iu1 = find(startsWith(d.Depth_Code, dp{1}));
         for field = fieldnames(d)'
             dd.(dp{1}).(field{1}) = d.(field{1})(iu1);
         end

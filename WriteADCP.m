@@ -6,7 +6,7 @@
 
 clc; clear;
 
-buoy = 'WLIS'; % {'CLIS','EXRX','WLIS'}
+buoy = 'CLIS'; % {'CLIS','EXRX','WLIS'}
 
 % Connect to PostgreSQL
 username = 'lisicos';

@@ -2,14 +2,17 @@ function d = GetCTDEEP_Nut_Data(Astn, deletion)
 % 
 % Get CTDEEP nutrient data for Astn from ERDDAP
 % 
+% Called from WriteNutDataQAQC.m
+% Called from QAQC_Para_Nut.m
+% 
 
 wopts = weboptions; wopts.Timeout = 120;
 
 % Form ERDDAP request
 al = ['http://merlin.dms.uconn.edu:8080/erddap/tabledap/DEEP_Nutrient.mat?' ...
-      'cruise%2CStation_Name%2CDepth_Code%2CPQL%2CParameter%2CResult%2C' ...
-      'latitude%2Clongitude%2Ctime%2CStart_Date%2CEnd_Date%2CB_Sample_Depth%2C' ...
-      'M_Sample_Depth%2CS_Sample_Depth%2CNB_Sample_Depth&Station_Name=%22XX%22'];
+      'Station_Name%2CDepth_Code%2CParameter%2CResult%2C' ...
+      'latitude%2Clongitude%2Ctime%2CB_Sample_Depth%2CM_Sample_Depth%2C' ...
+      'S_Sample_Depth%2CNB_Sample_Depth&Station_Name=%22XX%22'];
 aurl = strrep(al, 'XX', Astn);
 
 afile = ['CTDEEP_Nut_' Astn '.mat'];

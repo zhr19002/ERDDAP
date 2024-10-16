@@ -3,6 +3,8 @@
 % (1 = pass; 3 = beyond 98% data range; 4 = beyond max-min range)
 % 
 % Calls GetCTDEEP_Nut_Data.m
+% Calls ImplementThresholdTest.m
+% Calls WriteNutNETCDF.m
 % 
 
 clc; clear;
@@ -30,11 +32,6 @@ QAQC = QAQC.QAQC;
 % Get station nutrient data
 d = GetCTDEEP_Nut_Data(Astn, 1);
 if ~isempty(d)
-    for field = fieldnames(d)'
-        if ischar(d.(field{1}))
-            d.(field{1}) = cellstr(d.(field{1}));
-        end
-    end
     nut.latitude = mode(d.latitude);
     nut.longitude = mode(d.longitude);
     % Seperate data based on depth_code
@@ -52,8 +49,24 @@ if ~isempty(d)
             dpth = [dp{1} '_Sample_Depth'];
             nut.(dp{1}).(var).depth = cellfun(@str2double, dd.(dp{1}).(dpth)(iu2));
             nut.(dp{1}).(var).data = cellfun(@str2double, dd.(dp{1}).Result(iu2));
+            % Perform the threshold test
+            d_tmp = nut.(dp{1}).(var).data;
+            dt = nut.(dp{1}).(var).time;
+            c_tmp = ImplementThresholdTest(d_tmp, dt, QAQC, dp{1}, var);
+            nut.(dp{1}).(var).check = c_tmp;
         end
     end
-else
-    nut = {};
+end
+
+% Save QAQC results
+NutQAQC = nut;
+save(['CTDEEP_' Astn '_NutQAQC.mat'], 'NutQAQC');
+
+%%
+% Save all the data plotted in a structure that can be exported to NETCDF
+latlon = [NutQAQC.latitude, NutQAQC.longitude];
+for dp = {'S','B'}
+    for field = fieldnames(NutQAQC.(dp{1}))'
+        WriteNutNETCDF(Astn, dp{1}, field{1}, latlon, NutQAQC.(dp{1}).(field{1}));
+    end
 end

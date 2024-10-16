@@ -34,9 +34,6 @@ for i = 1:length(stnGrp)
     d0 = GetCTDEEP_Nut_Data(stnGrp{i}, 1);
     for j = 1:length(fields)
         if isfield(d0, fields{j})
-            if ischar(d0.(fields{j}))
-                d0.(fields{j}) = cellstr(d0.(fields{j}));
-            end
             d.(fields{j}) = [d.(fields{j}); d0.(fields{j})];
         end
     end

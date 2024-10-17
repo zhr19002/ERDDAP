@@ -22,21 +22,21 @@ subplot(5,1,2)
 subplot(5,1,3)
     plot(datetime(0,1:12,15),res.CHLA.mn); hold on;
     plot(datetime(0,1:12,15),res.CHLA.bd84,'r-'); 
-    plot(datetime(0,1:12,15),res.CHLA.bd26,'r-'); 
+    plot(datetime(0,1:12,15),res.CHLA.bd16,'r-'); 
     xticks(datetime(0,1:12,1)); grid on;
     xtickformat('MMM'); ylabel('CHLA (\mug/l)');
 
 subplot(5,1,4)
     plot(datetime(0,1:12,15),res.beta.mn); hold on;
     plot(datetime(0,1:12,15),res.beta.bd84,'r-');
-    plot(datetime(0,1:12,15),res.beta.bd26,'r-');
+    plot(datetime(0,1:12,15),res.beta.bd16,'r-');
     xticks(datetime(0,1:12,1)); grid on;
     xtickformat('MMM'); ylabel('\beta (m^{-1})');
    
 subplot(5,1,5)
     plot(datetime(0,1:12,15),res.PAR0.mn); hold on;
     plot(datetime(0,1:12,15),res.PAR0.bd84,'r-');
-    plot(datetime(0,1:12,15),res.PAR0.bd26,'r-');
+    plot(datetime(0,1:12,15),res.PAR0.bd16,'r-');
     xticks(datetime(0,1:12,1)); grid on;
     xtickformat('MMM'); ylabel('PAR (\muEm^{-2}s^{-1})');
 %%

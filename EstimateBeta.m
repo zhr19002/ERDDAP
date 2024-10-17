@@ -5,30 +5,27 @@ function [PAR0, PAR0upper, PAR0lower, ...
 % Called from GetDEEPStationSurfaceData.m
 % 
 
-y = log(var);
 z = -depth;
-ig = find(~isnan(z+y));
+log_var = real(log(var));
 
-if length(ig) >= 8
-    [fo, foFit] = fit(double(z(ig)), double(y(ig)), 'poly1');
-    errs = confint(cfit(fo), 0.68); % Get the uncertainty in coeffs
-    ParCorr = foFit.rsquare;        % Get the correlation of logfit
-    beta = fo.p1;                   % Get extinction coeff (m^-1)
-    betaupper = errs(2,1);
-    betalower = errs(1,1);
-    PAR0 = exp(fo.p2);              % Extrapolate surface value
-    PAR0upper = exp(errs(2,2));
-    PAR0lower=exp(errs(1,2));
-else
-    errs = NaN * [1 1; 1 1];
-    ParCorr = NaN;                  % Get the correlation of logfit
-    beta = NaN;                     % Get extinction coeff (m^-1)
-    betaupper = errs(2,1);
-    betalower = errs(1,1);
-    PAR0 = NaN;                     % Extrapolate surface value
-    PAR0upper = exp(errs(2,2));
-    PAR0lower=exp(errs(1,2));
+% Initialize outputs
+errs = NaN * [1 1; 1 1]; % Uncertainty of coeffs
+ParCorr = NaN;           % Correlation of logfit
+beta = NaN;              % Extinction coeff (m^-1)
+PAR0 = NaN;              % Extrapolate surface value
+
+iu = ~isnan(z) & ~isnan(log_var);
+if sum(iu) >= 8
+    [fo, gof] = fit(double(z(iu)), double(log_var(iu)), 'poly1');
+    errs = confint(fo, 0.68);
+    ParCorr = gof.rsquare;
+    beta = fo.p1;
+    PAR0 = exp(fo.p2);
 end
+betaupper = errs(2,1);
+betalower = errs(1,1);
+PAR0upper = exp(errs(2,2));
+PAR0lower = exp(errs(1,2));
 
 if FigsOn == 1
     figure;

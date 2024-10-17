@@ -9,7 +9,7 @@ clc; clear;
 stns = 'WStations'; % {'WStations','CStations','EStations'}
 
 % Fixed parameters
-fields = {'Station_Name','Depth_Code','Parameter','Result','time'};
+fields = {'Depth_Code','Parameter','Result','time'};
 paras = {'BIOSI-LC','CHLA','DIP','DOC','NH#-LC','NOX-LC', ...
          'PC','PN','PP-LC','SIO2-LC','TDN-LC','TDP','TSS'};
 

@@ -13,12 +13,13 @@ ZT = num2str(ZT); ZB = num2str(ZB);
 wopts = weboptions; wopts.Timeout = 120;
 
 % Form ERDDAP request
-aurl0 = ['http://merlin.dms.uconn.edu:8080/erddap/tabledap/DEEP_WQ.mat?' ...
-         'station_name%2Ctime%2Clatitude%2Clongitude%2Cdepth%2Csea_water_pressure%2C' ...
-         'sea_water_electrical_conductivity%2Csea_water_temperature%2CpH%2Csea_water_salinity' ...
-         '%2Coxygen_concentration_in_sea_water%2Cpercent_saturation%2Csea_water_density' ...
-         '&station_name=%22XX%22&depth%3E=ZT&depth%3C=ZB'];
-aurl = strrep(aurl0, 'XX', Astn);
+al = ['http://merlin.dms.uconn.edu:8080/erddap/tabledap/DEEP_WQ.mat?' ...
+      'station_name%2Ctime%2Clatitude%2Clongitude%2Cdepth%2Csea_water_pressure%2C' ...
+      'sea_water_electrical_conductivity%2Csea_water_temperature%2CPAR%2C' ...
+      'Chlorophyll%2CCorrected_Chlorophyll%2CpH%2Csea_water_salinity%2C' ...
+      'oxygen_concentration_in_sea_water%2Cpercent_saturation%2Csea_water_density' ...
+      '&station_name=%22XX%22&depth%3E=ZT&depth%3C=ZB'];
+aurl = strrep(al, 'XX', Astn);
 aurl = strrep(aurl, 'ZT', ZT);
 aurl = strrep(aurl, 'ZB', ZB);
 
@@ -29,9 +30,15 @@ if ~exist(afile, 'file')
         af = websave(afile, aurl, wopts);
         d = load(af);
         d = d.DEEP_WQ;
-        % Correct P (convert psi to dBars)
+        % Convert char array to cell array
+        for field = fieldnames(d)'
+            if ischar(d.(field{1}))
+                d.(field{1}) = cellstr(d.(field{1}));
+            end
+        end
+        % Compute P (convert psi to dBars)
         d.sea_water_pressure = d.depth;
-        % Correct rho
+        % Compute rho
         sw_S = d.sea_water_salinity;
         sw_T = d.sea_water_temperature;
         sw_P = d.sea_water_pressure;

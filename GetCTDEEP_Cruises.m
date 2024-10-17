@@ -1,13 +1,13 @@
 function CruiseNames = GetCTDEEP_Cruises(Ayear, Amonth)
 % 
-% Get cruise information from ERRDAP in Ayear-Amonth
+% Get cruise info in Ayear-Amonth from ERRDAP
 % 
 % Called from WriteCruiseDataQAQC.m
 % 
 
-aurl0 = ['http://merlin.dms.uconn.edu:8080/erddap/tabledap/DEEP_Cruise_Info.json?cruise_name%2C' ...
-         'Start_Date%2CEnd_Date&End_Date%3E=YYYY-MM-01&End_Date%3C=YYYY-MM-31'];
-aurl = strrep(aurl0, 'YYYY', num2str(Ayear));
+al = ['http://merlin.dms.uconn.edu:8080/erddap/tabledap/DEEP_Cruise_Info.json?' ...
+      'cruise_name%2CStart_Date%2CEnd_Date&End_Date%3E=YYYY-MM-01&End_Date%3C=YYYY-MM-31'];
+aurl = strrep(al, 'YYYY', num2str(Ayear));
 aurl = strrep(aurl, 'MM', Amonth);
 
 try

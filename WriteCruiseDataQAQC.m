@@ -11,13 +11,15 @@
 
 clc; clear;
 
-Ayear = 2021; stnGrp = {'A4','B3','C1','C2','D3','E1','F3'};
+Ayear = 2021;
+stnGrp = {'A4','B3','C1','C2','D3','E1','F3'};
 
 % Fixed parameters
 av_stn = struct('T','sea_water_temperature','S','sea_water_salinity', ...
-                'DO','oxygen_concentration_in_sea_wat','pH','pH', ...
-                'P','sea_water_pressure','C','sea_water_electrical_conductivi', ...
-                'rho','sea_water_density','DOsat','percent_saturation');
+                'DO','oxygen_concentration_in_sea_wat','P','sea_water_pressure', ...
+                'C','sea_water_electrical_conductivi','pH','pH', ...
+                'rho','sea_water_density','DOsat','percent_saturation', ...
+                'PAR','PAR','Chl','Chlorophyll','Chl2','Corrected_Chlorophyll');
 
 for Astn = stnGrp
     % Read station group QAQC parameters
@@ -63,13 +65,13 @@ for Astn = stnGrp
         for nc = 1:numel(d)
             if ~isempty(d{nc})
                 % Shorten field names
-                crs = d{nc}.cruise_name(1,:);
-                stn = d{nc}.station_name(1,:);
+                crs = d{nc}.cruise_name{1};
+                stn = d{nc}.station_name{1};
                 dpth = ['depth_' num2str(ZT) '_' num2str(ZB)];
                 clim.(crs).(stn).(dpth).time = d{nc}.time/(24*3600)+datetime(1970,1,1);
                 clim.(crs).(stn).(dpth).depth = d{nc}.depth;
                 % Check each variable in cruise climatology data
-                for av = {'T','S','DO','P','C','pH','rho','DOsat'}
+                for av = {'T','S','DO','P','C','pH','rho','DOsat','PAR','Chl','Chl2'}
                     if isfield(d{nc}, av_stn.(av{1}))
                         % Form QAQC structure
                         clim.(crs).(stn).(dpth).(av{1}).data = d{nc}.(av_stn.(av{1}));

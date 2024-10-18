@@ -1,6 +1,6 @@
-function [beta, PAR0] = EstimateBeta(depth, PAR, FigOn)
+function [beta, PAR0] = EstimateBetaPAR(depth, PAR, FigOn)
 % 
-% Called from VisualizeClimMonthAvg.m
+% Called from VisualizeStationMonthAvg.m
 % 
 
 z = -depth;
@@ -19,14 +19,14 @@ if sum(iu) >= 8
     errs = confint(fo, 0.68);
 end
 
-PAR0_upper = exp(errs(2,2));
 PAR0_lower = exp(errs(1,2));
+PAR0_upper = exp(errs(2,2));
 
 if FigOn > 0
     figure;
     semilogx(PAR, z, '+'); hold on;
     semilogx(PAR0, 0, 'rs', 'MarkerFaceColor', 'r');
-    semilogx([PAR0_upper PAR0_lower], [0 0], 'r-', 'linewidth', 2);
+    semilogx([PAR0_lower PAR0_upper], [0 0], 'r-', 'linewidth', 2);
     semilogx(PAR0*exp(z*beta), z, 'r-', 'linewidth', 2);
 end
 

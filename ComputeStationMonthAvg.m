@@ -1,18 +1,21 @@
-function res = ComputeMonthAvg(dt, d)
+function res = ComputeStationMonthAvg(dt, d)
 % 
-% Average by months and return the mean and anomalies
+% Calculate station monthly averages and anomalies
 % 
-% Called from VisualizeClimMonthAvg.m
+% Called from VisualizeStationMonthAvg.m
 % 
 
-res.anom = NaN * ones(length(dt), 1);
+% Initialize the anomalies
+res.anom = NaN * ones(length(dt),1);
 
 for nm = 1:12
     iu = find(month(dt)==nm);
-
+    
+    % Count unique days and total data points for the current month
     res.ndays(nm) = length(unique(dt(iu)));
     res.nu(nm) = length(iu);
-
+    
+    % Calculate statistics for the current month
     d_tmp = d(iu);
     d_tmp = d_tmp(~isnan(d_tmp));
     res.mn(nm) = mean(d_tmp);
@@ -22,22 +25,25 @@ for nm = 1:12
     res.bd16(nm) = prctile(d_tmp,16);
     res.bd50(nm) = prctile(d_tmp,50);
     res.bd84(nm) = prctile(d_tmp,84);
-
-    % Compute the deviation from mean and the residual sd
+    
+    % Calculate the anomalies (deviation from the mean)
     res.anom(iu) = d(iu) - res.mn(nm);
+
+    % Calculate the residual standard deviation of anomalies
     d_tmp = res.anom(iu);
     d_tmp = d_tmp(~isnan(d_tmp));
     res.residual_sd(nm) = std(d_tmp);
 end
 
-% Replace any nans with noise
+% Replace any NaN anomalies with random noise based on the standard deviation
 noise = std(res.anom(~isnan(res.anom)));
 inan = find(isnan(res.anom));
 if ~isempty(inan)
     res.anom(inan) = noise*rand(size(inan));
 end
 
-NF = 48;    % This should have a 24 month cut off. 
+% Apply a filter to the anomalies to smooth data
+NF = 48; % Filter length, reflect a 24-month cutoff
 res.fltanom = filter2(ones(NF,1)/NF, res.anom, 'same');
 
 end

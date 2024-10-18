@@ -1,37 +1,32 @@
-function [PAR0, PAR0upper, PAR0lower, ...
-          beta, betaupper, betalower, ...
-          ParCorr] = EstimateBeta(depth, var, FigsOn)
+function [beta, PAR0] = EstimateBeta(depth, PAR, FigOn)
 % 
-% Called from GetDEEPStationSurfaceData.m
+% Called from VisualizeClimMonthAvg.m
 % 
 
 z = -depth;
-log_var = real(log(var));
+log_PAR = real(log(PAR));
 
 % Initialize outputs
-errs = NaN * [1 1; 1 1]; % Uncertainty of coeffs
-ParCorr = NaN;           % Correlation of logfit
 beta = NaN;              % Extinction coeff (m^-1)
 PAR0 = NaN;              % Extrapolate surface value
+errs = NaN * [1 1; 1 1]; % Uncertainty of coeffs
 
-iu = ~isnan(z) & ~isnan(log_var);
+iu = ~isnan(z) & ~isnan(log_PAR);
 if sum(iu) >= 8
-    [fo, gof] = fit(double(z(iu)), double(log_var(iu)), 'poly1');
-    errs = confint(fo, 0.68);
-    ParCorr = gof.rsquare;
+    fo = fit(double(z(iu)), double(log_PAR(iu)), 'poly1');
     beta = fo.p1;
     PAR0 = exp(fo.p2);
+    errs = confint(fo, 0.68);
 end
-betaupper = errs(2,1);
-betalower = errs(1,1);
-PAR0upper = exp(errs(2,2));
-PAR0lower = exp(errs(1,2));
 
-if FigsOn == 1
+PAR0_upper = exp(errs(2,2));
+PAR0_lower = exp(errs(1,2));
+
+if FigOn > 0
     figure;
-    semilogx(var, z, '+'); hold on;
+    semilogx(PAR, z, '+'); hold on;
     semilogx(PAR0, 0, 'rs', 'MarkerFaceColor', 'r');
-    semilogx([PAR0upper PAR0lower], [0 0], 'r-', 'linewidth', 2);
+    semilogx([PAR0_upper PAR0_lower], [0 0], 'r-', 'linewidth', 2);
     semilogx(PAR0*exp(z*beta), z, 'r-', 'linewidth', 2);
 end
 

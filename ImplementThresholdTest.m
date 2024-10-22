@@ -14,13 +14,13 @@ d = ones(size(din));  % Set QAQC code to 1
 % Check QAQC thresholds for each month
 for MM = 1:12
     isus = find(month(dt)==MM & ...
-        (din<QAQC.(dpth).(var){'bd_1',MM} | din>QAQC.(dpth).(var){'bd_99',MM}));
+        (din<QAQC.(dpth).(var){'bd1',MM} | din>QAQC.(dpth).(var){'bd99',MM}));
     if ~isempty(isus)
         d(isus) = 3;
     end
 
     ifail = find(month(dt)==MM & ...
-        (din<QAQC.(dpth).(var){'min_val',MM} | din>QAQC.(dpth).(var){'max_val',MM} | isnan(din)));
+        (din<QAQC.(dpth).(var){'lower',MM} | din>QAQC.(dpth).(var){'upper',MM} | isnan(din)));
     if ~isempty(ifail)
         d(ifail) = 4;
     end

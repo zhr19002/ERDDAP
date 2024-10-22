@@ -60,10 +60,10 @@ for dp = {'S','B'}
     for av = paras
         var = replace(av{1},'#-','_');
         var = replace(var,'-','_');
-        para = table('Size', [5,12], ...
+        para = table('Size', [10,12], ...
                      'VariableTypes', repmat({'double'},1,12), ...
                      'VariableNames', arrayfun(@num2str,1:12,'UniformOutput',false), ...
-                     'RowNames',{'count','max_val','min_val','bd_99','bd_1'});
+                     'RowNames',{'count','mean','std','median','upper','lower','bd99','bd84','bd16','bd1'});
         for nm = 1:12
             iu = find(month(nut.(dp{1}).(var).time)==nm);
             if ~isempty(iu)
@@ -74,10 +74,15 @@ for dp = {'S','B'}
             end
             
             para{1,nm} = length(iu);
-            para{2,nm} = prctile(data,99.99);
-            para{3,nm} = prctile(data,0.01);
-            para{4,nm} = prctile(data,99);
-            para{5,nm} = prctile(data,1);
+            para{2,nm} = mean(data);
+            para{3,nm} = std(data);
+            para{4,nm} = median(data);
+            para{5,nm} = prctile(data,99.99);
+            para{6,nm} = prctile(data,0.01);
+            para{7,nm} = prctile(data,99);
+            para{8,nm} = prctile(data,84);
+            para{9,nm} = prctile(data,16);
+            para{10,nm} = prctile(data,1);
         end
         QAQC.(dp{1}).(var) = para;
     end

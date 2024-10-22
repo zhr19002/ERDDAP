@@ -17,7 +17,7 @@ av_stn = struct('T','sea_water_temperature','S','sea_water_salinity', ...
                 'DO','oxygen_concentration_in_sea_wat','P','sea_water_pressure', ...
                 'C','sea_water_electrical_conductivi','pH','pH', ...
                 'rho','sea_water_density','DOsat','percent_saturation', ...
-                'PAR','PAR','Chl','Chlorophyll','Chl2','Corrected_Chlorophyll');
+                'PAR','PAR','Chl','Chlorophyll','Corrected_Chl','Corrected_Chlorophyll');
 
 % Download station climatology data in the depth range ZT to ZB
 for ZT = 0:5:40
@@ -49,7 +49,7 @@ for ZT = 0:5:40
     dpth = ['depth_' num2str(ZT) '_' num2str(ZB)];
     clim.(dpth).time = d.time/(24*3600)+datetime(1970,1,1);
     % Check each variable in station climatology data
-    for av = {'T','S','DO','P','C','pH','rho','DOsat','PAR','Chl','Chl2'}
+    for av = {'T','S','DO','P','C','pH','rho','DOsat','PAR','Chl','Corrected_Chl'}
         if isfield(d, av_stn.(av{1}))
             % Form QAQC structure
             clim.(dpth).(av{1}) = d.(av_stn.(av{1}));
@@ -60,11 +60,11 @@ end
 %%
 dp_rng = fieldnames(clim);
 for i = 1:length(dp_rng)
-    for av = {'T','S','DO','P','C','pH','rho','DOsat','PAR','Chl','Chl2'}
-        para = table('Size', [5,12], ...
+    for av = {'T','S','DO','P','C','pH','rho','DOsat','PAR','Chl','Corrected_Chl'}
+        para = table('Size', [10,12], ...
                      'VariableTypes', repmat({'double'},1,12), ...
                      'VariableNames', arrayfun(@num2str,1:12,'UniformOutput',false), ...
-                     'RowNames',{'count','max_val','min_val','bd_99','bd_1'});
+                     'RowNames',{'count','mean','std','median','upper','lower','bd99','bd84','bd16','bd1'});
         for nm = 1:12
             iu = find(month(clim.(dp_rng{i}).time)==nm);
             if ~isempty(iu)
@@ -90,15 +90,20 @@ for i = 1:length(dp_rng)
                     rng = [6 10];
                 case 'rho'
                     rng = [16 25];
-                case 'DOsat'
+                otherwise
                     rng = [0 150];
             end
             
             para{1,nm} = length(iu);
-            para{2,nm} = min(prctile(data,99.99), rng(2));
-            para{3,nm} = max(prctile(data,0.01), rng(1));
-            para{4,nm} = min(prctile(data,99), rng(2));
-            para{5,nm} = max(prctile(data,1), rng(1));
+            para{2,nm} = mean(data);
+            para{3,nm} = std(data);
+            para{4,nm} = median(data);
+            para{5,nm} = min(prctile(data,99.99), rng(2));
+            para{6,nm} = max(prctile(data,0.01), rng(1));
+            para{7,nm} = min(prctile(data,99), rng(2));
+            para{8,nm} = min(prctile(data,84), rng(2));
+            para{9,nm} = max(prctile(data,16), rng(1));
+            para{10,nm} = max(prctile(data,1), rng(1));
         end
         QAQC.(dp_rng{i}).(av{1}) = para;
     end

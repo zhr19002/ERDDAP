@@ -12,7 +12,7 @@ function [QAQCTests, FailedTestsCount] = CheckMetWaveQAQC(d, QAQC, av)
 
 % Run the threshold test
 c = ones(size(d,1), 1);
-c(d.(av)<QAQC.(av)('min_val') | d.(av)>QAQC.(av)('max_val') | isnan(d.(av))) = 4;
+c(d.(av)<QAQC.(av)('lower') | d.(av)>QAQC.(av)('upper') | isnan(d.(av))) = 4;
 d.('QAQCTests') = 1000*c;
 d.('FailedTestsCount') = (c~=1);
 

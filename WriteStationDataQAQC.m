@@ -19,7 +19,7 @@ av_stn = struct('T','sea_water_temperature','S','sea_water_salinity', ...
                 'DO','oxygen_concentration_in_sea_wat','P','sea_water_pressure', ...
                 'C','sea_water_electrical_conductivi','pH','pH', ...
                 'rho','sea_water_density','DOsat','percent_saturation', ...
-                'PAR','PAR','Chl','Chlorophyll','Chl2','Corrected_Chlorophyll');
+                'PAR','PAR','Chl','Chlorophyll','Corrected_Chl','Corrected_Chlorophyll');
 
 % Read station group QAQC parameters
 if ismember(Astn, {'A2','A4','B3','C1','C2','D3','E1','09','15'})
@@ -43,7 +43,7 @@ for ZT = 0:5:40
         clim.(dpth).time = d.time/(24*3600)+datetime(1970,1,1);
         clim.(dpth).depth = d.depth;
         % Check each variable in station climatology data
-        for av = {'T','S','DO','P','C','pH','rho','DOsat','PAR','Chl','Chl2'}
+        for av = {'T','S','DO','P','C','pH','rho','DOsat','PAR','Chl','Corrected_Chl'}
             if isfield(d, av_stn.(av{1}))
                 % Form QAQC structure 
                 clim.(dpth).(av{1}).data = d.(av_stn.(av{1}));

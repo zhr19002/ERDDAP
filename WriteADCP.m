@@ -6,7 +6,7 @@
 
 clc; clear;
 
-buoy = 'CLIS'; % {'CLIS','EXRX','WLIS'}
+buoy = 'WLIS'; % {'CLIS','EXRX','WLIS'}
 
 % Connect to PostgreSQL
 username = 'lisicos';
@@ -43,7 +43,7 @@ for i = 1:height(dT)
     if ~mod(i,10000)
         disp(['Successfully decoded rows ' num2str(i-9999) '-' num2str(i)]);
     elseif i == height(dT)
-        disp(['Successfully decoded row ' num2str(i-mod(i,10000)+1) '-' num2str(i)]);
+        disp(['Successfully decoded rows ' num2str(i-mod(i,10000)+1) '-' num2str(i)]);
     end
 end
 
@@ -54,3 +54,22 @@ ADCP = movevars(ADCP, 'TmStamp', 'Before', 1);
 
 % Save the "ADCP" table
 save([buoy '_ADCP.mat'], 'ADCP');
+
+%%
+% Visualize available ADCP data
+d = load([buoy '_ADCP.mat']);
+d = d.ADCP;
+
+d.validID = zeros(height(d), 1);
+for i = 1:height(d)
+    if strcmp(d.ID(i), '7F6E')
+        d.validID(i) = 1;
+    else
+        d.validID(i) = 0;
+    end
+end
+d.ID_count = cumsum(d.validID);
+
+figure; hold on; grid on;
+plot(d.TmStamp, d.ID_count, 'b.');
+title([buoy '\_ADCP']);

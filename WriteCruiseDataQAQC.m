@@ -19,7 +19,7 @@ av_stn = struct('T','sea_water_temperature','S','sea_water_salinity', ...
                 'DO','oxygen_concentration_in_sea_wat','P','sea_water_pressure', ...
                 'C','sea_water_electrical_conductivi','pH','pH', ...
                 'rho','sea_water_density','DOsat','percent_saturation', ...
-                'PAR','PAR','Chl','Chlorophyll','Chl2','Corrected_Chlorophyll');
+                'PAR','PAR','Chl','Chlorophyll','Corrected_Chl','Corrected_Chlorophyll');
 
 for Astn = stnGrp
     % Read station group QAQC parameters
@@ -71,7 +71,7 @@ for Astn = stnGrp
                 clim.(crs).(stn).(dpth).time = d{nc}.time/(24*3600)+datetime(1970,1,1);
                 clim.(crs).(stn).(dpth).depth = d{nc}.depth;
                 % Check each variable in cruise climatology data
-                for av = {'T','S','DO','P','C','pH','rho','DOsat','PAR','Chl','Chl2'}
+                for av = {'T','S','DO','P','C','pH','rho','DOsat','PAR','Chl','Corrected_Chl'}
                     if isfield(d{nc}, av_stn.(av{1}))
                         % Form QAQC structure
                         clim.(crs).(stn).(dpth).(av{1}).data = d{nc}.(av_stn.(av{1}));

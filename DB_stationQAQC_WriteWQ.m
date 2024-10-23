@@ -22,12 +22,14 @@ end
 QAQC = load(['QAQC_Para_' stnGroup '.mat']);
 QAQC = QAQC.QAQC;
 
-% Write QAQCed station files
-for ZT = 0:5:40
+% Write QAQCed station WQ files
+for ZT = 0:5:100
     ZB = ZT+5;
     % Get station climatology data
     d = GetCTDEEP_Clim_Data(Astn, ZT, ZB, 1);
-    if ~isempty(d)
+    if isempty(d)
+        break;
+    else
         clim = table();
         dpth = ['depth_' num2str(ZT) '_' num2str(ZB)];
         for field = fieldnames(d)'
@@ -39,18 +41,22 @@ for ZT = 0:5:40
                 i = find(strcmp(stnVars, field{1}));
                 % Form QAQC structure
                 clim.([avars{i} '_data']) = d.(stnVars{i});
-                clim.([avars{i} '_Q']) = ...
-                ImplementThresholdTest(d.(stnVars{i}), clim.time, QAQC, dpth, avars{i});
+                if ZT > 40
+                    clim.([avars{i} '_Q'])(:) = 0;
+                else
+                    clim.([avars{i} '_Q']) = ...
+                        ImplementThresholdTest(d.(stnVars{i}), clim.time, QAQC, dpth, avars{i});
+                end
             else
                 clim.(field{1}) = d.(field{1});
             end
         end
-    end
-    % Create the "StationQAQC" table
-    if ZT == 0
-        StationQAQC = clim;
-    else
-        StationQAQC = [StationQAQC(:,:); clim(:,:)];
+        % Create the "StationQAQC" table
+        if ZT == 0
+            StationQAQC = clim;
+        else
+            StationQAQC = [StationQAQC(:,:); clim(:,:)];
+        end
     end
 end
 

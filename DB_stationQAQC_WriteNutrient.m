@@ -3,7 +3,7 @@ clc; clear;
 % {'A2','A4','B3','C1','C2','D3','E1','09','15'}
 % {'F2','F3','H2','H4','H6'}
 % {'I2','J2','K2','M3'}
-Astn = 'E1';
+Astn = 'A2';
 
 % Fixed parameters
 paras = {'BIOSI-LC','CHLA','DIP','DOC','NH#-LC','NOX-LC', ...
@@ -66,6 +66,13 @@ NutQAQC.Start_Date.Format = 'dd-MMM-yyyy HH:mm:ss';
 NutQAQC.End_Date.Format = 'dd-MMM-yyyy HH:mm:ss';
 NutQAQC.Time_ON_Station = cellstr(NutQAQC.Time_ON_Station);
 NutQAQC.Time_OFF_Station = cellstr(NutQAQC.Time_OFF_Station);
+if ~iscell(NutQAQC.Comment)
+    NutQAQC.Comment = strings(height(NutQAQC), 1);
+end
+if ismember(Astn, {'09','15'})
+    NutQAQC.Station_Name = ...
+    arrayfun(@(x) sprintf('%02d',x),NutQAQC.Station_Name,'UniformOutput',false);
+end
 
 % Quoted to preserve case sensitivity
 tblName = strcat('"',tbl,'"');
@@ -73,14 +80,13 @@ colNames = strcat('"',NutQAQC.Properties.VariableNames,'"');
 NutQAQC.Properties.VariableNames = colNames;
 
 % Define data type for each column
-vNames = cell(1, 2*length(avars));
 query = ['CREATE TABLE ' tblName ' (' ...
-         '"cruise" VARCHAR, "Lab_ID" VARCHAR, "Station_Name" VARCHAR, "Depth_Code" VARCHAR, ' ...
-         '"Sample_Depth" FLOAT, "Detection_Limit" FLOAT, "Dilution_Factor" FLOAT, "PQL" FLOAT, ' ...
-         '"Parameter" VARCHAR, "Result" FLOAT, "Result_Q" INTEGER, "Units" VARCHAR, ' ...
-         '"Comment" VARCHAR, "Month" VARCHAR, "latitude" FLOAT, "longitude" FLOAT, ' ...
-         '"Time_ON_Station" VARCHAR, "Time_OFF_Station" VARCHAR, "time" TIMESTAMP, ' ...
-         '"Start_Date" TIMESTAMP, "End_Date" TIMESTAMP);'];
+         '"Lab_ID" VARCHAR, "cruise" VARCHAR, "Station_Name" VARCHAR, "time" TIMESTAMP, ' ...
+         '"latitude" FLOAT, "longitude" FLOAT, "Depth_Code" VARCHAR, "Sample_Depth" FLOAT, ' ...
+         '"Detection_Limit" FLOAT, "Dilution_Factor" FLOAT, "PQL" FLOAT, "Parameter" VARCHAR, ' ...
+         '"Result" FLOAT, "Result_Q" INTEGER, "Units" VARCHAR, "Comment" VARCHAR, ' ...
+         '"Month" VARCHAR, "Start_Date" TIMESTAMP, "End_Date" TIMESTAMP, ' ...
+         '"Time_ON_Station" VARCHAR, "Time_OFF_Station" VARCHAR);'];
 
 % Write the table to PostgreSQL
 username = 'lisicos';
@@ -90,7 +96,7 @@ connQ = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
 execute(connQ, query);
 try
     batchSize = 10000;
-    for i = 1:1%ceil(height(StationQAQC)/batchSize)
+    for i = 1:ceil(height(NutQAQC)/batchSize)
         startRow = (i-1)*batchSize + 1;
         endRow = min(i*batchSize, height(NutQAQC));
         batchData = NutQAQC(startRow:endRow, :);

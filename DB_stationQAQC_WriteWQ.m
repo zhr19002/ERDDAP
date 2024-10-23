@@ -3,7 +3,7 @@ clc; clear;
 % {'A2','A4','B3','C1','C2','D3','E1','09','15'}
 % {'F2','F3','H2','H4','H6'}
 % {'I2','J2','K2','M3'}
-Astn = 'E1';
+Astn = 'A2';
 
 % Fixed parameters
 stnVars = {'sea_water_temperature','sea_water_salinity','oxygen_concentration_in_sea_wat', ...
@@ -72,6 +72,10 @@ StationQAQC.Start_Date.Format = 'dd-MMM-yyyy HH:mm:ss';
 StationQAQC.End_Date.Format = 'dd-MMM-yyyy HH:mm:ss';
 StationQAQC.Time_ON_Station = cellstr(StationQAQC.Time_ON_Station);
 StationQAQC.Time_OFF_Station = cellstr(StationQAQC.Time_OFF_Station);
+if ismember(Astn, {'09','15'})
+    StationQAQC.station_name = ...
+    arrayfun(@(x) sprintf('%02d',x),StationQAQC.station_name,'UniformOutput',false);
+end
 
 % Quoted to preserve case sensitivity
 tblName = strcat('"',tbl,'"');
@@ -101,7 +105,7 @@ connQ = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
 execute(connQ, query);
 try
     batchSize = 10000;
-    for i = 1:1%ceil(height(StationQAQC)/batchSize)
+    for i = 1:ceil(height(StationQAQC)/batchSize)
         startRow = (i-1)*batchSize + 1;
         endRow = min(i*batchSize, height(StationQAQC));
         batchData = StationQAQC(startRow:endRow, :);

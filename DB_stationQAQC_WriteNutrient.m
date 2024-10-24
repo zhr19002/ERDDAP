@@ -115,3 +115,48 @@ end
 % execute(connQ, strcat("DROP TABLE ",tblName));
 
 close(connQ);
+
+%%
+% Write the "QAQC_Para_Nutrients" table to PostgreSQL
+clc; clear;
+
+dir = 'West'; % {'West','Center','East'}
+QAQC = load(['QAQC_Para_' dir(1) 'Nutrients.mat']);
+QAQC = QAQC.QAQC;
+
+% Specify row and column names
+rows = {'count';'mean';'std';'median';'upper';'lower';'bd99';'bd84';'bd16';'bd1'};
+cols = {'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'};
+
+% Prepare data for the table
+dps = fieldnames(QAQC)';
+vars = fieldnames(QAQC.S)';
+col1 = cell(length(dps)*length(vars)*10, 1);
+data = zeros(length(dps)*length(vars)*10, 12);
+for i = 1:length(dps)
+    for j = 1:length(vars)
+        for k = 1:10
+            index = (i-1)*length(vars)*10 + (j-1)*10 + k;
+            col1{index} = [dps{i} '_' vars{j} '_' rows{k}];
+            data(index, :) = table2array(QAQC.(dps{i}).(vars{j})(k,:));
+        end
+    end
+end
+
+% Generate the table
+col1T = table(col1, 'VariableNames', {'Stats'});
+dataT = array2table(data, 'VariableNames', cols);
+qaqcT = [col1T, dataT];
+
+% Connect to PostgreSQL
+username = 'lisicos';
+password = 'vncq489';
+connQ = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
+     'DatabaseName','stationQAQC','PortNumber',5432);
+
+% Write the table to PostgreSQL
+tblName = strcat('"',['QAQC_Parameters_' dir '_Stations_Nutrients'],'"');
+qaqcT.Properties.VariableNames = strcat('"',qaqcT.Properties.VariableNames,'"');
+sqlwrite(connQ, tblName, qaqcT);
+
+close(connQ);

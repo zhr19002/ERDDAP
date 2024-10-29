@@ -1,8 +1,8 @@
-function WriteNutNETCDF(Astn, dp, var, latlon, d)
+function WriteStationNutNETCDF(Astn, dp, var, latlon, d)
 % 
-% Write Nutrient QAQC data to NC files
+% Write Station Nutrient QAQC data to NC files
 % 
-% Called from WriteNutDataQAQC.m
+% Called from WriteStationNutQAQC.m
 % 
 
 meta.Processing_Notes = 'Screened with WriteNutDataQAQC.m';

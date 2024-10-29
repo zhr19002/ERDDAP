@@ -1,72 +1,122 @@
 % 
-% Identify and flag station nutrient data outliers
+% Identify and flag buoy nutrient data outliers
 % (1 = pass; 3 = beyond 98% data range; 4 = beyond max-min range)
 % 
-% Calls GetCTDEEP_Nut_Data.m
-% Calls ImplementThresholdTest.m
-% Calls WriteNutNETCDF.m
+% Calls CheckNutQAQC.m
 % 
 
 clc; clear;
 
-% {'A2','A4','B3','C1','C2','D3','E1','09','15'}
-% {'F2','F3','H2','H4','H6'}
-% {'I2','J2','K2','M3'}
-Astn = 'E1';
+buoy = 'ARTG'; % {'ARTG','CLIS'}
+var = 'FL'; % {'PARden','PARtot','FL','NTU','NO3'}
 
 % Fixed parameters
-paras = {'BIOSI-LC','CHLA','DIP','DOC','NH#-LC','NOX-LC', ...
-         'PC','PN','PP-LC','SIO2-LC','TDN-LC','TDP','TSS'};
+nutVars = {'PAR_Raw','PAR_Density_Flux','PAR_Flux_Total', ...
+           'Avg_FL','StdDev_FL','Min_FL','Max_FL','chl_ug/L', ...
+           'Avg_NTU','StdDev_NTU','Min_NTU','Max_NTU','turbidity_NTU', ...
+           'NO3conc','NNO3'};
 
-% Read station group nutrients QAQC parameters
-if ismember(Astn, {'A2','A4','B3','C1','C2','D3','E1','09','15'})
-    stnGroup = 'WStations';
-elseif ismember(Astn, {'F2','F3','H2','H4','H6'})
-    stnGroup = 'CStations';
-else
-    stnGroup = 'EStations';
+% Read nutrient QAQC parameters
+QAQC = readtable('QAQC_Para_Nut.csv', ReadRowNames=true); %%%%%%
+
+% Connect to PostgreSQL
+username = 'lisicos';
+password = 'vncq489';
+conn = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
+    'DatabaseName','provLNDB','PortNumber',5432);
+
+% tbldata = sqlfind(conn,"")
+
+% Extract tables from PostgreSQL
+switch buoy
+    case 'ARTG'
+        if contains(var, 'PAR')
+            dbname = strcat('"',[buoy '_pb1_' var 'Dat'],'"');
+            dT = sqlread(conn, dbname);
+        else
+            dbname = strcat('"',[buoy '_pb1_sbeECO' var],'"');
+            dT = sqlread(conn, dbname);
+        end
+    case 'CLIS'
+        dT = sqlread(conn, '"CLIS_pb4_SunaNO3"');
 end
-QAQC = load(['QAQC_Para_' stnGroup(1) 'Nutrients.mat']);
-QAQC = QAQC.QAQC;
 
-% Get station nutrient data
-d = GetCTDEEP_Nut_Data(Astn, 1);
-if ~isempty(d)
-    nut.latitude = mode(d.latitude);
-    nut.longitude = mode(d.longitude);
-    % Seperate data based on depth_code
-    for dp = {'S','B'}
-        iu1 = find(startsWith(d.Depth_Code, dp{1}));
-        for field = fieldnames(d)'
-            dd.(dp{1}).(field{1}) = d.(field{1})(iu1);
-        end
-        % Seperate data based on parameters
-        for para = paras
-            iu2 = strcmp(dd.(dp{1}).Parameter, para{1});
-            var = replace(para{1},'#-','_');
-            var = replace(var,'-','_');
-            nut.(dp{1}).(var).time = dd.(dp{1}).time(iu2)/(24*3600)+datetime(1970,1,1);
-            dpth = [dp{1} '_Sample_Depth'];
-            nut.(dp{1}).(var).depth = cellfun(@str2double, dd.(dp{1}).(dpth)(iu2));
-            nut.(dp{1}).(var).data = cellfun(@str2double, dd.(dp{1}).Result(iu2));
-            % Perform the threshold test
-            d_tmp = nut.(dp{1}).(var).data;
-            dt = nut.(dp{1}).(var).time;
-            c_tmp = ImplementThresholdTest(d_tmp, dt, QAQC, dp{1}, var);
-            nut.(dp{1}).(var).check = c_tmp;
-        end
+dT = sortrows(dT, 'TmStamp');
+close(conn);
+
+% Create the "NutQAQC" table
+NutQAQC = table();
+NutQAQC.TmStamp = dT.TmStamp;
+for av = nutVars
+    if ismember(av{1}, dT.Properties.VariableNames)
+        % Run QAQC tests
+        [dQ, dC] = CheckNutQAQC(dT, QAQC, av{1}); %%%%%%
+        NutQAQC.(av{1}) = dT.(av{1});
+        NutQAQC.([av{1} '_Q']) = dQ;
+        NutQAQC.([av{1} '_FailedCount']) = dC;
     end
 end
 
-% Save QAQC results
-NutQAQC = nut;
-save(['CTDEEP_' Astn '_NutQAQC.mat'], 'NutQAQC');
+% Add specific columns
+NutQAQC.depth(:) = mode(dT.depth);
+NutQAQC.latitude(:) = mode(dT.latitude);
+NutQAQC.longitude(:) = mode(dT.longitude);
+NutQAQC.station(:) = mode(categorical(dT.station));
+NutQAQC.mooring_site_desc(:) = mode(categorical(dT.mooring_site_desc));
+
+% Save the updated "NutQAQC" table to a CSV file
+writetable(NutQAQC, [buoy '_Nut_QAQC.csv']);
+fprintf('%s   %s   %s\n', min(NutQAQC.TmStamp), max(NutQAQC.TmStamp), NutQAQC.TmStamp.TimeZone);
 
 %%
-% Save all the data plotted in a structure that can be exported to NETCDF
-latlon = [NutQAQC.latitude, NutQAQC.longitude];
-for dp = {'S','B'}
-    for field = fieldnames(NutQAQC.(dp{1}))'
-        WriteNutNETCDF(Astn, dp{1}, field{1}, latlon, NutQAQC.(dp{1}).(field{1}));
-    end
+% Read the CSV file into a table
+tbl = [buoy '_Nut_QAQC'];
+opts = detectImportOptions([tbl '.csv']);
+opts = setvaropts(opts,'TmStamp','InputFormat','dd-MMM-yyyy HH:mm:ss');
+NutQAQC = readtable([tbl '.csv'], opts);
+
+% Quoted to preserve case sensitivity
+tblName = strcat('"',tbl,'"');
+colNames = strcat('"',NutQAQC.Properties.VariableNames,'"');
+NutQAQC.Properties.VariableNames = colNames;
+
+% Define data type for each column
+vNames = cell(1, 3*length(nutVars));
+for i = 1:length(nutVars)
+    vNames{3*i-2} = sprintf('"%s" %s',nutVars{i},'FLOAT');
+    vNames{3*i-1} = sprintf('"%s_Q" %s',nutVars{i},'INTEGER');
+    vNames{3*i} = sprintf('"%s_FailedCount" %s',nutVars{i},'INTEGER');
 end
+query = strjoin(vNames, ', ');
+query = ['CREATE TABLE ' tblName ' (' ...
+         '"TmStamp" TIMESTAMP, ', query, ... 
+         ', "depth" FLOAT, "latitude" FLOAT, "longitude" FLOAT, ' ...
+         '"station" VARCHAR, "mooring_site_desc" VARCHAR);'];
+
+% Write the table to PostgreSQL
+username = 'lisicos';
+password = 'vncq489';
+connQ = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
+     'DatabaseName','buoyQAQC','PortNumber',5432);
+execute(connQ, query);
+try
+    batchSize = 10000;
+    for i = 1:ceil(height(NutQAQC)/batchSize)
+        startRow = (i-1)*batchSize + 1;
+        endRow = min(i*batchSize, height(NutQAQC));
+        batchData = NutQAQC(startRow:endRow, :);
+        % Write the batch to PostgreSQL
+        sqlwrite(connQ, tblName, batchData);
+        disp(['Row ' num2str(startRow) '-' num2str(endRow) ' written to PostgreSQL successfully.']);
+    end
+catch ME
+    disp(ME.message);
+end
+
+% % Check the table in PostgreSQL
+% tbldata = sqlfind(connQ, "");
+% dT = sqlread(connQ, tblName);
+% % Drop the table from PostgreSQL
+% execute(connQ, strcat("DROP TABLE ",tblName));
+
+close(connQ);

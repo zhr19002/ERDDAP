@@ -12,7 +12,8 @@ tblNames = {'ARTG_pb2_sbe37btm1','ARTG_pb2_sbe37btm2','ARTG_pb2_sbe37sfc', ...
             'WLIS_pb2_sbe37btm1','WLIS_pb2_sbe37btm2','WLIS_pb2_sbe37mid', ...
             'WLIS_pb2_sbe37sfc', 'ARTG_pb1_metSens','clis_cr1xPB4_metDat', ...
             'clis_cr1xPB4_metRO','EXRX_pb1_metRO',  'WLIS_pb4_metSens', ...
-            'clis_cr1xPB4_waveDat','EXRX_pb3_svs603hr','WLIS_pb3_svs603HR'};
+            'clis_cr1xPB4_waveDat','EXRX_pb3_svs603hr','WLIS_pb3_svs603HR', ...
+            'EXRX_pb1_adcpDat'};
 
 % Connect to PostgreSQL
 username = 'lisicos';
@@ -30,9 +31,12 @@ for i = 1:length(tblNames)
     elseif i >10 && i <=15
         % Save new meteorology data
         [dbname, d] = SaveNewMetData(conn, connQ, tblNames{i});
-    else
+    elseif i >15 && i <=18
         % Save new wave data
         [dbname, d] = SaveNewWaveData(conn, connQ, tblNames{i});
+    else
+        % Save new ADCP data
+        [dbname, d] = SaveNewADCPData(conn, connQ, tblNames{i});
     end
     % Append new data to PostgreSQL
     AppendNewData(connQ, dbname, d);
@@ -211,6 +215,68 @@ if height(dT) > 1
     waveQAQC.mooring_site_desc(:) = dTQ.mooring_site_desc(1);
     
     % Save the updated "waveQAQC" table
+    fprintf('%s   %s   %s   %d\n', dbname, min(dT.TmStamp), max(dT.TmStamp), height(dT));
+else
+    fprintf('No new data to add to "%s"', dbname);
+end
+end
+
+
+% 
+% Function: Save new ADCP data
+% 
+function [dbname, ADCP] = SaveNewADCPData(conn, connQ, tbl)
+% Extract a table from PostgreSQL
+dT = sqlread(conn, strcat('"',tbl,'"'));
+
+if contains(tbl, 'clis')
+    dbname = [upper(tbl(1:4)) '_ADCP'];
+else
+    dbname = [tbl(1:4) '_ADCP'];
+end
+
+% Filter new data in the table
+dTQ = sqlread(connQ, strcat('"',dbname,'"'));
+dT = dT(dT.TmStamp >= max(dTQ.TmStamp), :);
+
+if height(dT) > 1
+    dT = sortrows(dT, 'TmStamp');
+    
+    % Create the "result" structure to store values of each field
+    result = struct();
+    for i = 1:height(dT)
+        try
+            res = DecodeADCP(dT.adcpString_RDI_PD12{i});
+            for field = fieldnames(res)'
+                result(i).(field{1}) = res.(field{1});
+            end
+        catch ME
+            disp(['Error decoding row ' num2str(i) ': ' ME.message]);
+            for field = fieldnames(result)'
+                result(i).(field{1}) = [];
+            end
+        end
+        % Monitor decoding progress
+        if ~mod(i,10000)
+            disp(['Successfully decoded rows ' num2str(i-9999) '-' num2str(i)]);
+        elseif i == height(dT)
+            disp(['Successfully decoded rows ' num2str(i-mod(i,10000)+1) '-' num2str(i)]);
+        end
+    end
+    
+    % Assign values to the "ADCP" table
+    ADCP = struct2table(result);
+    ADCP.TmStamp = dT.TmStamp;
+    ADCP = movevars(ADCP, 'TmStamp', 'Before', 1);
+    
+    % Remove empty rows
+    ADCP = ADCP(~cellfun('isempty', ADCP.ID), :);
+    
+    % Convert columns to a specific format
+    ADCP.vels = cellfun(@(x) mat2str(x), ADCP.vels, 'UniformOutput', false);
+    ADCP.mtime = datetime(string(ADCP.mtime));
+    
+    % Save the updated "ADCP" table
     fprintf('%s   %s   %s   %d\n', dbname, min(dT.TmStamp), max(dT.TmStamp), height(dT));
 else
     fprintf('No new data to add to "%s"', dbname);

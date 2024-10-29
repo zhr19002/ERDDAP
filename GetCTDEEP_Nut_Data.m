@@ -3,7 +3,7 @@ function d = GetCTDEEP_Nut_Data(Astn, deletion)
 % Get CTDEEP nutrient data for Astn from ERDDAP
 % 
 % Called from QAQC_Para_Nut.m
-% Called from WriteNutDataQAQC.m
+% Called from WriteStationNutQAQC.m
 % 
 
 wopts = weboptions; wopts.Timeout = 120;

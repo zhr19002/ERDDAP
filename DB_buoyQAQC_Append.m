@@ -7,13 +7,22 @@
 clc; clear;
 
 % Table names
-tblNames = {'ARTG_pb2_sbe37btm1','ARTG_pb2_sbe37btm2','ARTG_pb2_sbe37sfc', ...
-            'EXRX_pb2_sbe37btm2','EXRX_pb2_sbe37mid', 'EXRX_pb2_sbe37sfc', ...
-            'WLIS_pb2_sbe37btm1','WLIS_pb2_sbe37btm2','WLIS_pb2_sbe37mid', ...
-            'WLIS_pb2_sbe37sfc', 'ARTG_pb1_metSens','clis_cr1xPB4_metDat', ...
-            'clis_cr1xPB4_metRO','EXRX_pb1_metRO',  'WLIS_pb4_metSens', ...
-            'clis_cr1xPB4_waveDat','EXRX_pb3_svs603hr','WLIS_pb3_svs603HR', ...
-            'EXRX_pb1_adcpDat'};
+tblNames = { ...
+    ... Climatology data
+    'ARTG_pb2_sbe37btm1','ARTG_pb2_sbe37btm2','ARTG_pb2_sbe37sfc', ...
+    'EXRX_pb2_sbe37btm2','EXRX_pb2_sbe37mid', 'EXRX_pb2_sbe37sfc', ...
+    'WLIS_pb2_sbe37btm1','WLIS_pb2_sbe37btm2','WLIS_pb2_sbe37mid', ...
+    'WLIS_pb2_sbe37sfc', ...
+    ... Meteorology data
+    'ARTG_pb1_metSens','clis_cr1xPB4_metDat','clis_cr1xPB4_metRO', ...
+    'EXRX_pb1_metRO','WLIS_pb4_metSens', ...
+    ... Wave data
+    'clis_cr1xPB4_waveDat','EXRX_pb3_svs603hr','WLIS_pb3_svs603HR', ...
+    ... ADCP data
+    'EXRX_pb1_adcpDat', ...
+    ... Nutrient data
+    'ARTG_pb1_PARdenDat','ARTG_pb1_PARtotDat', ...
+    'ARTG_pb1_sbeECOFL','ARTG_pb1_sbeECONTU'};
 
 % Connect to PostgreSQL
 username = 'lisicos';
@@ -28,15 +37,18 @@ for i = 1:length(tblNames)
     if i <= 10
         % Save new climatology data
         [dbname, d] = SaveNewClimData(conn, connQ, tblNames{i});
-    elseif i >10 && i <=15
+    elseif i > 10 && i <= 15
         % Save new meteorology data
         [dbname, d] = SaveNewMetData(conn, connQ, tblNames{i});
-    elseif i >15 && i <=18
+    elseif i > 15 && i <= 18
         % Save new wave data
         [dbname, d] = SaveNewWaveData(conn, connQ, tblNames{i});
-    else
+    elseif i > 18 && i <= 19
         % Save new ADCP data
         [dbname, d] = SaveNewADCPData(conn, connQ, tblNames{i});
+    else
+        % Save new nutrient data
+        [dbname, d] = SaveNewNutData(conn, connQ, tblNames{i});
     end
     % Append new data to PostgreSQL
     AppendNewData(connQ, dbname, d);
@@ -277,6 +289,68 @@ if height(dT) > 1
     ADCP.mtime = datetime(string(ADCP.mtime));
     
     % Save the updated "ADCP" table
+    fprintf('%s   %s   %s   %d\n', dbname, min(dT.TmStamp), max(dT.TmStamp), height(dT));
+else
+    fprintf('No new data to add to "%s"', dbname);
+end
+end
+
+
+% 
+% Function: Save new nutrient data
+% 
+function [dbname, NutQAQC] = SaveNewNutData(conn, connQ, tbl)
+% Fixed parameters
+nutVars = {'PAR_Raw','PAR_Density_Flux','PAR_Flux_Total', ...
+           'chl_ugL','turbidity_NTU','NO3conc','NNO3'};
+
+% Read buoy nutrient QAQC parameters
+QAQC = load('QAQC_Para_buoyNut.mat');
+QAQC = QAQC.QAQC;
+
+% Extract a table from PostgreSQL
+dT = sqlread(conn, strcat('"',tbl,'"'));
+dT(:, {'RecNum','CR1XBatt','CR1XTemp'}) = [];
+
+if contains(tbl, 'PAR')
+    dbname = [tbl(1:4) '_' tbl(10:15) '_QAQC'];
+    if contains(tbl, 'PARtot')
+        dT.TmStamp = dT.TmStamp + seconds(1);
+    end
+else
+    dbname = [tbl(1:4) '_' tbl(16:end) '_QAQC'];
+    dT(:, {'Date','EST'}) = [];
+    if contains(tbl, 'FL')
+        dT = renamevars(dT,'chl_ug/L','chl_ugL');
+    end
+end
+
+% Filter new data in the table
+dTQ = sqlread(connQ, strcat('"',dbname,'"'));
+dT = dT(dT.TmStamp >= max(dTQ.TmStamp), :);
+
+if height(dT) > 1
+    % Create the "NutQAQC" table
+    NutQAQC = table();
+    for i = 1:width(dT)
+        col = dT.Properties.VariableNames{i};
+        NutQAQC.(col) = dT.(col);
+        if ismember(col, nutVars)
+            % Run QAQC tests
+            [dQ, dC] = CheckNutDataQAQC(dT, QAQC, col);
+            NutQAQC.([col '_Q']) = dQ;
+            NutQAQC.([col '_FailedCount']) = dC;
+        end
+    end
+    
+    % Modify specific columns
+    NutQAQC.latitude(:) = mode(dT.latitude);
+    NutQAQC.longitude(:) = mode(dT.longitude);
+    NutQAQC.station(:) = mode(categorical(dT.station));
+    NutQAQC.mooring_site_desc(:) = mode(categorical(dT.mooring_site_desc));
+    NutQAQC.depth(:) = mode(dT.depth);
+    
+    % Save the updated "NutQAQC" table
     fprintf('%s   %s   %s   %d\n', dbname, min(dT.TmStamp), max(dT.TmStamp), height(dT));
 else
     fprintf('No new data to add to "%s"', dbname);

@@ -11,7 +11,12 @@ function [QAQCTests, FailedTestsCount] = CheckNutDataQAQC(d, QAQC, av)
 % 
 
 % Run the threshold test
-c = ImplementThresholdTest(d.(av), d.TmStamp, QAQC, 1, av);
+if ismember(av, {'PAR','Chl','Corrected_Chl'})
+    dpth = 'depth_0_5';
+else
+    dpth = 'S';
+end
+c = ImplementThresholdTest(d.(av), d.TmStamp, QAQC, dpth, av);
 d.('QAQCTests') = 1000*c;
 d.('FailedTestsCount') = (c~=1);
 

@@ -8,15 +8,10 @@
 clc; clear;
 
 buoy = 'ARTG'; % {'ARTG','CLIS'}
-var = 'PARden'; % {'PARden','PARtot','FL','NTU','NO3'}
+var = 'PAR'; % {'PAR','FL','NTU','NO3'}
 
 % Fixed parameters
-nutVars = {'PAR_Raw','PAR_Density_Flux','PAR_Flux_Total', ...
-           'chl_ugL','turbidity_NTU','NO3conc','NNO3'};
-
-% Read buoy nutrient QAQC parameters
-QAQC = load('QAQC_Para_buoyNut.mat');
-QAQC = QAQC.QAQC;
+nutVars = {'PAR','Corrected_Chl','TSS','NO3conc','NNO3'};
 
 % Connect to PostgreSQL
 username = 'lisicos';
@@ -30,25 +25,29 @@ conn = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
 switch buoy
     case 'ARTG'
         if contains(var, 'PAR')
-            dbname = strcat('"',[buoy '_pb1_' var 'Dat'],'"');
-            dT = sqlread(conn, dbname);
-            if contains(var, 'tot')
-                dT.TmStamp = dT.TmStamp + seconds(1);
-            end
+            dT = sqlread(conn, '"ARTG_pb1_PARdenDat"');
+            dT = renamevars(dT,'PAR_Raw','PAR');
         else
             dbname = strcat('"',[buoy '_pb1_sbeECO' var],'"');
             dT = sqlread(conn, dbname);
             if ismember('chl_ug/L', dT.Properties.VariableNames)
-                dT = renamevars(dT,'chl_ug/L','chl_ugL');
+                dT = renamevars(dT,'chl_ug/L','Corrected_Chl');
+            else
+                dT = renamevars(dT,'turbidity_NTU','TSS');
             end
             dT(:, {'Date','EST'}) = [];
         end
+        QAQC = load('QAQC_Para_WStations.mat');
     case 'CLIS'
         dT = sqlread(conn, '"CLIS_pb4_SunaNO3"');
+        
+        QAQC = load('QAQC_Para_CNutrients.mat');
+
 end
 
 dT(:, {'RecNum','CR1XBatt','CR1XTemp'}) = [];
 dT = sortrows(dT, 'TmStamp');
+QAQC = QAQC.QAQC;
 close(conn);
 
 % Create the "NutQAQC" table

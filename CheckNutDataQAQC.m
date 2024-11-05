@@ -10,13 +10,16 @@ function [QAQCTests, FailedTestsCount] = CheckNutDataQAQC(d, QAQC, av)
 % Called from WriteNutDataQAQC.m
 % 
 
+av_nut = struct('PAR_Raw','PAR','chl_ugL','Corrected_Chl', ...
+                'turbidity_NTU','TSS','NNO3','NOX_LC');
+
 % Run the threshold test
-if ismember(av, {'PAR','Chl','Corrected_Chl'})
+if ismember(av, {'PAR_Raw','chl_ugL'})
     dpth = 'depth_0_5';
 else
     dpth = 'S';
 end
-c = ImplementThresholdTest(d.(av), d.TmStamp, QAQC, dpth, av);
+c = ImplementThresholdTest(d.(av), d.TmStamp, QAQC, dpth, av_nut.(av));
 d.('QAQCTests') = 1000*c;
 d.('FailedTestsCount') = (c~=1);
 

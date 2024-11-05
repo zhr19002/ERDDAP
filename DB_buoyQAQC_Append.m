@@ -21,8 +21,7 @@ tblNames = { ...
     ... ADCP data
     'EXRX_pb1_adcpDat', ...
     ... Nutrient data
-    'ARTG_pb1_PARdenDat','ARTG_pb1_PARtotDat', ...
-    'ARTG_pb1_sbeECOFL','ARTG_pb1_sbeECONTU'};
+    'ARTG_pb1_PARdenDat','ARTG_pb1_sbeECOFL','ARTG_pb1_sbeECONTU'};
 
 % Connect to PostgreSQL
 username = 'lisicos';

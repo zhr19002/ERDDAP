@@ -7,11 +7,10 @@
 
 clc; clear;
 
-buoy = 'ARTG'; % {'ARTG','CLIS'}
 var = 'PAR'; % {'PAR','FL','NTU','NO3'}
 
 % Fixed parameters
-nutVars = {'PAR','Corrected_Chl','TSS','NO3conc','NNO3'};
+colVars = {'PAR_Raw','chl_ugL','turbidity_NTU','NNO3'};
 
 % Connect to PostgreSQL
 username = 'lisicos';
@@ -22,27 +21,26 @@ conn = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
 % tbldata = sqlfind(conn,"")
 
 % Extract tables from PostgreSQL
-switch buoy
-    case 'ARTG'
-        if contains(var, 'PAR')
-            dT = sqlread(conn, '"ARTG_pb1_PARdenDat"');
-            dT = renamevars(dT,'PAR_Raw','PAR');
-        else
-            dbname = strcat('"',[buoy '_pb1_sbeECO' var],'"');
-            dT = sqlread(conn, dbname);
-            if ismember('chl_ug/L', dT.Properties.VariableNames)
-                dT = renamevars(dT,'chl_ug/L','Corrected_Chl');
-            else
-                dT = renamevars(dT,'turbidity_NTU','TSS');
-            end
-            dT(:, {'Date','EST'}) = [];
-        end
+switch var
+    case 'PAR'
+        buoy = 'ARTG';
+        dT = sqlread(conn, '"ARTG_pb1_PARdenDat"');
         QAQC = load('QAQC_Para_WStations.mat');
-    case 'CLIS'
+    case 'FL'
+        buoy = 'ARTG';
+        dT = sqlread(conn, '"ARTG_pb1_sbeECOFL"');
+        dT = renamevars(dT,'chl_ug/L','chl_ugL');
+        dT(:, {'Date','EST'}) = [];
+        QAQC = load('QAQC_Para_WStations.mat');
+    case 'NTU'
+        buoy = 'ARTG';
+        dT = sqlread(conn, '"ARTG_pb1_sbeECONTU"');
+        dT(:, {'Date','EST'}) = [];
+        QAQC = load('QAQC_Para_WNutrients.mat');
+    case 'NO3'
+        buoy = 'CLIS';
         dT = sqlread(conn, '"CLIS_pb4_SunaNO3"');
-        
         QAQC = load('QAQC_Para_CNutrients.mat');
-
 end
 
 dT(:, {'RecNum','CR1XBatt','CR1XTemp'}) = [];
@@ -55,7 +53,7 @@ NutQAQC = table();
 for i = 1:width(dT)
     col = dT.Properties.VariableNames{i};
     NutQAQC.(col) = dT.(col);
-    if ismember(col, nutVars)
+    if ismember(col, colVars)
         % Run QAQC tests
         [dQ, dC] = CheckNutDataQAQC(dT, QAQC, col);
         NutQAQC.([col '_Q']) = dQ;

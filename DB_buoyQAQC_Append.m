@@ -10,18 +10,18 @@ clc; clear;
 tblNames = { ...
     ... Climatology data
     'ARTG_pb2_sbe37btm1','ARTG_pb2_sbe37btm2','ARTG_pb2_sbe37sfc', ...
+    'clis_cr1xPB4_sbe37Btm','clis_cr1xPB4_sbe37Sfc', ...
     'EXRX_pb2_sbe37btm2','EXRX_pb2_sbe37mid', 'EXRX_pb2_sbe37sfc', ...
-    'WLIS_pb2_sbe37btm1','WLIS_pb2_sbe37btm2','WLIS_pb2_sbe37mid', ...
-    'WLIS_pb2_sbe37sfc', ...
+    'WLIS_pb2_sbe37btm1','WLIS_pb2_sbe37btm2','WLIS_pb2_sbe37mid','WLIS_pb2_sbe37sfc', ...
     ... Meteorology data
     'ARTG_pb1_metSens','clis_cr1xPB4_metDat','clis_cr1xPB4_metRO', ...
     'EXRX_pb1_metRO','WLIS_pb4_metSens', ...
     ... Wave data
     'clis_cr1xPB4_waveDat','EXRX_pb3_svs603hr','WLIS_pb3_svs603HR', ...
     ... ADCP data
-    'EXRX_pb1_adcpDat', ...
+    'clis_cr1xPB4_adcpDat','EXRX_pb1_adcpDat','WLIS_pb1_adcpDat', ...
     ... Nutrient data
-    'ARTG_pb1_PARdenDat','ARTG_pb1_sbeECOFL','ARTG_pb1_sbeECONTU'};
+    'ARTG_pb1_PARdenDat','ARTG_pb1_sbeECOFL','ARTG_pb1_sbeECONTU','CLIS_pb4_SunaNO3'};
 
 % Connect to PostgreSQL
 username = 'lisicos';
@@ -33,16 +33,16 @@ connQ = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
 
 % Append new data to the "buoyQAQC" database
 for i = 1:length(tblNames)
-    if i <= 10
+    if i <= 12
         % Save new climatology data
         [dbname, d] = SaveNewClimData(conn, connQ, tblNames{i});
-    elseif i > 10 && i <= 15
+    elseif i > 12 && i <= 17
         % Save new meteorology data
         [dbname, d] = SaveNewMetData(conn, connQ, tblNames{i});
-    elseif i > 15 && i <= 18
+    elseif i > 17 && i <= 20
         % Save new wave data
         [dbname, d] = SaveNewWaveData(conn, connQ, tblNames{i});
-    elseif i > 18 && i <= 19
+    elseif i > 20 && i <= 23
         % Save new ADCP data
         [dbname, d] = SaveNewADCPData(conn, connQ, tblNames{i});
     else
@@ -50,7 +50,9 @@ for i = 1:length(tblNames)
         [dbname, d] = SaveNewNutData(conn, connQ, tblNames{i});
     end
     % Append new data to PostgreSQL
-    AppendNewData(connQ, dbname, d);
+    if height(d) > 1
+        AppendNewData(connQ, dbname, d);
+    end
 end
 
 close(conn);
@@ -66,21 +68,25 @@ avars = {'T','S','DO','P','C','pH','rho','DOsat'};
 
 % Read station group QAQC parameters
 if contains(tbl, 'clis', 'IgnoreCase', true)
+    loc = lower(tbl(end-2:end));
     QAQC = load('QAQC_Para_CStations.mat');
 else
+    loc = tbl(15:end);
     QAQC = load('QAQC_Para_WStations.mat');
 end
 QAQC = QAQC.QAQC;
 
 % Extract a table from PostgreSQL
+dbname = [upper(tbl(1:4)) '_' loc '_QAQC'];
 dT = sqlread(conn, strcat('"',tbl,'"'));
 dT = renamevars(dT, {'degC','psu','mg/L','dBars','S/m'}, avars(1:5));
 
 % Filter new data in the table
-dbname = [tbl(1:4) '_' tbl(15:end) '_QAQC'];
 dTQ = sqlread(connQ, strcat('"',dbname,'"'));
 dT = dT(dT.TmStamp >= max(dTQ.TmStamp), :);
 
+% Create the "BuoyQAQC" table
+BuoyQAQC = table();
 if height(dT) > 1
     dT = sortrows(dT, 'TmStamp');
     % Calculate rho
@@ -92,13 +98,11 @@ if height(dT) > 1
     % Add the pH column
     dT.('pH')(:) = NaN;
     
-    % Create the "BuoyQAQC" table
-    BuoyQAQC = table();
     BuoyQAQC.TmStamp = dT.TmStamp;
     BuoyQAQC.depth = dT.P;
     for av = avars
         % Run QAQC tests
-        [dQ, dC] = CheckBuoyDataQAQC(dT, tbl(15:end), QAQC, av{1});
+        [dQ, dC] = CheckBuoyDataQAQC(dT, loc, QAQC, av{1});
         BuoyQAQC.([av{1} '_data']) = dT.(av{1});
         BuoyQAQC.([av{1} '_Q']) = dQ;
         BuoyQAQC.([av{1} '_FailedCount']) = dC;
@@ -113,7 +117,8 @@ if height(dT) > 1
     % Save the updated "BuoyQAQC" table
     fprintf('%s   %s   %s   %d\n', dbname, min(dT.TmStamp), max(dT.TmStamp), height(dT));
 else
-    fprintf('No new data to add to "%s"', dbname);
+    BuoyQAQC = dTQ(dTQ.TmStamp >= max(dTQ.TmStamp), :);
+    fprintf('No new data to add to "%s"\n', dbname);
 end
 end
 
@@ -147,11 +152,10 @@ end
 dTQ = sqlread(connQ, strcat('"',dbname,'"'));
 dT = dT(dT.TmStamp >= max(dTQ.TmStamp), :);
 
+% Create the "MetQAQC" table
+MetQAQC = table();
 if height(dT) > 1
     dT = sortrows(dT, 'TmStamp');
-    
-    % Create the "MetQAQC" table
-    MetQAQC = table();
     MetQAQC.TmStamp = dT.TmStamp;
     for av = metVars
         % Clean meteorology data
@@ -173,7 +177,8 @@ if height(dT) > 1
     % Save the updated "MetQAQC" table
     fprintf('%s   %s   %s   %d\n', dbname, min(dT.TmStamp), max(dT.TmStamp), height(dT));
 else
-    fprintf('No new data to add to "%s"', dbname);
+    MetQAQC = dTQ(dTQ.TmStamp >= max(dTQ.TmStamp), :);
+    fprintf('No new data to add to "%s"\n', dbname);
 end
 end
 
@@ -195,20 +200,17 @@ if contains(tbl, 'clis')
     for av = waveVars
         dT.(av{1}) = str2double(dT.(av{1}));
     end
-    dbname = [upper(tbl(1:4)) '_Wave_QAQC'];
-else
-    dbname = [tbl(1:4) '_Wave_QAQC'];
 end
 
 % Filter new data in the table
+dbname = [upper(tbl(1:4)) '_Wave_QAQC'];
 dTQ = sqlread(connQ, strcat('"',dbname,'"'));
 dT = dT(dT.TmStamp >= max(dTQ.TmStamp), :);
 
+% Create the "waveQAQC" table
+waveQAQC = table();
 if height(dT) > 1
     dT = sortrows(dT, 'TmStamp');
-
-    % Create the "waveQAQC" table
-    waveQAQC = table();
     waveQAQC.TmStamp = dT.TmStamp;
     for av = waveVars
         % Run QAQC tests
@@ -228,7 +230,8 @@ if height(dT) > 1
     % Save the updated "waveQAQC" table
     fprintf('%s   %s   %s   %d\n', dbname, min(dT.TmStamp), max(dT.TmStamp), height(dT));
 else
-    fprintf('No new data to add to "%s"', dbname);
+    waveQAQC = dTQ(dTQ.TmStamp >= max(dTQ.TmStamp), :);
+    fprintf('No new data to add to "%s"\n', dbname);
 end
 end
 
@@ -240,19 +243,13 @@ function [dbname, ADCP] = SaveNewADCPData(conn, connQ, tbl)
 % Extract a table from PostgreSQL
 dT = sqlread(conn, strcat('"',tbl,'"'));
 
-if contains(tbl, 'clis')
-    dbname = [upper(tbl(1:4)) '_ADCP'];
-else
-    dbname = [tbl(1:4) '_ADCP'];
-end
-
 % Filter new data in the table
+dbname = [upper(tbl(1:4)) '_ADCP'];
 dTQ = sqlread(connQ, strcat('"',dbname,'"'));
 dT = dT(dT.TmStamp >= max(dTQ.TmStamp), :);
 
 if height(dT) > 1
     dT = sortrows(dT, 'TmStamp');
-    
     % Create the "result" structure to store values of each field
     result = struct();
     for i = 1:height(dT)
@@ -262,16 +259,9 @@ if height(dT) > 1
                 result(i).(field{1}) = res.(field{1});
             end
         catch ME
-            disp(['Error decoding row ' num2str(i) ': ' ME.message]);
             for field = fieldnames(result)'
                 result(i).(field{1}) = [];
             end
-        end
-        % Monitor decoding progress
-        if ~mod(i,10000)
-            disp(['Successfully decoded rows ' num2str(i-9999) '-' num2str(i)]);
-        elseif i == height(dT)
-            disp(['Successfully decoded rows ' num2str(i-mod(i,10000)+1) '-' num2str(i)]);
         end
     end
     
@@ -288,9 +278,14 @@ if height(dT) > 1
     ADCP.mtime = datetime(string(ADCP.mtime));
     
     % Save the updated "ADCP" table
-    fprintf('%s   %s   %s   %d\n', dbname, min(dT.TmStamp), max(dT.TmStamp), height(dT));
+    if height(ADCP) > 1
+        fprintf('%s   %s   %s   %d\n', dbname, min(ADCP.TmStamp), max(ADCP.TmStamp), height(ADCP));
+    else
+        fprintf('No new data to add to "%s"\n', dbname);
+    end
 else
-    fprintf('No new data to add to "%s"', dbname);
+    ADCP = dTQ(dTQ.TmStamp >= max(dTQ.TmStamp), :);
+    fprintf('No new data to add to "%s"\n', dbname);
 end
 end
 
@@ -300,41 +295,42 @@ end
 % 
 function [dbname, NutQAQC] = SaveNewNutData(conn, connQ, tbl)
 % Fixed parameters
-nutVars = {'PAR_Raw','PAR_Density_Flux','PAR_Flux_Total', ...
-           'chl_ugL','turbidity_NTU','NO3conc','NNO3'};
-
-% Read buoy nutrient QAQC parameters
-QAQC = load('QAQC_Para_buoyNut.mat');
-QAQC = QAQC.QAQC;
+colVars = {'PAR_Raw','chl_ugL','turbidity_NTU','NNO3'};
 
 % Extract a table from PostgreSQL
 dT = sqlread(conn, strcat('"',tbl,'"'));
 dT(:, {'RecNum','CR1XBatt','CR1XTemp'}) = [];
 
 if contains(tbl, 'PAR')
-    dbname = [tbl(1:4) '_' tbl(10:15) '_QAQC'];
-    if contains(tbl, 'PARtot')
-        dT.TmStamp = dT.TmStamp + seconds(1);
-    end
-else
-    dbname = [tbl(1:4) '_' tbl(16:end) '_QAQC'];
+    dbname = [tbl(1:4) '_PAR_QAQC'];
+    QAQC = load('QAQC_Para_WStations.mat');
+elseif contains(tbl, 'FL')
     dT(:, {'Date','EST'}) = [];
-    if contains(tbl, 'FL')
-        dT = renamevars(dT,'chl_ug/L','chl_ugL');
-    end
+    dT = renamevars(dT,'chl_ug/L','chl_ugL');
+    dbname = [tbl(1:4) '_FL_QAQC'];
+    QAQC = load('QAQC_Para_WStations.mat');
+elseif contains(tbl, 'NTU')
+    dT(:, {'Date','EST'}) = [];
+    dbname = [tbl(1:4) '_NTU_QAQC'];
+    QAQC = load('QAQC_Para_WNutrients.mat');
+else
+    dbname = [tbl(1:4) '_NO3_QAQC'];
+    QAQC = load('QAQC_Para_CNutrients.mat');
 end
+QAQC = QAQC.QAQC;
 
 % Filter new data in the table
 dTQ = sqlread(connQ, strcat('"',dbname,'"'));
 dT = dT(dT.TmStamp >= max(dTQ.TmStamp), :);
 
+% Create the "NutQAQC" table
+NutQAQC = table();
 if height(dT) > 1
-    % Create the "NutQAQC" table
-    NutQAQC = table();
+    dT = sortrows(dT, 'TmStamp');  
     for i = 1:width(dT)
         col = dT.Properties.VariableNames{i};
         NutQAQC.(col) = dT.(col);
-        if ismember(col, nutVars)
+        if ismember(col, colVars)
             % Run QAQC tests
             [dQ, dC] = CheckNutDataQAQC(dT, QAQC, col);
             NutQAQC.([col '_Q']) = dQ;
@@ -343,16 +339,19 @@ if height(dT) > 1
     end
     
     % Modify specific columns
-    NutQAQC.latitude(:) = mode(dT.latitude);
-    NutQAQC.longitude(:) = mode(dT.longitude);
-    NutQAQC.station(:) = mode(categorical(dT.station));
-    NutQAQC.mooring_site_desc(:) = mode(categorical(dT.mooring_site_desc));
-    NutQAQC.depth(:) = mode(dT.depth);
+    if strcmp(tbl(1:4), 'ARTG')
+        NutQAQC.latitude(:) = mode(dT.latitude);
+        NutQAQC.longitude(:) = mode(dT.longitude);
+        NutQAQC.station(:) = mode(categorical(dT.station));
+        NutQAQC.mooring_site_desc(:) = mode(categorical(dT.mooring_site_desc));
+        NutQAQC.depth(:) = mode(dT.depth);
+    end
     
     % Save the updated "NutQAQC" table
     fprintf('%s   %s   %s   %d\n', dbname, min(dT.TmStamp), max(dT.TmStamp), height(dT));
 else
-    fprintf('No new data to add to "%s"', dbname);
+    NutQAQC = dTQ(dTQ.TmStamp >= max(dTQ.TmStamp), :);
+    fprintf('No new data to add to "%s"\n', dbname);
 end
 end
 

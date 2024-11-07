@@ -1,37 +1,48 @@
 % 
-% Plot the time series of buoy data from "Buoy_buoy_QAQC.mat"
+% Plot the time series of buoy climatology data
 % Highlight the marked outliers
 % 
 
 clc; clear;
 
 % Set up parameters
-Astn = 'C1';
-buoy = 'ARTG'; loc = 'sfc'; Ayear = 2021;
+Ayear = 2021;
 av = 'T'; % {'T','S','DO','P','C','pH','rho','DOsat'}
+buoy = 'ARTG'; loc = 'sfc'; 
+Astn = 'C1'; dpL = 0; dpU = 3;
 
-d = load(['Buoy_' buoy '_QAQC.mat']);
-d = d.BuoyQAQC;
-iu = find(year(d.(loc).time)==Ayear);
-d_tmp = d.(loc).(av).data;
-c_tmp = d.(loc).(av).QAQC;
+% Connect to PostgreSQL
+username = 'lisicos';
+password = 'vncq489';
+connb = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
+    'DatabaseName','buoyQAQC','PortNumber',5432);
+conns = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
+    'DatabaseName','stationQAQC','PortNumber',5432);
+
+% Extract tables
+dTb = sqlread(connb, strcat('"',[buoy '_' loc '_QAQC'],'"'));
+dTb = dTb(year(dTb.TmStamp)==Ayear, :);
+dTs = sqlread(conns, strcat('"',['DEEP_' Astn '_WQ_QAQC'],'"'));
+dTs = dTs((dTs.depth>=dpL & dTs.depth<=dpU), :);
+close(connb);
+close(conns);
 
 figure('position',[321,180,623,420]); hold on; grid on;
 
 % Plot the time series of buoy data in Ayear
-plot(d.(loc).time(iu),d_tmp(iu),'b.','DisplayName',[buoy ' (' av ')']);
+plot(dTb.TmStamp,dTb.([av '_data']),'b.','DisplayName',[buoy ' (' av ')']);
 
 % Highlight the outliers
-iu1 = find(year(d.(loc).time)==Ayear & floor(c_tmp/10000)~=1);
-plot(d.(loc).time(iu1),d_tmp(iu1),'rs','DisplayName','1-Threshold');
-iu2 = find(year(d.(loc).time)==Ayear & mod(floor(c_tmp/1000),10)~=1);
-plot(d.(loc).time(iu2),d_tmp(iu2),'ro','DisplayName','2-JumpLim');
-iu3 = find(year(d.(loc).time)==Ayear & mod(floor(c_tmp/100),10)~=1);
-plot(d.(loc).time(iu3),d_tmp(iu3),'gd','DisplayName','3-Gap');
-iu4 = find(year(d.(loc).time)==Ayear & mod(floor(c_tmp/10),10)~=1);
-plot(d.(loc).time(iu4),d_tmp(iu4),'gp','DisplayName','4-PresRng');
-iu5 = find(year(d.(loc).time)==Ayear & mod(c_tmp,10)~=1);
-plot(d.(loc).time(iu5),d_tmp(iu5),'r^','DisplayName','5-Spike');
+iu1 = find(floor(dTb.([av '_Q'])/10000)~=1);
+plot(dTb.TmStamp(iu1),dTb.([av '_data'])(iu1),'rs','DisplayName','1-Threshold');
+iu2 = find(mod(floor(dTb.([av '_Q'])/1000),10)~=1);
+plot(dTb.TmStamp(iu2),dTb.([av '_data'])(iu2),'ro','DisplayName','2-JumpLim');
+iu3 = find(mod(floor(dTb.([av '_Q'])/100),10)~=1);
+plot(dTb.TmStamp(iu3),dTb.([av '_data'])(iu3),'gd','DisplayName','3-Gap');
+iu4 = find(mod(floor(dTb.([av '_Q'])/10),10)~=1);
+plot(dTb.TmStamp(iu4),dTb.([av '_data'])(iu4),'gp','DisplayName','4-PresRng');
+iu5 = find(mod(dTb.([av '_Q']),10)~=1);
+plot(dTb.TmStamp(iu5),dTb.([av '_data'])(iu5),'r^','DisplayName','5-Spike');
 
 xticks(datetime(Ayear,1:12,1));
 xtickformat('MMM/dd');
@@ -40,47 +51,23 @@ title([buoy '\_' loc ' ' num2str(Ayear) ' Data at ' Astn ' (' av ')']);
 legend('Location','eastoutside');
 
 %%
-% Compare with the cruise climatology data from "Cruises_Ayear_QAQC.mat"
-d_crs = load(['Cruises_' num2str(Ayear) '_QAQC.mat']);
-d_crs = d_crs.CruiseQAQC;
-crs = fieldnames(d_crs);
+% Compare with the cruise climatology data
+iu = find(year(dTs.time)==Ayear);
+plot(dTs.time(iu), dTs.([av '_data'])(iu), ...
+     'gs','MarkerFaceColor','g','DisplayName',['Cruises (' av ')']);
 
-% Determine the depth range ZT to ZB
-ZT = 5*floor((min(d.(loc).depth)-0.01)/5);
-ZB = ZT + 5;
-dpth = ['depth_' num2str(ZT) '_' num2str(ZB)];
-
-% Flags to avoid duplicate legends
-hasFlag = false;
-
-for i = 1:length(crs)
-    crsT = d_crs.(crs{i}).(Astn).(dpth).time;
-    crsD = d_crs.(crs{i}).(Astn).(dpth).(av).data;
-    if ~hasFlag
-        plot(crsT,crsD,'gs','MarkerFaceColor','g','DisplayName',['Cruises (' av ')']);
-        hasFlag = true;
-    else
-        plot(crsT,crsD,'gs','MarkerFaceColor','g','HandleVisibility','off');
-    end
-end
-
-%%
-% Compare with the station climatology data from "CTDEEP_Astn_QAQC.mat"
-d_stn = load(['CTDEEP_' Astn '_QAQC.mat']);
-d_stn = d_stn.StationQAQC;
-
-stnT = datetime(Ayear, month(d_stn.(dpth).time), 15);
-stnD = d_stn.(dpth).(av).data;
-plot(stnT,stnD,'.','Color',[0.5,0.5,0.5],'DisplayName',[Astn ' (' av ')']);
+% Compare with the station climatology data
+plot(datetime(Ayear,month(dTs.time),15), dTs.([av '_data']), ...
+     '.','Color',[0.5,0.5,0.5],'DisplayName',[Astn ' (' av ')']);
 
 % Get station climatology statistics
 bdmean = zeros(1,12); bd50 = zeros(1,12); 
 bd68L = zeros(1,12); bd68U = zeros(1,12);
 bd95L = zeros(1,12); bd95U = zeros(1,12);
 for nm = 1:12
-    idx = find(month(stnT)==nm);
+    idx = find(month(dTs.time)==nm);
     if ~isempty(idx)
-        tmp = stnD(idx);
+        tmp = dTs.([av '_data'])(idx);
         bdmean(nm) = mean(tmp(~isnan(tmp))); bd50(nm) = prctile(tmp,50);
         bd68L(nm) = prctile(tmp,16); bd68U(nm) = prctile(tmp,84);
         bd95L(nm) = prctile(tmp,2.5); bd95U(nm) = prctile(tmp,97.5);

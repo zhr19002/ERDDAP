@@ -5,23 +5,32 @@
 
 clc; clear;
 
-Astn = 'E1'; dpth = 'depth_0_5';
+Astn = 'C1'; dpL = 0; dpU = 3;
 
-d = load(['CTDEEP_' Astn '_QAQC.mat']);
-d = d.StationQAQC.(dpth);
+% Connect to PostgreSQL
+username = 'lisicos';
+password = 'vncq489';
+conn = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
+    'DatabaseName','stationQAQC','PortNumber',5432);
+
+% Extract tables
+d = sqlread(conn, strcat('"',['DEEP_' Astn '_WQ_QAQC'],'"'));
+d = d((d.depth>=dpL & d.depth<=dpU), :);
 dt = unique(d.time);
+close(conn);
 
 % Compute averages of selected variables
-for av = {'T','S','Chl','Chl2'}
-    dd.([av{1} '_avg']) = zeros(length(dt),1);
+davg = table();
+for av = {'T','S','Chl','Corrected_Chl'}
+    davg.([av{1} '_avg']) = zeros(length(dt),1);
     for i = 1:length(dt)
         iu = find(d.time == dt(i));
-        d_tmp = d.(av{1}).data(iu);
+        d_tmp = d.([av{1} '_data'])(iu);
         d_tmp = d_tmp(~isnan(d_tmp));
-        dd.([av{1} '_avg'])(i) = mean(d_tmp);
+        davg.([av{1} '_avg'])(i) = mean(d_tmp);
     end
     % Compute monthly averages
-    res.(av{1}) = ComputeStationMonthAvg(dt, dd.([av{1} '_avg']));
+    res.(av{1}) = ComputeStationMonthAvg(dt, davg.([av{1} '_avg']));
 end
 
 % Estimate beta and calculate PAR values
@@ -30,8 +39,8 @@ PAR0 = zeros(length(dt),1);
 PARmx = zeros(length(dt),1);
 for i = 1:length(dt)
     iu = find(d.time == dt(i));
-    [beta(i), PAR0(i)] = EstimateBetaPAR(d.depth(iu), d.PAR.data(iu), 0);
-    PARmx(i) = max(d.PAR.data(iu));
+    [beta(i), PAR0(i)] = EstimateBetaPAR(d.depth(iu), d.PAR_data(iu), 0);
+    PARmx(i) = max(d.PAR_data(iu));
 end
 % Compute monthly averages
 res.beta = ComputeStationMonthAvg(dt, beta);

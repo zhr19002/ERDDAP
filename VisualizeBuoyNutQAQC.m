@@ -8,13 +8,13 @@ clc; clear;
 % Set up parameters
 Ayear = 2021;
 buoy = 'ARTG';
-var = 'PAR'; % {'PAR','FL','NTU'}
+var = 'FL'; % {'PAR','FL','NTU'}
 Astn = 'C1';
 % Ayear = 2019; buoy = 'CLIS'; var = 'NO3'; Astn = 'C1';
 
 % Fixed parameters
 colb = struct('PAR','PAR_Raw','FL','chl_ugL','NTU','turbidity_NTU','NO3','NNO3');
-cols = struct('PAR','PAR_data','FL','Chl_data','NTU','TSS','NO3','NOX-LC');
+cols = struct('PAR','PAR_data','FL','Corrected_Chl_data','NTU','TSS','NO3','NOX-LC');
 
 % Connect to PostgreSQL
 username = 'lisicos';
@@ -62,17 +62,16 @@ title([buoy ' ' num2str(Ayear) ' Data at ' Astn ' (' vlabel ')']);
 legend('Location','eastoutside');
 
 %%
-% Compare with the cruise climatology data
+% Compare with the cruise nutrient data
 iu = find(year(dTs.time)==Ayear);
 plot(dTs.time(iu), stnD(iu), ...
      'gs','MarkerFaceColor','g','DisplayName',['Cruises (' vlabel ')']);
 
-%%
-% Compare with the station climatology data
+% Compare with the station nutrient data
 plot(datetime(Ayear,month(dTs.time),15), stnD, ...
      '.','Color',[0.5,0.5,0.5],'DisplayName',[Astn ' (' vlabel ')']);
 
-% Get station climatology statistics
+% Get station nutrient statistics
 bdmean = zeros(1,12); bd50 = zeros(1,12); 
 bd68L = zeros(1,12); bd68U = zeros(1,12);
 bd95L = zeros(1,12); bd95U = zeros(1,12);
@@ -86,7 +85,7 @@ for nm = 1:12
     end
 end
 
-% Put station climatology statistics patch on the graph
+% Put station nutrient statistics patch on the graph
 dt = datetime(Ayear, 1:12, 15);
 plot(dt, bdmean, 'k-', 'DisplayName', 'Mean');
 plot(dt, bd50, 'm-.', 'DisplayName', 'Median');

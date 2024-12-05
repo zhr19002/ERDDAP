@@ -3,6 +3,7 @@
 % (1 = pass; 3 = beyond 98% data range; 4 = beyond max-min range)
 % 
 % Calls CheckNutDataQAQC.m
+% Calls ImplementCalibration.m
 % 
 
 clc; clear;
@@ -55,9 +56,14 @@ for i = 1:width(dT)
     NutQAQC.(col) = dT.(col);
     if ismember(col, colVars)
         % Run QAQC tests
-        [dQ, dC] = CheckNutDataQAQC(dT, QAQC, col);
-        NutQAQC.([col '_Q']) = dQ;
-        NutQAQC.([col '_FailedCount']) = dC;
+        [dQ1, dC1] = CheckNutDataQAQC(dT, QAQC, col);
+        NutQAQC.([col '_Q']) = dQ1;
+        NutQAQC.([col '_FailedCount']) = dC1;
+        % Add calibrated columns
+        NutQAQC.(['Adjusted_' col]) = ImplementCalibration(dT.(col), buoy, var);
+        [dQ2, dC2] = CheckNutDataQAQC(NutQAQC, QAQC, ['Adjusted_' col]);
+        NutQAQC.(['Adjusted_' col '_Q']) = dQ2;
+        NutQAQC.(['Adjusted_' col '_FailedCount']) = dC2;
     end
 end
 

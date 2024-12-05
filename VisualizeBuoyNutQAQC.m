@@ -8,8 +8,8 @@ clc; clear;
 % Set up parameters
 Ayear = 2021;
 buoy = 'ARTG';
-var = 'FL'; % {'PAR','FL','NTU'}
-Astn = 'C1';
+var = 'NTU'; % {'PAR','FL','NTU'}
+Astn = 'E1';
 % Ayear = 2019; buoy = 'CLIS'; var = 'NO3'; Astn = 'C1';
 
 % Fixed parameters

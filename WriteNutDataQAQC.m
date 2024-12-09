@@ -60,7 +60,7 @@ for i = 1:width(dT)
         NutQAQC.([col '_Q']) = dQ1;
         NutQAQC.([col '_FailedCount']) = dC1;
         % Add calibrated columns
-        NutQAQC.(['Adjusted_' col]) = ImplementCalibration(dT.(col), buoy, var);
+        NutQAQC.(['Adjusted_' col]) = ImplementCalibration(dT(:,{'TmStamp',col}), buoy, var);
         [dQ2, dC2] = CheckNutDataQAQC(NutQAQC, QAQC, ['Adjusted_' col]);
         NutQAQC.(['Adjusted_' col '_Q']) = dQ2;
         NutQAQC.(['Adjusted_' col '_FailedCount']) = dC2;

@@ -3,7 +3,7 @@ clc; clear;
 % {'A2','A4','B3','C1','C2','D3','E1','09','15'}
 % {'F2','F3','H2','H4','H6'}
 % {'I2','J2','K2','M3'}
-Astn = 'A2';
+Astn = 'H4';
 
 % Fixed parameters
 stnVars = {'sea_water_temperature','sea_water_salinity','oxygen_concentration_in_sea_wat', ...
@@ -61,11 +61,11 @@ for ZT = 0:5:100
 end
 
 % Save the updated "StationQAQC" table to a CSV file
-writetable(StationQAQC, ['DEEP_' Astn '_WQ_QAQC.csv']);
+writetable(StationQAQC, ['DEEP_' Astn '_WQ_QAQC_new.csv']); %%%%%%
 
 %%
 % Read the CSV file into a table
-tbl = ['DEEP_' Astn '_WQ_QAQC'];
+tbl = ['DEEP_' Astn '_WQ_QAQC_new']; %%%%%%
 StationQAQC = readtable([tbl '.csv']);
 StationQAQC.time.Format = 'dd-MMM-yyyy HH:mm:ss';
 StationQAQC.Start_Date.Format = 'dd-MMM-yyyy HH:mm:ss';

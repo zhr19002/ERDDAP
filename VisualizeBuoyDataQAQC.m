@@ -9,7 +9,7 @@ clc; clear;
 Ayear = 2021;
 av = 'T'; % {'T','S','DO','P','C','pH','rho','DOsat'}
 buoy = 'ARTG'; loc = 'sfc'; 
-Astn = 'C1'; dpL = 0; dpU = 3;
+Astn = 'E1'; dpL = 0; dpU = 3;
 
 % Connect to PostgreSQL
 username = 'lisicos';

@@ -6,14 +6,14 @@
 clc; clear;
 
 % Set up parameters
-Ayear = 2021;
+Ayear = 2019;
 buoy = 'ARTG';
-var = 'NTU'; % {'PAR','FL','NTU'}
+var = 'PAR'; % {'PAR','FL','NTU'}
 Astn = 'E1';
-% Ayear = 2019; buoy = 'CLIS'; var = 'NO3'; Astn = 'C1';
+% Ayear = 2019; buoy = 'CLIS'; var = 'NO3'; Astn = 'I2';
 
 % Fixed parameters
-colb = struct('PAR','PAR_Raw','FL','chl_ugL','NTU','turbidity_NTU','NO3','NNO3');
+colb = struct('PAR','PAR_Density_Flux','FL','chl_ugL','NTU','turbidity_NTU','NO3','NNO3');
 cols = struct('PAR','PAR_data','FL','Corrected_Chl_data','NTU','TSS','NO3','NOX-LC');
 
 % Connect to PostgreSQL
@@ -46,14 +46,14 @@ vlabel = strrep(colb.(var),'_','\_');
 plot(dTb.TmStamp,dTb.(colb.(var)),'b.','DisplayName',[buoy ' (' vlabel ')']);
 
 % Highlight the outliers
-iu1 = find(floor(dTb.([colb.(var) '_Q'])/1000)~=1);
-plot(dTb.TmStamp(iu1),dTb.(colb.(var))(iu1),'rs','DisplayName','1-Threshold');
-iu2 = find(mod(floor(dTb.([colb.(var) '_Q'])/100),10)~=1);
-plot(dTb.TmStamp(iu2),dTb.(colb.(var))(iu2),'ro','DisplayName','2-JumpLim');
-iu3 = find(mod(floor(dTb.([colb.(var) '_Q'])/10),10)~=1);
-plot(dTb.TmStamp(iu3),dTb.(colb.(var))(iu3),'gd','DisplayName','3-Gap');
-iu4 = find(mod(dTb.([colb.(var) '_Q']),10)~=1);
-plot(dTb.TmStamp(iu4),dTb.(colb.(var))(iu4),'r^','DisplayName','4-Spike');
+% iu1 = find(floor(dTb.([colb.(var) '_Q'])/1000)~=1);
+% plot(dTb.TmStamp(iu1),dTb.(colb.(var))(iu1),'rs','DisplayName','1-Threshold');
+% iu2 = find(mod(floor(dTb.([colb.(var) '_Q'])/100),10)~=1);
+% plot(dTb.TmStamp(iu2),dTb.(colb.(var))(iu2),'ro','DisplayName','2-JumpLim');
+% iu3 = find(mod(floor(dTb.([colb.(var) '_Q'])/10),10)~=1);
+% plot(dTb.TmStamp(iu3),dTb.(colb.(var))(iu3),'gd','DisplayName','3-Gap');
+% iu4 = find(mod(dTb.([colb.(var) '_Q']),10)~=1);
+% plot(dTb.TmStamp(iu4),dTb.(colb.(var))(iu4),'r^','DisplayName','4-Spike');
 
 xticks(datetime(Ayear,1:12,1));
 xtickformat('MMM/dd');

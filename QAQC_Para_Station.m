@@ -90,6 +90,8 @@ for i = 1:length(dp_rng)
                     rng = [6 10];
                 case 'rho'
                     rng = [16 25];
+                case 'PAR'
+                    rng = [0 5000];
                 otherwise
                     rng = [0 150];
             end

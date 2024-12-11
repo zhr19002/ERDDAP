@@ -3,7 +3,7 @@ clc; clear;
 % {'A2','A4','B3','C1','C2','D3','E1','09','15'}
 % {'F2','F3','H2','H4','H6'}
 % {'I2','J2','K2','M3'}
-Astn = 'H4';
+Astn = 'A2';
 
 % Fixed parameters
 stnVars = {'sea_water_temperature','sea_water_salinity','oxygen_concentration_in_sea_wat', ...
@@ -19,7 +19,7 @@ elseif ismember(Astn, {'F2','F3','H2','H4','H6'})
 else
     stnGroup = 'EStations';
 end
-QAQC = load(['QAQC_Para_' stnGroup '.mat']);
+QAQC = load(['QAQC_' stnGroup '_WQ.mat']);
 QAQC = QAQC.QAQC;
 
 % Write QAQCed station WQ files
@@ -61,11 +61,11 @@ for ZT = 0:5:100
 end
 
 % Save the updated "StationQAQC" table to a CSV file
-writetable(StationQAQC, ['DEEP_' Astn '_WQ_QAQC_new.csv']); %%%%%%
+writetable(StationQAQC, ['DEEP_' Astn '_WQ_QAQC.csv']);
 
 %%
 % Read the CSV file into a table
-tbl = ['DEEP_' Astn '_WQ_QAQC_new']; %%%%%%
+tbl = ['DEEP_' Astn '_WQ_QAQC'];
 StationQAQC = readtable([tbl '.csv']);
 StationQAQC.time.Format = 'dd-MMM-yyyy HH:mm:ss';
 StationQAQC.Start_Date.Format = 'dd-MMM-yyyy HH:mm:ss';
@@ -126,11 +126,11 @@ end
 close(connQ);
 
 %%
-% Write the "QAQC_Para_Stations" table to PostgreSQL
+% Write the "QAQC_(W/C/E)Stations_WQ" table to PostgreSQL
 clc; clear;
 
 dir = 'West'; % {'West','Center','East'}
-QAQC = load(['QAQC_Para_' dir(1) 'Stations.mat']);
+QAQC = load(['QAQC_' dir(1) 'Stations_WQ.mat']);
 QAQC = QAQC.QAQC;
 
 % Specify row and column names
@@ -164,7 +164,7 @@ connQ = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
      'DatabaseName','stationQAQC','PortNumber',5432);
 
 % Write the table to PostgreSQL
-tblName = strcat('"',['QAQC_Parameters_' dir '_Stations_WQ'],'"');
+tblName = strcat('"',['QAQC_' dir '_Stations_WQ'],'"');
 qaqcT.Properties.VariableNames = strcat('"',qaqcT.Properties.VariableNames,'"');
 sqlwrite(connQ, tblName, qaqcT);
 

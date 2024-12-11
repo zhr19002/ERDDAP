@@ -1,6 +1,6 @@
 % 
 % Create QAQC tables for different depth_codes in a region
-% Generate the "QAQC_Para_(W/C/E)Nutrients.mat" file
+% Generate the "QAQC_(W/C/E)Stations_Nutrient.mat" file
 % 
 % Calls GetCTDEEP_Nut_Data.m
 % 
@@ -89,4 +89,4 @@ for dp = {'S','B'}
 end
 
 % Save QAQC parameters of staion group nutrients
-save(['QAQC_Para_' stns(1) 'Nutrients.mat'], 'QAQC');
+save(['QAQC_' stns '_Nutrient.mat'], 'QAQC');

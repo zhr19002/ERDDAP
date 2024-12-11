@@ -17,7 +17,7 @@ elseif ismember(Astn, {'F2','F3','H2','H4','H6'})
 else
     stnGroup = 'EStations';
 end
-QAQC = load(['QAQC_Para_' stnGroup(1) 'Nutrients.mat']);
+QAQC = load(['QAQC_' stnGroup '_Nutrient.mat']);
 QAQC = QAQC.QAQC;
 
 % Write QAQCed station nutrient files
@@ -117,11 +117,11 @@ end
 close(connQ);
 
 %%
-% Write the "QAQC_Para_Nutrients" table to PostgreSQL
+% Write the "QAQC_(W/C/E)Stations_Nutrient" table to PostgreSQL
 clc; clear;
 
 dir = 'West'; % {'West','Center','East'}
-QAQC = load(['QAQC_Para_' dir(1) 'Nutrients.mat']);
+QAQC = load(['QAQC_' dir(1) 'Stations_Nutrient.mat']);
 QAQC = QAQC.QAQC;
 
 % Specify row and column names
@@ -155,7 +155,7 @@ connQ = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
      'DatabaseName','stationQAQC','PortNumber',5432);
 
 % Write the table to PostgreSQL
-tblName = strcat('"',['QAQC_Parameters_' dir '_Stations_Nutrients'],'"');
+tblName = strcat('"',['QAQC_' dir '_Stations_Nutrient'],'"');
 qaqcT.Properties.VariableNames = strcat('"',qaqcT.Properties.VariableNames,'"');
 sqlwrite(connQ, tblName, qaqcT);
 

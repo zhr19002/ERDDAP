@@ -1,6 +1,6 @@
 % 
 % Create QAQC tables for different depths in a region
-% Generate the "QAQC_Para_(W/C/E)Stations.mat" file
+% Generate the "QAQC_(W/C/E)Stations_WQ.mat" file
 % 
 % Calls GetCTDEEP_Clim_Data.m
 % 
@@ -112,4 +112,4 @@ for i = 1:length(dp_rng)
 end
 
 % Save QAQC parameters of a group of stations
-save(['QAQC_Para_' stns '.mat'], 'QAQC');
+save(['QAQC_' stns '_WQ.mat'], 'QAQC');

@@ -8,11 +8,7 @@
 % 
 
 clc; clear;
-
-% {'A2','A4','B3','C1','C2','D3','E1','09','15'}
-% {'F2','F3','H2','H4','H6'}
-% {'I2','J2','K2','M3'}
-Astn = 'E1';
+Astn = 'A4'; % {'A4','C1','E1','I2'}
 
 % Fixed parameters
 av_stn = struct('T','sea_water_temperature','S','sea_water_salinity', ...
@@ -29,7 +25,7 @@ elseif ismember(Astn, {'F2','F3','H2','H4','H6'})
 else
     stnGroup = 'EStations';
 end
-QAQC = load(['QAQC_Para_' stnGroup '.mat']);
+QAQC = load(['QAQC_' stnGroup '_WQ.mat']);
 QAQC = QAQC.QAQC;
 
 % Download station climatology data in the depth range ZT to ZB
@@ -56,16 +52,48 @@ for ZT = 0:5:40
     end
 end
 
-% Save QAQC results
-StationQAQC = clim;
-save(['CTDEEP_' Astn '_QAQC.mat'], 'StationQAQC');
+% Save station climatology QAQC parameters
+for dp = fieldnames(clim)'
+    for av = {'T','S','DO','P','C','pH','rho','DOsat','PAR','Chl','Corrected_Chl'}
+        % Station climatology data cleaning
+        iu1 = find(clim.(dp{1}).(av{1}).check==1);
+        d_time = clim.(dp{1}).time(iu1);
+        d_data = clim.(dp{1}).(av{1}).data(iu1);
+        para = table('Size', [10,12], ...
+                     'VariableTypes', repmat({'double'},1,12), ...
+                     'VariableNames', arrayfun(@num2str,1:12,'UniformOutput',false), ...
+                     'RowNames',{'count','mean','std','median','upper','lower','bd99','bd84','bd16','bd1'});
+        for nm = 1:12
+            iu2 = find(month(d_time)==nm);
+            if ~isempty(iu2)
+                data = d_data(iu2);
+                data = data(~isnan(data));
+            else
+                data = 0;
+            end
+            
+            para{1,nm} = length(iu2);
+            para{2,nm} = mean(data);
+            para{3,nm} = std(data);
+            para{4,nm} = median(data);
+            para{5,nm} = max(data);
+            para{6,nm} = min(data);
+            para{7,nm} = prctile(data,99);
+            para{8,nm} = prctile(data,84);
+            para{9,nm} = prctile(data,16);
+            para{10,nm} = prctile(data,1);
+        end
+        QAQC.(dp{1}).(av{1}) = para;
+    end
+end
+save(['QAQC_' Astn '_WQ.mat'], 'QAQC');
 
 %%
 % Save all the data plotted in a structure that can be exported to NETCDF
 d0 = GetCTDEEP_Clim_Data(Astn, 0, 5, 1);
 latlon = [mode(d0.latitude), mode(d0.longitude)];
-dp_rng = fieldnames(StationQAQC);
+dp_rng = fieldnames(clim);
 for i = 1:length(dp_rng)
-    stnDep = max(StationQAQC.(dp_rng{i}).depth);
-    WriteStationNETCDF(Astn, dp_rng{i}, latlon, stnDep, StationQAQC.(dp_rng{i}));
+    stnDep = max(clim.(dp_rng{i}).depth);
+    WriteStationNETCDF(Astn, dp_rng{i}, latlon, stnDep, clim.(dp_rng{i}));
 end

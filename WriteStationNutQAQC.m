@@ -8,11 +8,7 @@
 % 
 
 clc; clear;
-
-% {'A2','A4','B3','C1','C2','D3','E1','09','15'}
-% {'F2','F3','H2','H4','H6'}
-% {'I2','J2','K2','M3'}
-Astn = 'E1';
+Astn = 'A4'; % {'A4','C1','E1','I2'}
 
 % Fixed parameters
 paras = {'BIOSI-LC','CHLA','DIP','DOC','NH#-LC','NOX-LC', ...
@@ -26,7 +22,7 @@ elseif ismember(Astn, {'F2','F3','H2','H4','H6'})
 else
     stnGroup = 'EStations';
 end
-QAQC = load(['QAQC_Para_' stnGroup(1) 'Nutrients.mat']);
+QAQC = load(['QAQC_' stnGroup '_Nutrient.mat']);
 QAQC = QAQC.QAQC;
 
 % Get station nutrient data
@@ -58,15 +54,49 @@ if ~isempty(d)
     end
 end
 
-% Save QAQC results
-NutQAQC = nut;
-save(['CTDEEP_' Astn '_NutQAQC.mat'], 'NutQAQC');
+% Save station nutrient QAQC parameters
+for dp = {'S','B'}
+    for av = paras
+        var = replace(av{1},'#-','_');
+        var = replace(var,'-','_');
+        % Station nutrient data cleaning
+        iu3 = find(nut.(dp{1}).(var).check==1);
+        d_time = nut.(dp{1}).(var).time(iu3);
+        d_data = nut.(dp{1}).(var).data(iu3);
+        para = table('Size', [10,12], ...
+                     'VariableTypes', repmat({'double'},1,12), ...
+                     'VariableNames', arrayfun(@num2str,1:12,'UniformOutput',false), ...
+                     'RowNames',{'count','mean','std','median','upper','lower','bd99','bd84','bd16','bd1'});
+        for nm = 1:12
+            iu4 = find(month(d_time)==nm);
+            if ~isempty(iu4)
+                data = d_data(iu4);
+                data = data(~isnan(data));
+            else
+                data = 0;
+            end
+            
+            para{1,nm} = length(iu4);
+            para{2,nm} = mean(data);
+            para{3,nm} = std(data);
+            para{4,nm} = median(data);
+            para{5,nm} = max(data);
+            para{6,nm} = min(data);
+            para{7,nm} = prctile(data,99);
+            para{8,nm} = prctile(data,84);
+            para{9,nm} = prctile(data,16);
+            para{10,nm} = prctile(data,1);
+        end
+        QAQC.(dp{1}).(var) = para;
+    end
+end
+save(['QAQC_' Astn '_Nutrient.mat'], 'QAQC');
 
 %%
 % Save all the data plotted in a structure that can be exported to NETCDF
-latlon = [NutQAQC.latitude, NutQAQC.longitude];
+latlon = [nut.latitude, nut.longitude];
 for dp = {'S','B'}
-    for field = fieldnames(NutQAQC.(dp{1}))'
-        WriteNutNETCDF(Astn, dp{1}, field{1}, latlon, NutQAQC.(dp{1}).(field{1}));
+    for field = fieldnames(nut.(dp{1}))'
+        WriteNutNETCDF(Astn, dp{1}, field{1}, latlon, nut.(dp{1}).(field{1}));
     end
 end

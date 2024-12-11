@@ -45,10 +45,14 @@ elseif contains(tblName, 'Met')
         dT.([av{1} '_FailedCount']) = dC;
     end
 else
-    if contains(tblName, 'CLIS')
-        QAQC = load('QAQC_Para_CStations.mat');
+    if contains(tblName, 'ARTG')
+        QAQC = load('QAQC_E1_WQ.mat');
+    elseif contains(tblName, 'EXRX')
+        QAQC = load('QAQC_A4_WQ.mat');
+    elseif contains(tblName, 'WLIS')
+        QAQC = load('QAQC_C1_WQ.mat');
     else
-        QAQC = load('QAQC_Para_WStations.mat');  
+        QAQC = load('QAQC_I2_WQ.mat');
     end
     QAQC = QAQC.QAQC;
     dT = renamevars(dT, avars_data, avars);

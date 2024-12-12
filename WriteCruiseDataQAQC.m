@@ -30,7 +30,7 @@ for Astn = stnGrp
     else
         stns = 'EStations';
     end
-    QAQC = load(['QAQC_Para_' stns '.mat']);
+    QAQC = load(['QAQC_' stns '_WQ.mat']);
     QAQC = QAQC.QAQC;
     
     % Get cruise names for all months in Ayear

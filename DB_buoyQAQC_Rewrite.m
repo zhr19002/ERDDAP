@@ -8,7 +8,7 @@
 clc; clear;
 
 % Change the table name
-tblName = '"ARTG_btm1_QAQC"';
+tblName = '"WLIS_btm1_QAQC"';
 
 % Fixed parameters
 avars = {'T','S','DO','P','C','pH','rho','DOsat'};

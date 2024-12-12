@@ -26,22 +26,22 @@ switch var
     case 'PAR'
         buoy = 'ARTG';
         dT = sqlread(conn, '"ARTG_pb1_PARdenDat"');
-        QAQC = load('QAQC_Para_WStations.mat');
+        QAQC = load('QAQC_E1_WQ.mat');
     case 'FL'
         buoy = 'ARTG';
         dT = sqlread(conn, '"ARTG_pb1_sbeECOFL"');
         dT = renamevars(dT,'chl_ug/L','chl_ugL');
         dT(:, {'Date','EST'}) = [];
-        QAQC = load('QAQC_Para_WStations.mat');
+        QAQC = load('QAQC_E1_WQ.mat');
     case 'NTU'
         buoy = 'ARTG';
         dT = sqlread(conn, '"ARTG_pb1_sbeECONTU"');
         dT(:, {'Date','EST'}) = [];
-        QAQC = load('QAQC_Para_WNutrients.mat');
+        QAQC = load('QAQC_E1_Nutrient.mat');
     case 'NO3'
         buoy = 'CLIS';
         dT = sqlread(conn, '"CLIS_pb4_SunaNO3"');
-        QAQC = load('QAQC_Para_CNutrients.mat');
+        QAQC = load('QAQC_I2_Nutrient.mat');
 end
 
 dT(:, {'RecNum','CR1XBatt','CR1XTemp'}) = [];

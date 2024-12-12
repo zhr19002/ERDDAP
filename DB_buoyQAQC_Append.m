@@ -67,12 +67,18 @@ function [dbname, BuoyQAQC] = SaveNewClimData(conn, connQ, tbl)
 avars = {'T','S','DO','P','C','pH','rho','DOsat'};
 
 % Read station group QAQC parameters
-if contains(tbl, 'clis', 'IgnoreCase', true)
-    loc = lower(tbl(end-2:end));
-    QAQC = load('QAQC_Para_CStations.mat');
-else
+if contains(tbl, 'ARTG')
     loc = tbl(15:end);
-    QAQC = load('QAQC_Para_WStations.mat');
+    QAQC = load('QAQC_E1_WQ.mat');
+elseif contains(tbl, 'EXRX')
+    loc = tbl(15:end);
+    QAQC = load('QAQC_A4_WQ.mat');
+elseif contains(tbl, 'WLIS')
+    loc = tbl(15:end);
+    QAQC = load('QAQC_C1_WQ.mat');
+else
+    loc = lower(tbl(end-2:end));
+    QAQC = load('QAQC_I2_WQ.mat');
 end
 QAQC = QAQC.QAQC;
 
@@ -303,19 +309,19 @@ dT(:, {'RecNum','CR1XBatt','CR1XTemp'}) = [];
 
 if contains(tbl, 'PAR')
     dbname = [tbl(1:4) '_PAR_QAQC'];
-    QAQC = load('QAQC_Para_WStations.mat');
+    QAQC = load('QAQC_E1_WQ.mat');
 elseif contains(tbl, 'FL')
     dT(:, {'Date','EST'}) = [];
     dT = renamevars(dT,'chl_ug/L','chl_ugL');
     dbname = [tbl(1:4) '_FL_QAQC'];
-    QAQC = load('QAQC_Para_WStations.mat');
+    QAQC = load('QAQC_E1_WQ.mat');
 elseif contains(tbl, 'NTU')
     dT(:, {'Date','EST'}) = [];
     dbname = [tbl(1:4) '_NTU_QAQC'];
-    QAQC = load('QAQC_Para_WNutrients.mat');
+    QAQC = load('QAQC_E1_Nutrient.mat');
 else
     dbname = [tbl(1:4) '_NO3_QAQC'];
-    QAQC = load('QAQC_Para_CNutrients.mat');
+    QAQC = load('QAQC_I2_Nutrient.mat');
 end
 QAQC = QAQC.QAQC;
 

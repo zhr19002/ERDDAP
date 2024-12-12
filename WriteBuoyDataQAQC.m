@@ -21,10 +21,14 @@ avars = {'T','S','DO','P','C','pH','rho','DOsat'};
 
 % Read station group QAQC parameters
 switch buoy
-    case 'CLIS'
-        QAQC = load('QAQC_Para_CStations.mat'); 
+    case 'ARTG'
+        QAQC = load('QAQC_E1_WQ.mat');
+    case 'EXRX'
+        QAQC = load('QAQC_A4_WQ.mat');
+    case 'WLIS'
+        QAQC = load('QAQC_C1_WQ.mat');
     otherwise
-        QAQC = load('QAQC_Para_WStations.mat');
+        QAQC = load('QAQC_I2_WQ.mat');
 end
 QAQC = QAQC.QAQC;
 

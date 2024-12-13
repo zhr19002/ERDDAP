@@ -8,10 +8,12 @@
 
 clc; clear;
 
-var = 'PAR'; % {'PAR','FL','NTU','NO3'}
+tvar = 'PAR'; % {'PAR','FL','NTU','NO3'}
 
 % Fixed parameters
-colVars = {'PAR_Raw','chl_ugL','turbidity_NTU','NNO3'};
+cols = {'PAR_Density_Flux','chl_ugL','turbidity_NTU','NNO3'};
+colVar = struct('PAR_Density_Flux','PAR','chl_ugL','CHLA', ...
+                'turbidity_NTU','TSS','NNO3','NO3');
 
 % Connect to PostgreSQL
 username = 'lisicos';
@@ -22,7 +24,7 @@ conn = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
 % tbldata = sqlfind(conn,"")
 
 % Extract tables from PostgreSQL
-switch var
+switch tvar
     case 'PAR'
         buoy = 'ARTG';
         dT = sqlread(conn, '"ARTG_pb1_PARdenDat"');
@@ -53,19 +55,20 @@ close(conn);
 NutQAQC = table();
 for i = 1:width(dT)
     col = dT.Properties.VariableNames{i};
-    NutQAQC.(col) = dT.(col);
-    if ismember(col, colVars)
+    if ismember(col, cols)
+        var = colVar.(col);
+        NutQAQC.(var) = dT.(col);
         % Run QAQC tests
-        [dQ1, dC1] = CheckNutDataQAQC(dT, QAQC, col);
-        NutQAQC.([col '_Q']) = dQ1;
-        NutQAQC.([col '_FailedCount']) = dC1;
+        [dQ1, dC1] = CheckNutDataQAQC(NutQAQC, QAQC, var);
+        NutQAQC.([var '_Q']) = dQ1;
+        NutQAQC.([var '_FailedCount']) = dC1;
         % Add calibrated columns
-        if strcmp(col, 'NNO3')
-            NutQAQC.(['Adjusted_' col]) = ImplementCalibration(dT(:,{'TmStamp',col}), buoy, var);
-            [dQ2, dC2] = CheckNutDataQAQC(NutQAQC, QAQC, ['Adjusted_' col]);
-            NutQAQC.(['Adjusted_' col '_Q']) = dQ2;
-            NutQAQC.(['Adjusted_' col '_FailedCount']) = dC2;
-        end
+        NutQAQC.(['Adjusted_' var]) = ImplementCalibration(dT.(col), dT.TmStamp, tvar);
+        [dQ2, dC2] = CheckNutDataQAQC(NutQAQC, QAQC, ['Adjusted_' var]);
+        NutQAQC.(['Adjusted_' var '_Q']) = dQ2;
+        NutQAQC.(['Adjusted_' var '_FailedCount']) = dC2;
+    else
+        NutQAQC.(col) = dT.(col);
     end
 end
 
@@ -79,12 +82,12 @@ if strcmp(buoy, 'ARTG')
 end
 
 % Save the updated "NutQAQC" table to a CSV file
-writetable(NutQAQC, [buoy '_' var '_QAQC.csv']);
+writetable(NutQAQC, [buoy '_' tvar '_QAQC.csv']);
 fprintf('%s   %s   %s\n', min(NutQAQC.TmStamp), max(NutQAQC.TmStamp), NutQAQC.TmStamp.TimeZone);
 
 %%
 % Read the CSV file into a table
-tbl = [buoy '_' var '_QAQC'];
+tbl = [buoy '_' tvar '_QAQC'];
 opts = detectImportOptions([tbl '.csv']);
 opts = setvaropts(opts,'TmStamp','InputFormat','dd-MMM-yyyy HH:mm:ss');
 NutQAQC = readtable([tbl '.csv'], opts);

@@ -301,7 +301,9 @@ end
 % 
 function [dbname, NutQAQC] = SaveNewNutData(conn, connQ, tbl)
 % Fixed parameters
-colVars = {'PAR_Raw','chl_ugL','turbidity_NTU','NNO3'};
+cols = {'PAR_Density_Flux','chl_ugL','turbidity_NTU','NNO3'};
+colVar = struct('PAR_Density_Flux','PAR','chl_ugL','CHLA', ...
+                'turbidity_NTU','TSS','NNO3','NO3');
 
 % Extract a table from PostgreSQL
 dT = sqlread(conn, strcat('"',tbl,'"'));
@@ -335,12 +337,20 @@ if height(dT) > 1
     dT = sortrows(dT, 'TmStamp');  
     for i = 1:width(dT)
         col = dT.Properties.VariableNames{i};
-        NutQAQC.(col) = dT.(col);
-        if ismember(col, colVars)
+        if ismember(col, cols)
+            var = colVar.(col);
+            NutQAQC.(var) = dT.(col);
             % Run QAQC tests
-            [dQ, dC] = CheckNutDataQAQC(dT, QAQC, col);
-            NutQAQC.([col '_Q']) = dQ;
-            NutQAQC.([col '_FailedCount']) = dC;
+            [dQ1, dC1] = CheckNutDataQAQC(NutQAQC, QAQC, var);
+            NutQAQC.([var '_Q']) = dQ1;
+            NutQAQC.([var '_FailedCount']) = dC1;
+            % Add calibrated columns
+            NutQAQC.(['Adjusted_' var]) = ImplementCalibration(dT.(col), dT.TmStamp, tvar);
+            [dQ2, dC2] = CheckNutDataQAQC(NutQAQC, QAQC, ['Adjusted_' var]);
+            NutQAQC.(['Adjusted_' var '_Q']) = dQ2;
+            NutQAQC.(['Adjusted_' var '_FailedCount']) = dC2;
+        else
+            NutQAQC.(col) = dT.(col);
         end
     end
     

@@ -6,15 +6,13 @@
 clc; clear;
 
 % Set up parameters
-Ayear = 2019;
-buoy = 'ARTG';
-var = 'PAR'; % {'PAR','FL','NTU'}
-Astn = 'E1';
-% Ayear = 2019; buoy = 'CLIS'; var = 'NO3'; Astn = 'I2';
+buoy = 'ARTG'; Astn = 'E1';
+Ayear = 2021; tvar = 'NTU'; % {'PAR','FL','NTU'}
+% buoy = 'CLIS'; Astn = 'I2'; Ayear = 2019; tvar = 'NO3';
 
 % Fixed parameters
-colb = struct('PAR','PAR_Density_Flux','FL','chl_ugL','NTU','turbidity_NTU','NO3','NNO3');
-cols = struct('PAR','PAR_data','FL','Corrected_Chl_data','NTU','TSS','NO3','NOX-LC');
+colb = struct('PAR','Adjusted_PAR','FL','Adjusted_CHLA','NTU','Adjusted_TSS','NO3','Adjusted_NO3');
+cols = struct('PAR','PAR','FL','Corrected_Chl','NTU','TSS','NO3','NOX-LC');
 
 % Connect to PostgreSQL
 username = 'lisicos';
@@ -25,15 +23,15 @@ conns = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
     'DatabaseName','stationQAQC','PortNumber',5432);
 
 % Extract tables
-dTb = sqlread(connb, strcat('"',[buoy '_' var '_QAQC'],'"'));
+dTb = sqlread(connb, strcat('"',[buoy '_' tvar '_QAQC'],'"'));
 dTb = dTb(year(dTb.TmStamp)==Ayear, :);
-if ismember(var, {'PAR','FL'})
+if ismember(tvar, {'PAR','FL'})
     dTs = sqlread(conns, strcat('"',['DEEP_' Astn '_WQ_QAQC'],'"'));
-    dTs = dTs((dTs.depth>=0 & dTs.depth<=3), :);
-    stnD = dTs.(cols.(var));
+    dTs = dTs((dTs.depth>=0 & dTs.depth<5 & dTs.([cols.(tvar) '_Q'])==1), :);
+    stnD = dTs.([cols.(tvar) '_data']);
 else
     dTs = sqlread(conns, strcat('"',['DEEP_' Astn '_Nutrient_QAQC'],'"'));
-    dTs = dTs((dTs.Depth_Code=='S' & dTs.Parameter==cols.(var)), :);
+    dTs = dTs((dTs.Depth_Code=='S' & dTs.Parameter==cols.(tvar) & dTs.Result_Q==1), :);
     stnD = dTs.Result;
 end
 close(connb);
@@ -42,18 +40,18 @@ close(conns);
 figure('position',[321,180,623,420]); hold on; grid on;
 
 % Plot the time series of buoy data in Ayear
-vlabel = strrep(colb.(var),'_','\_');
-plot(dTb.TmStamp,dTb.(colb.(var)),'b.','DisplayName',[buoy ' (' vlabel ')']);
+vlabel = strrep(colb.(tvar),'_','\_');
+plot(dTb.TmStamp,dTb.(colb.(tvar)),'b.','DisplayName',[buoy ' (' vlabel ')']);
 
 % Highlight the outliers
-% iu1 = find(floor(dTb.([colb.(var) '_Q'])/1000)~=1);
-% plot(dTb.TmStamp(iu1),dTb.(colb.(var))(iu1),'rs','DisplayName','1-Threshold');
-% iu2 = find(mod(floor(dTb.([colb.(var) '_Q'])/100),10)~=1);
-% plot(dTb.TmStamp(iu2),dTb.(colb.(var))(iu2),'ro','DisplayName','2-JumpLim');
-% iu3 = find(mod(floor(dTb.([colb.(var) '_Q'])/10),10)~=1);
-% plot(dTb.TmStamp(iu3),dTb.(colb.(var))(iu3),'gd','DisplayName','3-Gap');
-% iu4 = find(mod(dTb.([colb.(var) '_Q']),10)~=1);
-% plot(dTb.TmStamp(iu4),dTb.(colb.(var))(iu4),'r^','DisplayName','4-Spike');
+iu1 = find(floor(dTb.([colb.(tvar) '_Q'])/1000)~=1);
+plot(dTb.TmStamp(iu1),dTb.(colb.(tvar))(iu1),'rs','DisplayName','1-Threshold');
+% iu2 = find(mod(floor(dTb.([colb.(tvar) '_Q'])/100),10)~=1);
+% plot(dTb.TmStamp(iu2),dTb.(colb.(tvar))(iu2),'ro','DisplayName','2-JumpLim');
+% iu3 = find(mod(floor(dTb.([colb.(tvar) '_Q'])/10),10)~=1);
+% plot(dTb.TmStamp(iu3),dTb.(colb.(tvar))(iu3),'gd','DisplayName','3-Gap');
+% iu4 = find(mod(dTb.([colb.(tvar) '_Q']),10)~=1);
+% plot(dTb.TmStamp(iu4),dTb.(colb.(tvar))(iu4),'r^','DisplayName','4-Spike');
 
 xticks(datetime(Ayear,1:12,1));
 xtickformat('MMM/dd');

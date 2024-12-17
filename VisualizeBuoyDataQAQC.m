@@ -9,7 +9,7 @@ clc; clear;
 Ayear = 2021;
 av = 'T'; % {'T','S','DO','P','C','pH','rho','DOsat'}
 buoy = 'ARTG'; loc = 'sfc'; 
-Astn = 'E1'; dpL = 0; dpU = 3;
+Astn = 'E1'; dpL = 0; dpU = 5;
 
 % Connect to PostgreSQL
 username = 'lisicos';
@@ -23,7 +23,7 @@ conns = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
 dTb = sqlread(connb, strcat('"',[buoy '_' loc '_QAQC'],'"'));
 dTb = dTb(year(dTb.TmStamp)==Ayear, :);
 dTs = sqlread(conns, strcat('"',['DEEP_' Astn '_WQ_QAQC'],'"'));
-dTs = dTs((dTs.depth>=dpL & dTs.depth<=dpU), :);
+dTs = dTs((dTs.depth>=dpL & dTs.depth<dpU & dTs.([av '_Q'])==1), :);
 close(connb);
 close(conns);
 
@@ -35,14 +35,14 @@ plot(dTb.TmStamp,dTb.([av '_data']),'b.','DisplayName',[buoy ' (' av ')']);
 % Highlight the outliers
 iu1 = find(floor(dTb.([av '_Q'])/10000)~=1);
 plot(dTb.TmStamp(iu1),dTb.([av '_data'])(iu1),'rs','DisplayName','1-Threshold');
-iu2 = find(mod(floor(dTb.([av '_Q'])/1000),10)~=1);
-plot(dTb.TmStamp(iu2),dTb.([av '_data'])(iu2),'ro','DisplayName','2-JumpLim');
-iu3 = find(mod(floor(dTb.([av '_Q'])/100),10)~=1);
-plot(dTb.TmStamp(iu3),dTb.([av '_data'])(iu3),'gd','DisplayName','3-Gap');
-iu4 = find(mod(floor(dTb.([av '_Q'])/10),10)~=1);
-plot(dTb.TmStamp(iu4),dTb.([av '_data'])(iu4),'gp','DisplayName','4-PresRng');
-iu5 = find(mod(dTb.([av '_Q']),10)~=1);
-plot(dTb.TmStamp(iu5),dTb.([av '_data'])(iu5),'r^','DisplayName','5-Spike');
+% iu2 = find(mod(floor(dTb.([av '_Q'])/1000),10)~=1);
+% plot(dTb.TmStamp(iu2),dTb.([av '_data'])(iu2),'ro','DisplayName','2-JumpLim');
+% iu3 = find(mod(floor(dTb.([av '_Q'])/100),10)~=1);
+% plot(dTb.TmStamp(iu3),dTb.([av '_data'])(iu3),'gd','DisplayName','3-Gap');
+% iu4 = find(mod(floor(dTb.([av '_Q'])/10),10)~=1);
+% plot(dTb.TmStamp(iu4),dTb.([av '_data'])(iu4),'gp','DisplayName','4-PresRng');
+% iu5 = find(mod(dTb.([av '_Q']),10)~=1);
+% plot(dTb.TmStamp(iu5),dTb.([av '_data'])(iu5),'r^','DisplayName','5-Spike');
 
 xticks(datetime(Ayear,1:12,1));
 xtickformat('MMM/dd');

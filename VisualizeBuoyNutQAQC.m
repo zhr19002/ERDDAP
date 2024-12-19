@@ -7,7 +7,7 @@ clc; clear;
 
 % Set up parameters
 buoy = 'ARTG'; Astn = 'E1';
-Ayear = 2021; tvar = 'NTU'; % {'PAR','FL','NTU'}
+Ayear = 2019; tvar = 'PAR'; % {'PAR','FL','NTU'}
 % buoy = 'CLIS'; Astn = 'I2'; Ayear = 2019; tvar = 'NO3';
 
 % Fixed parameters

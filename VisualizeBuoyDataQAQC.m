@@ -6,9 +6,9 @@
 clc; clear;
 
 % Set up parameters
-Ayear = 2021;
+Ayear = 2023;
 av = 'T'; % {'T','S','DO','P','C','pH','rho','DOsat'}
-buoy = 'ARTG'; loc = 'sfc'; 
+buoy = 'ARTG'; loc = 'btm1'; 
 Astn = 'E1'; dpL = 0; dpU = 5;
 
 % Connect to PostgreSQL

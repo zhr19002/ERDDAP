@@ -1,32 +1,23 @@
 % 
-% Generate a statistics table of QAQC results from "CTDEEP_station_QAQC.mat"
+% Generate a statistics table of station climatology QAQC results
 % 
 
 clc; clear;
+Astn = 'A4'; % {'A4','C1','E1','I2'}
 
-% {'A2','A4','B3','C1','C2','D3','E1','09','15'}
-% {'F2','F3','H2','H4','H6'}
-% {'I2','J2','K2','M3'}
-Astn = 'E1';
+% Connect to PostgreSQL
+username = 'lisicos';
+password = 'vncq489';
+connQ = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
+     'DatabaseName','stationQAQC','PortNumber',5432);
 
-d = load(['CTDEEP_' Astn '_QAQC.mat']);
-d = d.StationQAQC;
-avar = ["T";"S";"DO";"P";"C";"rho";"pH";"DOsat"];
-
-% Concatenate QAQC results from structures of different depths
-dpth = fieldnames(d);
-for i = 1:length(avar)
-    av_check.(avar{i}) = d.(dpth{1}).(avar{i}).check;
-    for dp = 2:length(dpth)
-        c_tmp = d.(dpth{dp}).(avar{i}).check;
-        av_check.(avar{i}) = [av_check.(avar{i});c_tmp];
-    end
-end
+% Extract table from PostgreSQL
+dT = sqlread(connQ, ['"DEEP_' Astn '_WQ_QAQC"']);
 
 % Statistics of QAQC results
 stats_tbl = table((1:4)','VariableNames',{'Flag'});
-for i = 1:length(avar)
-    tmp = tabulate(av_check.(avar{i}));
+for av = {'T','S','DO','P','C','rho','pH','DOsat'}
+    tmp = tabulate(dT.([av{1} '_Q']));
     for n = 1:4
         if ~ismember(n,tmp(:,1))
             tmp = [tmp; [n 0 0]];
@@ -34,6 +25,6 @@ for i = 1:length(avar)
     end
     tmp = sortrows(tmp);
     av_count = arrayfun(@(i) sprintf('%d (%.2f%%)', tmp(i,2), tmp(i,3)), 1:4, 'UniformOutput', false);
-    stats_tbl.(avar{i}) = av_count';
+    stats_tbl.(av{1}) = av_count';
 end
 disp(stats_tbl);

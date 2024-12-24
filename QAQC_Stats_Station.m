@@ -13,6 +13,7 @@ connQ = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
 
 % Extract table from PostgreSQL
 dT = sqlread(connQ, ['"DEEP_' Astn '_WQ_QAQC"']);
+close(connQ);
 
 % Statistics of QAQC results
 stats_tbl = table((1:4)','VariableNames',{'Flag'});

@@ -310,21 +310,22 @@ dT = sqlread(conn, strcat('"',tbl,'"'));
 dT(:, {'RecNum','CR1XBatt','CR1XTemp'}) = [];
 
 if contains(tbl, 'PAR')
-    dbname = [tbl(1:4) '_PAR_QAQC'];
+    tvar = 'PAR';
     QAQC = load('QAQC_E1_WQ.mat');
 elseif contains(tbl, 'FL')
     dT(:, {'Date','EST'}) = [];
     dT = renamevars(dT,'chl_ug/L','chl_ugL');
-    dbname = [tbl(1:4) '_FL_QAQC'];
+    tvar = 'FL';
     QAQC = load('QAQC_E1_WQ.mat');
 elseif contains(tbl, 'NTU')
     dT(:, {'Date','EST'}) = [];
-    dbname = [tbl(1:4) '_NTU_QAQC'];
+    tvar = 'NTU';
     QAQC = load('QAQC_E1_Nutrient.mat');
 else
-    dbname = [tbl(1:4) '_NO3_QAQC'];
+    tvar = 'NO3';
     QAQC = load('QAQC_I2_Nutrient.mat');
 end
+dbname = [tbl(1:4) '_' tvar '_QAQC'];
 QAQC = QAQC.QAQC;
 
 % Filter new data in the table
@@ -345,7 +346,7 @@ if height(dT) > 1
             NutQAQC.([var '_Q']) = dQ1;
             NutQAQC.([var '_FailedCount']) = dC1;
             % Add calibrated columns
-            NutQAQC.(['Adjusted_' var]) = ImplementCalibration(dT.(col), dT.TmStamp, tvar);
+            NutQAQC.(['Adjusted_' var]) = ImplementCalibration(dT.(col), dT.TmStamp, tbl(1:4), tvar);
             [dQ2, dC2] = CheckNutDataQAQC(NutQAQC, QAQC, ['Adjusted_' var]);
             NutQAQC.(['Adjusted_' var '_Q']) = dQ2;
             NutQAQC.(['Adjusted_' var '_FailedCount']) = dC2;

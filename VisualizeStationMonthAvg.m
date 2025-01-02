@@ -5,7 +5,7 @@
 
 clc; clear;
 
-Astn = 'C1'; dpL = 0; dpU = 3;
+Astn = 'E1'; dpL = 0; dpU = 3;
 
 % Connect to PostgreSQL
 username = 'lisicos';
@@ -15,7 +15,7 @@ conn = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
 
 % Extract tables
 d = sqlread(conn, strcat('"',['DEEP_' Astn '_WQ_QAQC'],'"'));
-d = d((d.depth>=dpL & d.depth<=dpU), :);
+d = d((d.depth>=dpL & d.depth<dpU), :);
 dt = unique(d.time);
 close(conn);
 

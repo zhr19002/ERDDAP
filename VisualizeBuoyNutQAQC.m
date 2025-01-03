@@ -6,9 +6,9 @@
 clc; clear;
 
 % Set up parameters
-buoy = 'ARTG'; Astn = 'E1';
-Ayear = 2019; tvar = 'PAR'; % {'PAR','FL','NTU'}
-% buoy = 'CLIS'; Astn = 'I2'; Ayear = 2019; tvar = 'NO3';
+% buoy = 'ARTG'; Astn = 'E1';
+% Ayear = 2019; tvar = 'PAR'; % {'PAR','FL','NTU'}
+buoy = 'CLIS'; Astn = 'I2'; Ayear = 2019; tvar = 'NO3';
 
 % Fixed parameters
 colb = struct('PAR','Adjusted_PAR','FL','Adjusted_CHLA','NTU','Adjusted_TSS','NO3','Adjusted_NO3');

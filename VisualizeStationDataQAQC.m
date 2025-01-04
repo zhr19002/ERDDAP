@@ -6,8 +6,9 @@
 clc; clear;
 
 % Set up parameters
-Astn = 'E1';
-av = 'T'; % {'T','S','DO','P','C','pH','rho','DOsat'}
+Astn = 'E1'; dpL = 0; dpU = 5;
+avars = {'T','S','DO','P','C','pH','rho','DOsat'};
+units = {'degC','psu','mg/L','dBars','S/m','/','kg/m3','percent'};
 
 % Connect to PostgreSQL
 username = 'lisicos';
@@ -16,52 +17,38 @@ conn = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
     'DatabaseName','stationQAQC','PortNumber',5432);
 
 % Extract tables
-d0 = sqlread(conn, strcat('"',['DEEP_' Astn '_WQ_QAQC'],'"'));
-d0.time.Year = 0;
+d = sqlread(conn, ['"DEEP_' Astn '_WQ_QAQC"']);
 close(conn);
 
-nfigs = floor(max(d0.depth)/5) + 1;
-figure; tiledlayout(ceil(nfigs/2), 2);
+% Preprocess data
+d = d((d.depth>=dpL & d.depth<dpU), :);
+d.time.Year = 0;
+d.S_data(d.S_data < 5) = NaN;
+d.C_data(d.C_data > 50) = NaN;
+d.rho_data(d.rho_data < 15) = NaN;
 
-% Flags to avoid duplicate legends
-hasSus = false;
-hasFail = false;
+figure; tiledlayout(4,2);
 
-for i = 1:nfigs
+for i = 1:length(avars)
     nexttile(i)
     hold on; grid on;
     
-    d = d0((d0.depth>=5*i-5 & d0.depth<5*i), :);
-    d_tmp = d.([av '_data']);
-    c_tmp = d.([av '_Q']);
+    d_tmp = d.([avars{i} '_data']);
+    c_tmp = d.([avars{i} '_Q']);
     
     % Plot the time series of station climatology data in all years
     plot(d.time,d_tmp,'b.','HandleVisibility','off');
     
     % Highlight the outliers
     iu1 = find(c_tmp==3);
-    if ~isempty(iu1)
-        if ~hasSus
-            plot(d.time(iu1),d_tmp(iu1),'gs','DisplayName','Suspicious');
-            hasSus = true;
-        else
-            plot(d.time(iu1),d_tmp(iu1),'gs','HandleVisibility','off');
-        end
-    end
+    plot(d.time(iu1),d_tmp(iu1),'gs','DisplayName','Suspicious');
     iu2 = find(c_tmp==4);
-    if ~isempty(iu2)
-        if ~hasFail
-            plot(d.time(iu2),d_tmp(iu2),'rs','DisplayName','Fail');
-            hasFail = true;
-        else
-            plot(d.time(iu2),d_tmp(iu2),'rs','HandleVisibility','off');
-        end
-    end
+    plot(d.time(iu2),d_tmp(iu2),'rs','DisplayName','Fail');
     
     xticks(datetime(0,1:12,1));
     xtickformat('MMM/dd');
-    ylabel(av);
-    title(['CTDEEP ' Astn ' (' num2str(5*i-5) '-' num2str(5*i) 'm)']);
+    ylabel([avars{i} ' (' units{i} ')']);
+    title([Astn ' (' avars{i} ') at ' num2str(dpL) '-' num2str(dpU) 'm']);
     if i == 1
         legend show;
         lgd = legend('show');
@@ -70,4 +57,4 @@ for i = 1:nfigs
     end
 end
 
-% saveas(gcf, [Astn '_QAQC (' av ').png']);
+% saveas(gcf, [Astn '_QAQC.png']);

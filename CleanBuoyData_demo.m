@@ -5,31 +5,36 @@
 clc; clear;
 
 % Set up parameters
-buoy = 'ARTG'; Ayear = 2022;
+buoy = 'ARTG'; loc = 'sfc'; Ayear = 2024;
 
-d = load(['Buoy_' buoy '_QAQC.mat']);
-d = d.BuoyQAQC;
-
-figure; tiledlayout(3,1);
-for loc = {'btm1','btm2','sfc'}
+figure; tiledlayout(2,1);
+for i = 1:2
     nexttile
-    d_T = d.(loc{1}).T.data;
-    d_S = d.(loc{1}).S.data;
-    d_P = d.(loc{1}).P.data;
-
-    iu = find(year(d.(loc{1}).time)==Ayear);
-    plot(d.(loc{1}).time(iu),d_T(iu),'r.','DisplayName','T (degC)');
+    
+    % Load dataset
+    d = load([buoy '_QAQC_' num2str(i-1) '.mat']);
+    d = d.BuoyQAQC;
+    d_T = d.(loc).T.data;
+    d_S = d.(loc).S.data;
+    d_P = d.(loc).P.data;
+    
+    iu = find(year(d.(loc).time)==Ayear);
+    plot(d.(loc).time(iu),d_T(iu),'r.','DisplayName','T (degC)');
     hold on; grid on;
-    plot(d.(loc{1}).time(iu),d_S(iu),'g.','DisplayName','S (psu)');
-    plot(d.(loc{1}).time(iu),d_P(iu),'b.','DisplayName','P (dBars)');
-
+    plot(d.(loc).time(iu),d_S(iu),'g.','DisplayName','S (psu)');
+    plot(d.(loc).time(iu),d_P(iu),'b.','DisplayName','P (dBars)');
+    
     xticks(datetime(Ayear,1:12,1));
     xtickformat('MMM/dd');
-    title([buoy '\_' loc{1} ' ' num2str(Ayear) ' time series for T, S, P']);
+    if i == 1
+        title(['Original ' num2str(Ayear) ' time series at ' buoy '\_' loc]);
+    else
+        title(['Cleaned ' num2str(Ayear) ' time series at ' buoy '\_' loc]);
+    end
 end
 
 ax = nexttile(1);
 lgd = legend(ax,'Orientation','horizontal');
 lgd.Layout.Tile = 'south';
 
-% saveas(gcf, [buoy '_' num2str(Ayear) '.png']);
+% saveas(gcf, [num2str(Ayear) '_' buoy '_' loc '.png']);

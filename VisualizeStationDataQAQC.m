@@ -15,8 +15,6 @@ username = 'lisicos';
 password = 'vncq489';
 conn = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
     'DatabaseName','stationQAQC','PortNumber',5432);
-
-% Extract tables
 d = sqlread(conn, ['"DEEP_' Astn '_WQ_QAQC"']);
 close(conn);
 

@@ -6,23 +6,22 @@ clc; clear;
 
 % Set up parameters
 buoy = 'WLIS'; Ayear = 2024;
-avars = {'windSpd_Kts','windSpd_Max','fiveSecAvg_Max','windDir_M', ...
-         'airTemp_Avg','relHumid_Avg','baroPress_Avg','dewPT_Avg'};
-vnames = {'windSpd','windGust','fiveSecAvg','windDir','airTemp','relHumid','baroPress','dewPT'};
-units = {'kts','kts','kts','degrees','celsius','percent','millibars','celsius'};
+avars = {'Hsig_m','Hmax_m','Tdom_s','Tavg_s','waveDir','meanDir'};
+vnames = {'Hsig','Hmax','Tdom','Tavg','waveDir','meanDir'};
+units = {'m','m','s','s','degrees','degrees'};
 
 % Connect to PostgreSQL
 username = 'lisicos';
 password = 'vncq489';
 conn = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
     'DatabaseName','buoyQAQC','PortNumber',5432);
-dT = sqlread(conn, ['"' buoy '_Met_QAQC"']);
+dT = sqlread(conn, ['"' buoy '_Wave_QAQC"']);
 dT = dT(year(dT.TmStamp)==Ayear, :);
 close(conn);
 
 % Plot the time series of buoy meteorology data
-figure; tiledlayout(4,1);
-for i = 1:4
+figure; tiledlayout(6,1);
+for i = 1:6
     nexttile(i); hold on; grid on;
     
     % Plot original data points

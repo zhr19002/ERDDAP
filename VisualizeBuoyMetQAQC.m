@@ -21,8 +21,8 @@ dT = dT(year(dT.TmStamp)==Ayear, :);
 close(conn);
 
 % Plot the time series of buoy meteorology data
-figure; tiledlayout(4,1);
-for i = 1:4
+figure; tiledlayout(8,1);
+for i = 1:8
     nexttile(i); hold on; grid on;
     
     % Plot original data points

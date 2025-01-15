@@ -6,10 +6,13 @@ clc; clear;
 
 % Set up parameters
 buoy = 'WLIS'; Ayear = 2024;
-avars = {'windSpd_Kts','windSpd_Max','fiveSecAvg_Max','windDir_M', ...
-         'airTemp_Avg','relHumid_Avg','baroPress_Avg','dewPT_Avg'};
-vnames = {'windSpd','windGust','fiveSecAvg','windDir','airTemp','relHumid','baroPress','dewPT'};
-units = {'kts','kts','kts','degrees','celsius','percent','millibars','celsius'};
+
+avars = {'windSpd_Kts','windSpd_Max','fiveSecAvg_Max','windDir_M'};
+vnames = {'windSpd','windGust','fiveSecAvg','windDir'};
+units = {'kts','kts','kts','deg'};
+% avars = {'airTemp_Avg','relHumid_Avg','baroPress_Avg','dewPT_Avg'};
+% vnames = {'airTemp','relHumid','baroPress','dewPT'};
+% units = {'celsius','percent','millibars','celsius'};
 
 % Connect to PostgreSQL
 username = 'lisicos';
@@ -21,8 +24,8 @@ dT = dT(year(dT.TmStamp)==Ayear, :);
 close(conn);
 
 % Plot the time series of buoy meteorology data
-figure; tiledlayout(8,1);
-for i = 1:8
+figure; tiledlayout(4,1);
+for i = 1:4
     nexttile(i); hold on; grid on;
     
     % Plot original data points

@@ -8,7 +8,7 @@ clc; clear;
 buoy = 'WLIS'; Ayear = 2024;
 avars = {'Hsig_m','Hmax_m','Tdom_s','Tavg_s','waveDir','meanDir'};
 vnames = {'Hsig','Hmax','Tdom','Tavg','waveDir','meanDir'};
-units = {'m','m','s','s','degrees','degrees'};
+units = {'m','m','s','s','deg','deg'};
 
 % Connect to PostgreSQL
 username = 'lisicos';

@@ -3,7 +3,7 @@
 % 
 
 clc; clear;
-buoy = 'CLIS'; % {'CLIS','EXRX','WLIS'}
+buoy = 'WLIS'; % {'CLIS','EXRX','WLIS'}
 
 % Connect to PostgreSQL
 username = 'lisicos';
@@ -13,6 +13,7 @@ connQ = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
 
 % Extract table from PostgreSQL
 dT = sqlread(connQ, ['"' buoy '_Wave_QAQC"']);
+dT = dT(dT.TmStamp < datetime(2025,1,1), :);
 close(connQ);
 
 % Statistics of QAQC results

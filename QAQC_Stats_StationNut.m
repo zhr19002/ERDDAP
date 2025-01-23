@@ -1,5 +1,5 @@
 % 
-% Generate a statistics table of station nutrient QAQC results
+% Generate a statistics table of station nutrients QAQC results
 % 
 
 clc; clear;

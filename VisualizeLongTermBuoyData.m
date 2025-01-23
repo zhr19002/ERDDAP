@@ -6,8 +6,8 @@
 clc; clear;
 
 % Set 1 for climotology, 2 for meteorology, 3 for wave
-type = 3;
-buoy = 'WLIS'; loc = 'sfc';
+type = 1;
+buoy = 'ARTG'; loc = 'sfc';
 
 % Connect to PostgreSQL
 username = 'lisicos';

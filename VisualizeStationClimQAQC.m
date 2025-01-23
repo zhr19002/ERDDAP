@@ -54,5 +54,3 @@ for i = 1:length(avars)
         lgd.Layout.Tile = 'south';
     end
 end
-
-% saveas(gcf, [Astn '_QAQC.png']);

@@ -6,8 +6,8 @@
 clc; clear;
 
 % Set up parameters
-buoy = 'ARTG'; Astn = 'E1'; Ayear = 2019; tvar = 'PAR'; % {'PAR','FL','NTU'}
-% buoy = 'CLIS'; Astn = 'I2'; Ayear = 2019; tvar = 'NO3';
+% buoy = 'ARTG'; Astn = 'E1'; Ayear = 2024; tvar = 'PAR'; % {'PAR','FL','NTU'}
+buoy = 'CLIS'; Astn = 'I2'; Ayear = 2019; tvar = 'NO3';
 
 % Fixed parameters
 colb = struct('PAR','Adjusted_PAR','FL','Adjusted_CHLA','NTU','Adjusted_TSS','NO3','Adjusted_NO3');
@@ -45,12 +45,12 @@ plot(dTb.TmStamp,dTb.(colb.(tvar)),'b.','DisplayName',[buoy ' (' vlabel ')']);
 % Highlight the outliers
 iu1 = find(floor(dTb.([colb.(tvar) '_Q'])/1000)~=1);
 plot(dTb.TmStamp(iu1),dTb.(colb.(tvar))(iu1),'rs','DisplayName','1-Threshold');
-% iu2 = find(mod(floor(dTb.([colb.(tvar) '_Q'])/100),10)~=1);
-% plot(dTb.TmStamp(iu2),dTb.(colb.(tvar))(iu2),'ro','DisplayName','2-JumpLim');
-% iu3 = find(mod(floor(dTb.([colb.(tvar) '_Q'])/10),10)~=1);
-% plot(dTb.TmStamp(iu3),dTb.(colb.(tvar))(iu3),'gd','DisplayName','3-Gap');
-% iu4 = find(mod(dTb.([colb.(tvar) '_Q']),10)~=1);
-% plot(dTb.TmStamp(iu4),dTb.(colb.(tvar))(iu4),'r^','DisplayName','4-Spike');
+iu2 = find(mod(floor(dTb.([colb.(tvar) '_Q'])/100),10)~=1);
+plot(dTb.TmStamp(iu2),dTb.(colb.(tvar))(iu2),'ro','DisplayName','2-JumpLim');
+iu3 = find(mod(floor(dTb.([colb.(tvar) '_Q'])/10),10)~=1);
+plot(dTb.TmStamp(iu3),dTb.(colb.(tvar))(iu3),'gd','DisplayName','3-Gap');
+iu4 = find(mod(dTb.([colb.(tvar) '_Q']),10)~=1);
+plot(dTb.TmStamp(iu4),dTb.(colb.(tvar))(iu4),'r^','DisplayName','4-Spike');
 
 xticks(datetime(Ayear,1:12,1));
 xtickformat('MMM/dd');

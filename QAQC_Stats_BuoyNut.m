@@ -4,11 +4,11 @@
 
 clc; clear;
 
-buoy = 'ARTG';
-tvars = {'PAR','FL','NTU'};
-avars = {'Adjusted_PAR','Adjusted_CHLA','Adjusted_TSS'};
-% tvars = {'NO3'};
-% avars = {'Adjusted_NO3'};
+buoy = 'CLIS';
+% tvars = {'PAR','FL','NTU'};
+% avars = {'Adjusted_PAR','Adjusted_CHLA','Adjusted_TSS'};
+tvars = {'NO3'};
+avars = {'Adjusted_NO3'};
 
 % Connect to PostgreSQL
 username = 'lisicos';

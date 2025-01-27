@@ -35,18 +35,16 @@ for loc = locs
             % Preprocess the mat file
             % d0 = load('wlis2000.mat'); d0 = d0.wlis_wq2000;
             % d1 = load('wlis2001.mat'); d1 = d1.wlis_wq2001;
-            d2 = load('wlis2002.mat'); d2 = d2.wlis_wq2002;
+            % d2 = load('wlis2002.mat'); d2 = d2.wlis_wq2002;
+            d3 = load('wlis2003_wq.mat'); d3 = d3.wlis2003_wq;
+            d = d3;
             if contains(loc{1}, 'btm')
-                % d0 = renamevars(d0, cols_btm, cols_new);
-                % d1 = renamevars(d1, cols_btm, cols_new);
-                d2 = renamevars(d2, cols_btm, cols_new);
+                d = renamevars(d, cols_btm, cols_new);
             else
-                % d0 = renamevars(d0, cols_sfc, cols_new);
-                % d1 = renamevars(d1, cols_sfc, cols_new);
-                d2 = renamevars(d2, cols_sfc, cols_new);
+                d = renamevars(d, cols_sfc, cols_new);
             end
             % dT = [d0(:,cols_new); d1(:,cols_new)];
-            dT = d2(:,cols_new);
+            dT = d(:,cols_new);
     end
     dT = sortrows(dT, 'TmStamp');
     % Convert P from psia to dBars

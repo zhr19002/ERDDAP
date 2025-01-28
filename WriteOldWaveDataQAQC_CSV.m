@@ -55,6 +55,8 @@ close(connQ);
 
 % Save the updated "waveQAQC" table to a CSV file
 waveQAQC.TmStamp.Format = 'dd-MMM-yyyy HH:mm:ss';
+waveQAQC.TmStamp.TimeZone = 'UTC';
+waveQAQC.TmStamp = datetime(waveQAQC.TmStamp,'TimeZone','America/New_York');
 writetable(waveQAQC, [buoy '_Wave_QAQC.csv']);
 fprintf('%s   %s   %s\n', min(waveQAQC.TmStamp), max(waveQAQC.TmStamp), waveQAQC.TmStamp.TimeZone);
 

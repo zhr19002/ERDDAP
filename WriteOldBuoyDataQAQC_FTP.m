@@ -4,15 +4,27 @@
 % 
 
 clc; clear;
-buoy = 'WLIS'; locs = {'btm1','sfc'};
+buoy = 'WLIS'; year = 2005;
+% d0 = load('wlis2000.mat'); d0 = d0.wlis_wq2000;
+% d1 = load('wlis2001.mat'); d1 = d1.wlis_wq2001;
+% d2 = load('wlis2002.mat'); d2 = d2.wlis_wq2002;
+% d3 = load('wlis2003_wq.mat'); d3 = d3.wlis2003_wq;
+% d4 = load('wlis2004_wq.mat'); d4 = d4.wlis2ysi2004;
+d5 = load('wlis2005_wq.mat'); d5 = d5.wlis2ysi2005;
 
 % Fixed parameters
 avars = {'T','S','DO','P','C','pH','rho','DOsat'};
-cols_btm = {'TmStamp','ysiBtm_m','ysiBtm_degC','ysiBtm_psu', ...
-            'ysiBtm_DOmgL','ysiBtm_psia','ysiBtm_mSm'};
-cols_sfc = {'TmStamp','ysiSfc_m','ysiSfc_degC','ysiSfc_psu', ...
-            'ysiSfc_DOmgL','ysiSfc_psia','ysiSfc_mSm'};
-cols_new = [{'TmStamp','depth'}, avars(1:5)];
+cols_new = [{'TmStamp'}, avars(1:5)];
+if year < 2004
+    locs = {'btm1','sfc'};
+    cols_btm = {'TmStamp','ysiBtm_degC','ysiBtm_psu','ysiBtm_DOmgL','ysiBtm_m','ysiBtm_mSm'};
+    cols_sfc = {'TmStamp','ysiSfc_degC','ysiSfc_psu','ysiSfc_DOmgL','ysiSfc_m','ysiSfc_mSm'};
+else
+    locs = {'btm1','mid','sfc'};
+    cols_btm = {'EST','btm_degC','btm_sal','btm_DOmgL','btm_depthM','btm_CONDmScm'};
+    cols_mid = {'EST','mid_degC','mid_sal','mid_DOmgL','mid_depthM','mid_CONDmScm'};
+    cols_sfc = {'EST','sfc_degC','sfc_sal','sfc_DOmgL','sfc_depthM','sfc_CONDmScm'};
+end
 
 % Read station group QAQC parameters
 switch buoy
@@ -33,22 +45,18 @@ for loc = locs
     switch buoy
         case 'WLIS'
             % Preprocess the mat file
-            % d0 = load('wlis2000.mat'); d0 = d0.wlis_wq2000;
-            % d1 = load('wlis2001.mat'); d1 = d1.wlis_wq2001;
-            % d2 = load('wlis2002.mat'); d2 = d2.wlis_wq2002;
-            d3 = load('wlis2003_wq.mat'); d3 = d3.wlis2003_wq;
-            d = d3;
+            dT = d5;
             if contains(loc{1}, 'btm')
-                d = renamevars(d, cols_btm, cols_new);
+                dT = renamevars(dT, cols_btm, cols_new);
+            elseif contains(loc{1}, 'mid')
+                dT = renamevars(dT, cols_mid, cols_new);
             else
-                d = renamevars(d, cols_sfc, cols_new);
+                dT = renamevars(dT, cols_sfc, cols_new);
             end
-            % dT = [d0(:,cols_new); d1(:,cols_new)];
-            dT = d(:,cols_new);
+            dT = dT(:,cols_new);
     end
     dT = sortrows(dT, 'TmStamp');
-    % Convert P from psia to dBars
-    dT.('P') = dT.depth;
+    
     % Calculate rho
     dT.('rho') = real(sw_dens(dT.S,dT.T,dT.P)-1000);
     % Calculate DOsat (convert to mg/L)
@@ -64,7 +72,7 @@ for loc = locs
     % Create the "BuoyQAQC" table
     BuoyQAQC = table();
     BuoyQAQC.TmStamp = d.TmStamp;
-    BuoyQAQC.depth = d.depth;
+    BuoyQAQC.depth = d.P;
     for av = avars
         % Run QAQC tests
         [dQ, dC] = CheckBuoyDataQAQC(d, loc{1}, QAQC, av{1});
@@ -86,6 +94,7 @@ for loc = locs
     close(connQ);
     
     % Save the updated "BuoyQAQC" table to a CSV file
+    BuoyQAQC.TmStamp.Format = 'dd-MMM-yyyy HH:mm:ss';
     BuoyQAQC.TmStamp.TimeZone = 'America/New_York';
     writetable(BuoyQAQC, [buoy '_' loc{1} '_QAQC.csv']);
     fprintf('%s   %s   %s\n', min(BuoyQAQC.TmStamp), max(BuoyQAQC.TmStamp), BuoyQAQC.TmStamp.TimeZone);

@@ -1,0 +1,130 @@
+% 
+% Identify and flag buoy nutrients data outliers
+% (1 = pass; 3 = beyond 98% data range; 4 = beyond max-min range)
+% 
+
+clc; clear;
+buoy = 'WLIS'; year = 2002;
+d2 = load('wlis2002.mat'); d2 = d2.wlis_wq2002;
+% d3 = load('wlis2003_wq.mat'); d3 = d3.wlis2003_wq;
+% d4 = load('wlis2004_wq.mat'); d4 = d4.wlis2ysi2004;
+% d5 = load('wlis2005_wq.mat'); d5 = d5.wlis2ysi2005;
+
+% Fixed parameters
+avars = {'TSS','CHLA'};
+cols_new = [{'TmStamp'}, avars];
+if year < 2004
+    locs = {'btm1','sfc'};
+    cols_btm = {'TmStamp','ysiBtm_NTU','ysiBtm_fluoRFU'};
+    cols_sfc = {'TmStamp','ysiSfc_NTU','ysiSfc_fluoRFU'};
+else
+    locs = {'btm1','mid','sfc'};
+    cols_btm = {'EST','btm_turbNTU'};
+    cols_mid = {'EST','mid_turbNTU','mid_fluoRFU'};
+    cols_sfc = {'EST','sfc_turbNTU','sfc_fluoRFU'};
+end
+
+% Read station group QAQC parameters
+switch buoy
+    case 'ARTG'
+        QAQC = load('QAQC_E1_WQ.mat');
+    case 'EXRX'
+        QAQC = load('QAQC_A4_WQ.mat');
+    case 'WLIS'
+        QAQC = load('QAQC_C1_WQ.mat');
+    otherwise
+        QAQC = load('QAQC_I2_WQ.mat');
+end
+QAQC = QAQC.QAQC;
+
+% Write QAQCed buoy files
+for loc = locs
+    % Process tables from FTP site
+    switch buoy
+        case 'WLIS'
+            % Preprocess the mat file
+            dT = d5;
+            if contains(loc{1}, 'btm')
+                dT = renamevars(dT, cols_btm, cols_new);
+            elseif contains(loc{1}, 'mid')
+                dT = renamevars(dT, cols_mid, cols_new);
+            else
+                dT = renamevars(dT, cols_sfc, cols_new);
+            end
+            dT = dT(:,cols_new);
+    end
+    dT = sortrows(dT, 'TmStamp');
+    
+    % Create the "NutQAQC" table
+    NutQAQC = table();
+    NutQAQC.TmStamp = d.TmStamp;
+    for av = avars
+        % Run QAQC tests
+        NutQAQC.(av{1}) = dT.(av{1});
+        % Run QAQC tests
+        [dQ1, dC1] = CheckNutDataQAQC(NutQAQC, QAQC, av{1});
+        NutQAQC.([av{1} '_Q']) = dQ1;
+        NutQAQC.([av{1} '_FailedCount']) = dC1;
+        % Add calibrated columns
+        NutQAQC.(['Adjusted_' av{1}]) = ImplementCalibration(dT.(col), dT.TmStamp, buoy, tvar);
+        [dQ2, dC2] = CheckNutDataQAQC(NutQAQC, QAQC, ['Adjusted_' av{1}]);
+        NutQAQC.(['Adjusted_' av{1} '_Q']) = dQ2;
+        NutQAQC.(['Adjusted_' av{1} '_FailedCount']) = dC2;
+    end
+    
+    % Add specific columns
+    username = 'lisicos';
+    password = 'vncq489';
+    connQ = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
+         'DatabaseName','buoyQAQC','PortNumber',5432);
+    dTQ = sqlread(connQ, strcat('"',[buoy '_' loc{1} '_QAQC'],'"'));
+    NutQAQC.latitude(:) = dTQ.latitude(1);
+    NutQAQC.longitude(:) = dTQ.longitude(1);
+    NutQAQC.station(:) = dTQ.station(1);
+    NutQAQC.mooring_site_desc(:) = dTQ.mooring_site_desc(1);
+    close(connQ);
+    
+    % Save the updated "BuoyQAQC" table to a CSV file
+    NutQAQC.TmStamp.Format = 'dd-MMM-yyyy HH:mm:ss';
+    NutQAQC.TmStamp.TimeZone = 'America/New_York';
+    writetable(NutQAQC, [buoy '_' loc{1} '_QAQC.csv']);
+    fprintf('%s   %s   %s\n', min(NutQAQC.TmStamp), max(NutQAQC.TmStamp), NutQAQC.TmStamp.TimeZone);
+end
+
+%%
+% Read the CSV file into a table
+num = 1;
+tbl = [buoy '_' locs{num} '_QAQC'];
+opts = detectImportOptions([tbl '.csv']);
+opts = setvaropts(opts,'TmStamp','InputFormat','dd-MMM-yyyy HH:mm:ss');
+NutQAQC = readtable([tbl '.csv'], opts);
+
+% Quoted to preserve case sensitivity
+tblName = strcat('"',tbl,'"');
+colNames = strcat('"',NutQAQC.Properties.VariableNames,'"');
+NutQAQC.Properties.VariableNames = colNames;
+
+% Write the table to PostgreSQL
+username = 'lisicos';
+password = 'vncq489';
+connQ = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
+     'DatabaseName','buoyQAQC','PortNumber',5432);
+try
+    batchSize = 10000;
+    for i = 1:ceil(height(NutQAQC)/batchSize)
+        startRow = (i-1)*batchSize + 1;
+        endRow = min(i*batchSize, height(NutQAQC));
+        batchData = NutQAQC(startRow:endRow, :);
+        % Write the batch to PostgreSQL
+        sqlwrite(connQ, tblName, batchData);
+        disp(['Row ' num2str(startRow) '-' num2str(endRow) ' written to PostgreSQL successfully.']);
+    end
+catch ME
+    disp(ME.message);
+end
+
+% % Check the table in PostgreSQL
+% tbldata = sqlfind(connQ, "");
+% dT = sqlread(connQ, tblName);
+
+close(connQ);

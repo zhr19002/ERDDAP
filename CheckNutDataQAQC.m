@@ -1,4 +1,4 @@
-function [QAQCTests, FailedTestsCount] = CheckNutDataQAQC(d, QAQC, av)
+function [QAQCTests, FailedTestsCount] = CheckNutDataQAQC(d, loc, QAQC, av)
 % 
 % Identify and flag failed QAQC tests of buoy nutrient data
 % 
@@ -17,11 +17,25 @@ avNut = struct('PAR','PAR','Adjusted_PAR','PAR', ...
 
 % Run the threshold test
 if ismember(av, {'PAR','Adjusted_PAR','CHLA','Adjusted_CHLA'})
-    dpth = 'depth_0_5';
+    ZT = 5*floor((d.depth-0.01)/5);
+    ZT(ZT<0 | ZT>40 | isnan(ZT)) = mode(ZT);
+    uZT = unique(ZT);
+    c = ones(size(d,1), 1);
+    for i = 1:length(uZT)
+        % Determine the depth range ZT to ZB
+        dpth = ['depth_' num2str(uZT(i)) '_' num2str(uZT(i)+5)];
+        % Locate rows of a specific depth range
+        iu = find(ZT==uZT(i));
+        c(iu) = ImplementThresholdTest(d.(av)(iu), d.TmStamp(iu), QAQC, dpth, avNut.(av));
+    end
 else
-    dpth = 'S';
+    if strcmp(loc, 'sfc')
+        dpth = 'S';
+    else
+        dpth = 'B';
+    end
+    c = ImplementThresholdTest(d.(av), d.TmStamp, QAQC, dpth, avNut.(av));
 end
-c = ImplementThresholdTest(d.(av), d.TmStamp, QAQC, dpth, avNut.(av));
 d.('QAQCTests') = 1000*c;
 d.('FailedTestsCount') = (c~=1);
 

@@ -4,13 +4,15 @@
 % 
 
 clc; clear;
-buoy = 'WLIS'; year = 2002;
-d2 = load('wlis2002.mat'); d2 = d2.wlis_wq2002;
-d2.('ysiBtm_fluoRFU')(:) = NaN; d2.('ysiSfc_fluoRFU')(:) = NaN;
+buoy = 'WLIS'; year = 2005;
+% d2 = load('wlis2002.mat'); d2 = d2.wlis_wq2002;
+% d2.('ysiBtm_fluoRFU')(:) = NaN; d2.('ysiSfc_fluoRFU')(:) = NaN;
 % d3 = load('wlis2003_wq.mat'); d3 = d3.wlis2003_wq;
 % d3.('ysiBtm_fluoRFU')(:) = NaN; d3.('ysiSfc_fluoRFU')(:) = NaN;
 % d4 = load('wlis2004_wq.mat'); d4 = d4.wlis2ysi2004;
-% d5 = load('wlis2005_wq.mat'); d5 = d5.wlis2ysi2005;
+% d4.('btm_fluoRFU')(:) = NaN;
+d5 = load('wlis2005_wq.mat'); d5 = d5.wlis2ysi2005;
+d5.('btm_fluoRFU')(:) = NaN;
 
 % Fixed parameters
 avars = {'TSS','CHLA'};
@@ -22,16 +24,16 @@ if year < 2004
     cols_sfc = {'TmStamp','ysiSfc_m','ysiSfc_NTU','ysiSfc_fluoRFU'};
 else
     locs = {'btm','mid','sfc'};
-    cols_btm = {'EST','btm_turbNTU','btm_fluoRFU'};
-    cols_mid = {'EST','mid_turbNTU','mid_fluoRFU'};
-    cols_sfc = {'EST','sfc_turbNTU','sfc_fluoRFU'};
+    cols_btm = {'EST','btm_depthM','btm_turbNTU','btm_fluoRFU'};
+    cols_mid = {'EST','mid_depthM','mid_turbNTU','mid_fluoRFU'};
+    cols_sfc = {'EST','sfc_depthM','sfc_turbNTU','sfc_fluoRFU'};
 end
 
 % Write QAQCed buoy files
 for loc = locs
     switch buoy
         case 'WLIS'
-            dT = d2;
+            dT = d5;
             if contains(loc{1}, 'btm')
                 dT = renamevars(dT, cols_btm, cols_new);
             elseif contains(loc{1}, 'mid')
@@ -72,11 +74,7 @@ for loc = locs
     password = 'vncq489';
     connQ = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
          'DatabaseName','buoyQAQC','PortNumber',5432);
-    if contains(loc{1}, 'btm')
-        dTQ = sqlread(connQ, strcat('"',[buoy '_' loc{1} '1_QAQC'],'"'));
-    else
-        dTQ = sqlread(connQ, strcat('"',[buoy '_' loc{1} '_QAQC'],'"'));
-    end
+    dTQ = sqlread(connQ, strcat('"',[buoy '_' loc{1} '_NutrQAQC'],'"'));
     NutQAQC.latitude(:) = dTQ.latitude(1);
     NutQAQC.longitude(:) = dTQ.longitude(1);
     NutQAQC.station(:) = dTQ.station(1);
@@ -86,14 +84,14 @@ for loc = locs
     % Save the updated "BuoyQAQC" table to a CSV file
     NutQAQC.TmStamp.Format = 'dd-MMM-yyyy HH:mm:ss';
     NutQAQC.TmStamp.TimeZone = 'America/New_York';
-    writetable(NutQAQC, [buoy '_' loc{1} '_NutrientQAQC.csv']);
+    writetable(NutQAQC, [buoy '_' loc{1} '_NutrQAQC.csv']);
     fprintf('%s   %s   %s\n', min(NutQAQC.TmStamp), max(NutQAQC.TmStamp), NutQAQC.TmStamp.TimeZone);
 end
 
 %%
 % Read the CSV file into a table
-num = 1;
-tbl = [buoy '_' locs{num} '_NutrientQAQC'];
+num = 3;
+tbl = [buoy '_' locs{num} '_NutrQAQC'];
 opts = detectImportOptions([tbl '.csv']);
 opts = setvaropts(opts,'TmStamp','InputFormat','dd-MMM-yyyy HH:mm:ss');
 NutQAQC = readtable([tbl '.csv'], opts);

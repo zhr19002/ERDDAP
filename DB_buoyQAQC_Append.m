@@ -342,12 +342,12 @@ if height(dT) > 1
             var = colVar.(col);
             NutQAQC.(var) = dT.(col);
             % Run QAQC tests
-            [dQ1, dC1] = CheckNutDataQAQC(NutQAQC, QAQC, var);
+            [dQ1, dC1] = CheckNutDataQAQC(NutQAQC, 'sfc', QAQC, var);
             NutQAQC.([var '_Q']) = dQ1;
             NutQAQC.([var '_FailedCount']) = dC1;
             % Add calibrated columns
             NutQAQC.(['Adjusted_' var]) = ImplementCalibration(dT.(col), dT.TmStamp, tbl(1:4), tvar);
-            [dQ2, dC2] = CheckNutDataQAQC(NutQAQC, QAQC, ['Adjusted_' var]);
+            [dQ2, dC2] = CheckNutDataQAQC(NutQAQC, 'sfc', QAQC, ['Adjusted_' var]);
             NutQAQC.(['Adjusted_' var '_Q']) = dQ2;
             NutQAQC.(['Adjusted_' var '_FailedCount']) = dC2;
         else

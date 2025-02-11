@@ -127,3 +127,19 @@ for tbl = tblNames
 end
 
 close(connQ);
+
+%%
+clc; clear;
+username = 'lisicos';
+password = 'vncq489';
+connQ = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
+     'DatabaseName','buoyQAQC','PortNumber',5432);
+
+tblNames = {'WLIS_btm_NutrQAQC','WLIS_mid_NutrQAQC','WLIS_sfc_NutrQAQC'};
+
+for tbl = tblNames
+    d = sqlread(connQ, strcat('"',tbl{1},'"'));
+    fprintf('%s   %s   %s   %d\n', tbl{1}, min(d.TmStamp), max(d.TmStamp), height(d));
+end
+
+close(connQ);

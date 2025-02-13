@@ -1,5 +1,5 @@
 % 
-% Plot the time series of buoy meteorology data
+% Plot the time series of buoy wave data
 % 
 
 clc; clear;
@@ -19,7 +19,7 @@ dT = sqlread(conn, ['"' buoy '_Wave_QAQC"']);
 dT = dT(year(dT.TmStamp)==Ayear, :);
 close(conn);
 
-% Plot the time series of buoy meteorology data
+% Plot the time series of buoy wave data
 figure; tiledlayout(6,1);
 for i = 1:6
     nexttile(i); hold on; grid on;

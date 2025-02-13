@@ -4,15 +4,16 @@
 % 
 
 clc; clear;
-buoy = 'WLIS'; year = 2005;
+buoy = 'WLIS'; year = 2006;
 % d2 = load('wlis2002.mat'); d2 = d2.wlis_wq2002;
 % d2.('ysiBtm_fluoRFU')(:) = NaN; d2.('ysiSfc_fluoRFU')(:) = NaN;
 % d3 = load('wlis2003_wq.mat'); d3 = d3.wlis2003_wq;
 % d3.('ysiBtm_fluoRFU')(:) = NaN; d3.('ysiSfc_fluoRFU')(:) = NaN;
 % d4 = load('wlis2004_wq.mat'); d4 = d4.wlis2ysi2004;
 % d4.('btm_fluoRFU')(:) = NaN;
-d5 = load('wlis2005_wq.mat'); d5 = d5.wlis2ysi2005;
-d5.('btm_fluoRFU')(:) = NaN;
+% d5 = load('wlis2005_wq.mat'); d5 = d5.wlis2ysi2005;
+% d5.('btm_fluoRFU')(:) = NaN;
+d6 = load('wlis2006_wq.mat');
 
 % Fixed parameters
 avars = {'TSS','CHLA'};
@@ -22,18 +23,25 @@ if year < 2004
     locs = {'btm','sfc'};
     cols_btm = {'TmStamp','ysiBtm_m','ysiBtm_NTU','ysiBtm_fluoRFU'};
     cols_sfc = {'TmStamp','ysiSfc_m','ysiSfc_NTU','ysiSfc_fluoRFU'};
-else
+elseif year < 2006
     locs = {'btm','mid','sfc'};
     cols_btm = {'EST','btm_depthM','btm_turbNTU','btm_fluoRFU'};
     cols_mid = {'EST','mid_depthM','mid_turbNTU','mid_fluoRFU'};
     cols_sfc = {'EST','sfc_depthM','sfc_turbNTU','sfc_fluoRFU'};
+else
+    locs = {'btm','mid','sfc'};
+    cols_btm = {'EST','btm_depthM','btm_turbNTU','btm_CHLmgL'};
+    cols_mid = {'EST','mid_depthM','mid_turbNTU','mid_CHLmgL'};
+    cols_sfc = {'EST','sfc_depthM','sfc_turbNTU','sfc_CHLmgL'};
 end
 
 % Write QAQCed buoy files
 for loc = locs
     switch buoy
         case 'WLIS'
-            dT = d5;
+            % Preprocess the mat file
+            % dT = d5;
+            dT = d6.([loc{1} 'YSI_2006']);
             if contains(loc{1}, 'btm')
                 dT = renamevars(dT, cols_btm, cols_new);
             elseif contains(loc{1}, 'mid')
@@ -90,7 +98,7 @@ end
 
 %%
 % Read the CSV file into a table
-num = 3;
+num = 1;
 tbl = [buoy '_' locs{num} '_NutrQAQC'];
 opts = detectImportOptions([tbl '.csv']);
 opts = setvaropts(opts,'TmStamp','InputFormat','dd-MMM-yyyy HH:mm:ss');

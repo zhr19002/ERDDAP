@@ -4,13 +4,14 @@
 % 
 
 clc; clear;
-buoy = 'WLIS'; year = 2005;
+buoy = 'WLIS'; year = 2006;
 % d0 = load('wlis2000.mat'); d0 = d0.wlis_wq2000;
 % d1 = load('wlis2001.mat'); d1 = d1.wlis_wq2001;
 % d2 = load('wlis2002.mat'); d2 = d2.wlis_wq2002;
 % d3 = load('wlis2003_wq.mat'); d3 = d3.wlis2003_wq;
 % d4 = load('wlis2004_wq.mat'); d4 = d4.wlis2ysi2004;
-d5 = load('wlis2005_wq.mat'); d5 = d5.wlis2ysi2005;
+% d5 = load('wlis2005_wq.mat'); d5 = d5.wlis2ysi2005;
+d6 = load('wlis2006_wq.mat');
 
 % Fixed parameters
 avars = {'T','S','DO','P','C','pH','rho','DOsat'};
@@ -41,11 +42,12 @@ QAQC = QAQC.QAQC;
 
 % Write QAQCed buoy files
 for loc = locs
-    % Process tables from FTP site
     switch buoy
         case 'WLIS'
             % Preprocess the mat file
-            dT = d5;
+            % dT = d5;
+            location = loc{1};
+            dT = d6.([location(1:3) 'YSI_2006']);
             if contains(loc{1}, 'btm')
                 dT = renamevars(dT, cols_btm, cols_new);
             elseif contains(loc{1}, 'mid')

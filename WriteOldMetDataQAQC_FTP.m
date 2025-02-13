@@ -14,13 +14,18 @@ metVars = {'windSpd_Kts','windSpd_Max','fiveSecAvg_Max','windDir_M', ...
 QAQC = readtable('QAQC_Para_Met.csv', ReadRowNames=true);
 
 % Process tables from FTP site
-d3 = load('wlis2003_met.mat'); d3 = d3.wlis2003_met;
-d = d3;
+% d3 = load('wlis2003_met.mat'); d3 = d3.wlis2003_met;
+% d3.('fiveSecAvg_Max')(:) = NaN; d3.('dewPT_Avg')(:) = NaN;
+% d3 = renamevars(d3,'windSpd_kts','windSpd_Kts');
+% d5 = load('wlis2004_par.mat'); d5 = d5.wlis2wxpar_EST;
+% d5.TmStamp = datetime(d5.Date+d5.Time,'Format','dd-MMM-yyyy HH:mm:ss');
+% d5.('fiveSecAvg_Max')(:) = NaN; d5.('dewPT_Avg')(:) = NaN;
+% d5 = renamevars(d5,'windSpd_MAX','windSpd_Max');
+d6 = load('wlis2006_met.mat'); d6 = d6.WLIS_metDat_2006;
+d6 = renamevars(d6,{'EST','dewPt_Avg'},{'TmStamp','dewPT_Avg'});
 
 % Preprocess the mat file
-d = renamevars(d,'windSpd_kts','windSpd_Kts');
-d.('fiveSecAvg_Max')(:) = NaN;
-d.('dewPT_Avg')(:) = NaN;
+d = d6;
 dT = d(:, [{'TmStamp'}, metVars]);
 dT = sortrows(dT, 'TmStamp');
 

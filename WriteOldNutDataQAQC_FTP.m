@@ -4,7 +4,7 @@
 % 
 
 clc; clear;
-buoy = 'WLIS'; year = 2006;
+buoy = 'WLIS'; year = 2007;
 % d2 = load('wlis2002.mat'); d2 = d2.wlis_wq2002;
 % d2.('ysiBtm_fluoRFU')(:) = NaN; d2.('ysiSfc_fluoRFU')(:) = NaN;
 % d3 = load('wlis2003_wq.mat'); d3 = d3.wlis2003_wq;
@@ -13,7 +13,8 @@ buoy = 'WLIS'; year = 2006;
 % d4.('btm_fluoRFU')(:) = NaN;
 % d5 = load('wlis2005_wq.mat'); d5 = d5.wlis2ysi2005;
 % d5.('btm_fluoRFU')(:) = NaN;
-d6 = load('wlis2006_wq.mat');
+% d6 = load('wlis2006_wq.mat');
+d7 = load('wlis2007_wq.mat');
 
 % Fixed parameters
 avars = {'TSS','CHLA'};
@@ -41,7 +42,8 @@ for loc = locs
         case 'WLIS'
             % Preprocess the mat file
             % dT = d5;
-            dT = d6.([loc{1} 'YSI_2006']);
+            % dT = d6.([loc{1} 'YSI_2006']);
+            dT = d7.([loc{1} 'YSI_2007']);
             if contains(loc{1}, 'btm')
                 dT = renamevars(dT, cols_btm, cols_new);
             elseif contains(loc{1}, 'mid')

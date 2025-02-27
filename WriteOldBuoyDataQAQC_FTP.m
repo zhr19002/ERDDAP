@@ -4,7 +4,7 @@
 % 
 
 clc; clear;
-buoy = 'WLIS'; year = 2008;
+buoy = 'WLIS'; year = 2009;
 % d0 = load('wlis2000.mat'); d0 = d0.wlis_wq2000;
 % d1 = load('wlis2001.mat'); d1 = d1.wlis_wq2001;
 % d2 = load('wlis2002.mat'); d2 = d2.wlis_wq2002;

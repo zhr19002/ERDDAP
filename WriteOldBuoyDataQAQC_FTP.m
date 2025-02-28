@@ -13,7 +13,8 @@ buoy = 'WLIS'; year = 2009;
 % d5 = load('wlis2005_wq.mat'); d5 = d5.wlis2ysi2005;
 % d6 = load('wlis2006_wq.mat');
 % d7 = load('wlis2007_wq.mat');
-d8 = load('wlis2008_wq.mat');
+% d8 = load('wlis2008_wq.mat');
+d9 = load('wlis2009_wq.mat');
 
 % Fixed parameters
 avars = {'T','S','DO','P','C','pH','rho','DOsat'};
@@ -51,7 +52,8 @@ for loc = locs
             location = loc{1};
             % dT = d6.([location(1:3) 'YSI_2006']);
             % dT = d7.([location(1:3) 'YSI_2007']);
-            dT = d8.([location(1:3) 'YSI_2008']);
+            % dT = d8.([location(1:3) 'YSI_2008']);
+            dT = d9.([location(1:3) 'YSI_2009']);
             if contains(loc{1}, 'btm')
                 dT = renamevars(dT, cols_btm, cols_new);
             elseif contains(loc{1}, 'mid')

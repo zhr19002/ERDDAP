@@ -27,11 +27,13 @@ QAQC = readtable('QAQC_Para_Met.csv', ReadRowNames=true);
 % d7 = renamevars(d7,{'EST','dewPt_Avg'},{'TmStamp','dewPT_Avg'});
 % d8 = load('wlis2008_met.mat'); d8 = d8.WLIS_metDat_2008;
 % d8 = renamevars(d8,{'EST','dewPt_Avg'},{'TmStamp','dewPT_Avg'});
-d9 = load('wlis2009_met.mat'); d9 = d9.WLIS_metDat_2009;
-d9 = renamevars(d9,{'EST','dewPt_Avg'},{'TmStamp','dewPT_Avg'});
+% d9 = load('wlis2009_met.mat'); d9 = d9.WLIS_metDat_2009;
+% d9 = renamevars(d9,{'EST','dewPt_Avg'},{'TmStamp','dewPT_Avg'});
+d11 = load('wlis2011_met.mat'); d11 = d11.WLIS_metDat_2011;
+d11 = renamevars(d11,{'EST','dewPt_Avg'},{'TmStamp','dewPT_Avg'});
 
 % Preprocess the mat file
-d = d9;
+d = d11;
 dT = d(:, [{'TmStamp'}, metVars]);
 dT = sortrows(dT, 'TmStamp');
 

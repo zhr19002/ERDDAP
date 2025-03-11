@@ -4,7 +4,7 @@
 % 
 
 clc; clear;
-buoy = 'WLIS'; year = 2011;
+buoy = 'WLIS'; year = 2012;
 % d0 = load('wlis2000.mat'); d0 = d0.wlis_wq2000;
 % d1 = load('wlis2001.mat'); d1 = d1.wlis_wq2001;
 % d2 = load('wlis2002.mat'); d2 = d2.wlis_wq2002;
@@ -16,8 +16,10 @@ buoy = 'WLIS'; year = 2011;
 % d8 = load('wlis2008_wq.mat');
 % d9 = load('wlis2009_wq.mat');
 % d10 = load('wlis2010_wq.mat');
-d11 = load('wlis2011_wq.mat');
-d11.btmYSI_2011 = renamevars(d11.btmYSI_2011,'btm_depth','btm_depthM');
+% d11 = load('wlis2011_wq.mat');
+% d11.btmYSI_2011 = renamevars(d11.btmYSI_2011,'btm_depth','btm_depthM');
+d12 = load('wlis2012_wq.mat');
+d12.btmYSI_2012 = renamevars(d12.btmYSI_2012,'btm_depth','btm_depthM');
 
 % Fixed parameters
 avars = {'T','S','DO','P','C','pH','rho','DOsat'};
@@ -58,7 +60,8 @@ for loc = locs
             % dT = d8.([location(1:3) 'YSI_2008']);
             % dT = d9.([location(1:3) 'YSI_2009']);
             % dT = d10.([location(1:3) 'YSI_2010']);
-            dT = d11.([location(1:3) 'YSI_2011']);
+            % dT = d11.([location(1:3) 'YSI_2011']);
+            dT = d12.([location(1:3) 'YSI_2012']);
             if contains(loc{1}, 'btm')
                 dT = renamevars(dT, cols_btm, cols_new);
             elseif contains(loc{1}, 'mid')

@@ -4,7 +4,7 @@
 % 
 
 clc; clear;
-buoy = 'WLIS'; year = 2013;
+buoy = 'WLIS'; year = 2014;
 % d0 = load('wlis2000.mat'); d0 = d0.wlis_wq2000;
 % d1 = load('wlis2001.mat'); d1 = d1.wlis_wq2001;
 % d2 = load('wlis2002.mat'); d2 = d2.wlis_wq2002;
@@ -20,8 +20,9 @@ buoy = 'WLIS'; year = 2013;
 % d11.btmYSI_2011 = renamevars(d11.btmYSI_2011,'btm_depth','btm_depthM');
 % d12 = load('wlis2012_wq.mat');
 % d12.btmYSI_2012 = renamevars(d12.btmYSI_2012,'btm_depth','btm_depthM');
-d13 = load('wlis2013_wq.mat');
-d13.btmYSI_2013 = renamevars(d13.btmYSI_2013,'btm_depth','btm_depthM');
+% d13 = load('wlis2013_wq.mat');
+% d13.btmYSI_2013 = renamevars(d13.btmYSI_2013,'btm_depth','btm_depthM');
+d14 = load('wlis2014_wq.mat');
 
 % Fixed parameters
 avars = {'T','S','DO','P','C','pH','rho','DOsat'};
@@ -30,11 +31,15 @@ if year < 2004
     locs = {'btm1','sfc'};
     cols_btm = {'TmStamp','ysiBtm_degC','ysiBtm_psu','ysiBtm_DOmgL','ysiBtm_m','ysiBtm_mSm'};
     cols_sfc = {'TmStamp','ysiSfc_degC','ysiSfc_psu','ysiSfc_DOmgL','ysiSfc_m','ysiSfc_mSm'};
-else
+elseif year < 2014
     locs = {'btm1','mid','sfc'};
     cols_btm = {'EST','btm_degC','btm_sal','btm_DOmgL','btm_depthM','btm_CONDmScm'};
     cols_mid = {'EST','mid_degC','mid_sal','mid_DOmgL','mid_depthM','mid_CONDmScm'};
     cols_sfc = {'EST','sfc_degC','sfc_sal','sfc_DOmgL','sfc_depthM','sfc_CONDmScm'};
+else
+    locs = {'mid','sfc'};
+    cols_mid = {'EST','DegC','Sal','ODOconc','Meters','Cond'};
+    cols_sfc = {'EST','DegC','Sal','ODOconc','Meters','Cond'};
 end
 
 % Read station group QAQC parameters
@@ -64,7 +69,8 @@ for loc = locs
             % dT = d10.([location(1:3) 'YSI_2010']);
             % dT = d11.([location(1:3) 'YSI_2011']);
             % dT = d12.([location(1:3) 'YSI_2012']);
-            dT = d13.([location(1:3) 'YSI_2013']);
+            % dT = d13.([location(1:3) 'YSI_2013']);
+            dT = d14.([location(1:3) 'YSI_2014']);
             if contains(loc{1}, 'btm')
                 dT = renamevars(dT, cols_btm, cols_new);
             elseif contains(loc{1}, 'mid')

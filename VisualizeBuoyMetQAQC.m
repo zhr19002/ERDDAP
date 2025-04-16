@@ -5,7 +5,7 @@
 clc; clear;
 
 % Set up parameters
-buoy = 'WLIS'; Ayear = 2024;
+buoy = 'WLIS'; Ayear = 2016;
 
 avars = {'windSpd_Kts','windSpd_Max','fiveSecAvg_Max','windDir_M'};
 vnames = {'windSpd','windGust','fiveSecAvg','windDir'};
@@ -35,11 +35,11 @@ for i = 1:4
     iu1 = find(floor(dT.([avars{i} '_Q'])/1000)~=1);
     plot(dT.TmStamp(iu1),dT.(avars{i})(iu1),'rs','DisplayName','1-Threshold');
     iu2 = find(mod(floor(dT.([avars{i} '_Q'])/100),10)~=1);
-    plot(dT.TmStamp(iu2),dT.(avars{i})(iu2),'ro','DisplayName','2-JumpLim');
+    %plot(dT.TmStamp(iu2),dT.(avars{i})(iu2),'ro','DisplayName','2-JumpLim');
     iu3 = find(mod(floor(dT.([avars{i} '_Q'])/10),10)~=1);
-    plot(dT.TmStamp(iu3),dT.(avars{i})(iu3),'gd','DisplayName','3-Gap');
+    %plot(dT.TmStamp(iu3),dT.(avars{i})(iu3),'gd','DisplayName','3-Gap');
     iu4 = find(mod(dT.([avars{i} '_Q']),10)~=1);
-    plot(dT.TmStamp(iu4),dT.(avars{i})(iu4),'r^','DisplayName','4-Spike');
+    %plot(dT.TmStamp(iu4),dT.(avars{i})(iu4),'r^','DisplayName','4-Spike');
     
     xticks(datetime(Ayear,1:12,1));
     xtickformat('MMM/dd');

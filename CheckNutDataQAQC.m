@@ -17,6 +17,9 @@ avNut = struct('PAR','PAR','Adjusted_PAR','PAR', ...
 
 % Run the threshold test
 if ismember(av, {'PAR','Adjusted_PAR','CHLA','Adjusted_CHLA'})
+    if (~isfield(d, 'depth')) & strcmp(loc, 'sfc')
+        d.depth(:) = 1;
+    end
     ZT = 5*floor((d.depth-0.01)/5);
     ZT(ZT<0 | ZT>40 | isnan(ZT)) = mode(ZT);
     uZT = unique(ZT);

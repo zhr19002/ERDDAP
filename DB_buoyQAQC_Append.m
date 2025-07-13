@@ -336,13 +336,6 @@ dT = dT(dT.TmStamp >= max(dTQ.TmStamp), :);
 NutQAQC = table();
 if height(dT) > 1
     dT = sortrows(dT, 'TmStamp');
-
-    vars = dT.Properties.VariableNames;
-    if ismember('depth', vars)
-        vars(strcmp(vars, 'depth')) = [];
-        dT = dT(:, [vars(1), {'depth'}, vars(2:end)]);
-    end
-
     for i = 1:width(dT)
         col = dT.Properties.VariableNames{i};
         if ismember(col, cols)
@@ -368,6 +361,7 @@ if height(dT) > 1
         NutQAQC.longitude(:) = mode(dT.longitude);
         NutQAQC.station(:) = mode(categorical(dT.station));
         NutQAQC.mooring_site_desc(:) = mode(categorical(dT.mooring_site_desc));
+        NutQAQC.depth(:) = mode(dT.depth);
     end
     
     % Save the updated "NutQAQC" table

@@ -7,7 +7,7 @@
 % 
 
 clc; clear;
-buoy = 'CLIS'; % {'CLIS','EXRX','WLIS'}
+buoy = 'WLIS'; % {'CLIS','EXRX','WLIS'}
 waveVars = {'Hsig_m','Hmax_m','Tdom_s','Tavg_s','waveDir','meanDir'};
 
 % Read wave QAQC parameters
@@ -32,7 +32,7 @@ switch buoy
     case 'EXRX'
         dT = sqlread(conn, '"EXRX_pb3_svs603hr"');
     case 'WLIS'
-        dT = sqlread(conn, '"WLIS_pb3_svs603HR"');
+        dT = sqlread(conn, '"WLIS_pb3_svs603hr"');
 end
 
 dT = sortrows(dT, 'TmStamp');

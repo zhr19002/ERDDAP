@@ -7,7 +7,7 @@
 % 
 
 clc; clear;
-buoy = 'ARTG'; % {'ARTG','CLIS1','CLIS2','EXRX','WLIS'}
+buoy = 'WLIS'; % {'ARTG','CLIS1','CLIS2','EXRX','WLIS'}
 metVars = {'windSpd_Kts','windSpd_Max','fiveSecAvg_Max','windDir_M', ...
            'airTemp_Avg','relHumid_Avg','baroPress_Avg','dewPT_Avg'};
 tVars = [{'TmStamp'},metVars,{'longitude','latitude','station','mooring_site_desc','depth'}];

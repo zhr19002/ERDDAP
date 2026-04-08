@@ -1,72 +1,32 @@
 % 
-% Identify and flag WLIS climatology data outliers through 5 QAQC tests
+% Identify and flag EXRX climatology data outliers through 5 QAQC tests
 % (1 = pass; 3 = beyond 98% data range; 4 = beyond max-min range)
 % 
 
 clc; clear;
-year = 2014;
-% d0 = load('wlis2000.mat'); d0 = d0.wlis_wq2000;
-% d1 = load('wlis2001.mat'); d1 = d1.wlis_wq2001;
-% d2 = load('wlis2002.mat'); d2 = d2.wlis_wq2002;
-% d3 = load('wlis2003_wq.mat'); d3 = d3.wlis2003_wq;
-% d4 = load('wlis2004_wq.mat'); d4 = d4.wlis2ysi2004;
-% d5 = load('wlis2005_wq.mat'); d5 = d5.wlis2ysi2005;
-% d6 = load('wlis2006_wq.mat');
-% d7 = load('wlis2007_wq.mat');
-% d8 = load('wlis2008_wq.mat');
-% d9 = load('wlis2009_wq.mat');
-% d10 = load('wlis2010_wq.mat');
-% d11 = load('wlis2011_wq.mat');
-% d11.btmYSI_2011 = renamevars(d11.btmYSI_2011,'btm_depth','btm_depthM');
-% d12 = load('wlis2012_wq.mat');
-% d12.btmYSI_2012 = renamevars(d12.btmYSI_2012,'btm_depth','btm_depthM');
-% d13 = load('wlis2013_wq.mat');
-% d13.btmYSI_2013 = renamevars(d13.btmYSI_2013,'btm_depth','btm_depthM');
-d14 = load('wlis2014_wq.mat');
 
 % Fixed parameters
 avars = {'T','S','DO','P','C','pH','rho','DOsat'};
+cols = {'EST','degC','sal','do_mgL','depthM','cond'};
 cols_new = [{'TmStamp'}, avars(1:5)];
-if year < 2004
-    locs = {'btm1','sfc'};
-    cols_btm = {'TmStamp','ysiBtm_degC','ysiBtm_psu','ysiBtm_DOmgL','ysiBtm_m','ysiBtm_mSm'};
-    cols_sfc = {'TmStamp','ysiSfc_degC','ysiSfc_psu','ysiSfc_DOmgL','ysiSfc_m','ysiSfc_mSm'};
-elseif year < 2014
-    locs = {'btm1','mid','sfc'};
-    cols_btm = {'EST','btm_degC','btm_sal','btm_DOmgL','btm_depthM','btm_CONDmScm'};
-    cols_mid = {'EST','mid_degC','mid_sal','mid_DOmgL','mid_depthM','mid_CONDmScm'};
-    cols_sfc = {'EST','sfc_degC','sfc_sal','sfc_DOmgL','sfc_depthM','sfc_CONDmScm'};
-else
-    locs = {'mid','sfc'};
-    cols_mid = {'EST','DegC','Sal','ODOconc','Meters','Cond'};
-    cols_sfc = {'EST','DegC','Sal','ODOconc','Meters','Cond'};
-end
 
 % Read station group QAQC parameters
-QAQC = load('QAQC_C1_WQ.mat');
+QAQC = load('QAQC_A4_WQ.mat');
 QAQC = QAQC.QAQC;
 
 % Write QAQCed buoy files
-for loc = locs
+for loc = {'btm2','mid','sfc'}
     % Preprocess the mat file
-    % dT = d5;
     location = loc{1};
-    % dT = d6.([location(1:3) 'YSI_2006']);
-    % dT = d7.([location(1:3) 'YSI_2007']);
-    % dT = d8.([location(1:3) 'YSI_2008']);
-    % dT = d9.([location(1:3) 'YSI_2009']);
-    % dT = d10.([location(1:3) 'YSI_2010']);
-    % dT = d11.([location(1:3) 'YSI_2011']);
-    % dT = d12.([location(1:3) 'YSI_2012']);
-    % dT = d13.([location(1:3) 'YSI_2013']);
-    dT = d14.([location(1:3) 'YSI_2014']);
-    if contains(loc{1}, 'btm')
-        dT = renamevars(dT, cols_btm, cols_new);
-    elseif contains(loc{1}, 'mid')
-        dT = renamevars(dT, cols_mid, cols_new);
-    else
-        dT = renamevars(dT, cols_sfc, cols_new);
-    end
+    % d7 = load('exrx2007.mat');
+    % dT = d7.(['ex' upper(location(1)) location(2:3)]);
+    tbl = ['exrx' upper(location(1)) location(2:3) '2006'];
+    opts = detectImportOptions([tbl '.csv']);
+    opts = setvaropts(opts,'EST','InputFormat','dd-MMM-yyyy HH:mm:ss');
+    dT = readtable([tbl '.csv'], opts);
+    
+    % Change columns in the original file
+    dT = renamevars(dT, cols, cols_new);
     dT = dT(:,cols_new);
     dT = sortrows(dT, 'TmStamp');
     
@@ -82,7 +42,7 @@ for loc = locs
     % Clean buoy data
     % d = CleanBuoyData(dT, avars);
     d = dT;
-
+    
     % Create the "BuoyQAQC" table
     BuoyQAQC = table();
     BuoyQAQC.TmStamp = d.TmStamp;
@@ -100,7 +60,7 @@ for loc = locs
     password = 'vncq489';
     connQ = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
          'DatabaseName','buoyQAQC','PortNumber',5432);
-    dTQ = sqlread(connQ, strcat('"',['WLIS_' loc{1} '_QAQC'],'"'));
+    dTQ = sqlread(connQ, strcat('"',['EXRX_' loc{1} '_QAQC'],'"'));
     BuoyQAQC.latitude(:) = dTQ.latitude(1);
     BuoyQAQC.longitude(:) = dTQ.longitude(1);
     BuoyQAQC.station(:) = dTQ.station(1);
@@ -110,14 +70,13 @@ for loc = locs
     % Save the updated "BuoyQAQC" table to a CSV file
     BuoyQAQC.TmStamp.Format = 'dd-MMM-yyyy HH:mm:ss';
     BuoyQAQC.TmStamp.TimeZone = 'America/New_York';
-    writetable(BuoyQAQC, ['WLIS_' loc{1} '_QAQC.csv']);
+    writetable(BuoyQAQC, ['EXRX_' loc{1} '_QAQC.csv']);
     fprintf('%s   %s   %s\n', min(BuoyQAQC.TmStamp), max(BuoyQAQC.TmStamp), BuoyQAQC.TmStamp.TimeZone);
 end
 
 %%
 % Read the CSV file into a table
-num = 1;
-tbl = ['WLIS_' locs{num} '_QAQC'];
+tbl = 'EXRX_btm2_QAQC';
 opts = detectImportOptions([tbl '.csv']);
 opts = setvaropts(opts,'TmStamp','InputFormat','dd-MMM-yyyy HH:mm:ss');
 BuoyQAQC = readtable([tbl '.csv'], opts);

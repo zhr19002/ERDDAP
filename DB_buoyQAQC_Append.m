@@ -10,7 +10,6 @@ clc; clear;
 tblNames = { ...
     ... Climatology data
     'ARTG_pb2_sbe37btm1','ARTG_pb2_sbe37btm2','ARTG_pb2_sbe37sfc', ...
-    'clis_cr1xPB4_sbe37Btm','clis_cr1xPB4_sbe37Sfc', ...
     'EXRX_pb2_sbe37btm2','EXRX_pb2_sbe37mid', 'EXRX_pb2_sbe37sfc', ...
     'WLIS_pb2_sbe37btm1','WLIS_pb2_sbe37btm2','WLIS_pb2_sbe37mid','WLIS_pb2_sbe37sfc', ...
     ... Meteorology data
@@ -33,16 +32,16 @@ connQ = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
 
 % Append new data to the "buoyQAQC" database
 for i = 1:length(tblNames)
-    if i <= 12
+    if i <= 10
         % Save new climatology data
         [dbname, d] = SaveNewClimData(conn, connQ, tblNames{i});
-    elseif i > 12 && i <= 17
+    elseif i > 10 && i <= 15
         % Save new meteorology data
         [dbname, d] = SaveNewMetData(conn, connQ, tblNames{i});
-    elseif i > 17 && i <= 20
+    elseif i > 15 && i <= 18
         % Save new wave data
         [dbname, d] = SaveNewWaveData(conn, connQ, tblNames{i});
-    elseif i > 20 && i <= 23
+    elseif i > 18 && i <= 21
         % Save new ADCP data
         [dbname, d] = SaveNewADCPData(conn, connQ, tblNames{i});
     else

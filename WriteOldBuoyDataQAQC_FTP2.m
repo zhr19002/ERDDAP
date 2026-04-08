@@ -35,7 +35,8 @@ dT.('DOsat')(dT.('DOsat') > 1000) = NaN;
 dT.('pH')(:) = NaN;
 
 % Clean buoy data
-d = CleanBuoyData(dT, avars);
+% d = CleanBuoyData(dT, avars);
+d = dT;
 
 % Create the "BuoyQAQC" table
 BuoyQAQC = table();

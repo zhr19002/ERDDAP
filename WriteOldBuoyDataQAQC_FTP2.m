@@ -1,6 +1,6 @@
 % 
-% Identify and flag WLIS climatology data outliers through 5 QAQC tests
-% (1 = pass; 3 = beyond 98% data range; 4 = beyond max-min range)
+% Identify and flag WLIS clim data outliers through 5 QAQC tests
+% (1 = pass; 3 = suspect; 4 = fail)
 % 
 
 clc; clear;

@@ -1,6 +1,6 @@
 % 
-% Identify and flag EXRX climatology data outliers through 5 QAQC tests
-% (1 = pass; 3 = beyond 98% data range; 4 = beyond max-min range)
+% Identify and flag EXRX clim data outliers through 5 QAQC tests
+% (1 = pass; 3 = suspect; 4 = fail)
 % 
 
 clc; clear;

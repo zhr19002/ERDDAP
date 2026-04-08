@@ -8,18 +8,18 @@ clc; clear;
 
 % Table names
 tblNames = { ...
-    ... Climatology data
+    ... Clim data
     'ARTG_pb2_sbe37btm1','ARTG_pb2_sbe37btm2','ARTG_pb2_sbe37sfc', ...
     'EXRX_pb2_sbe37btm2','EXRX_pb2_sbe37mid', 'EXRX_pb2_sbe37sfc', ...
     'WLIS_pb2_sbe37btm1','WLIS_pb2_sbe37btm2','WLIS_pb2_sbe37mid','WLIS_pb2_sbe37sfc', ...
-    ... Meteorology data
+    ... Met data
     'ARTG_pb1_metSens','clis_cr1xPB4_metDat','clis_cr1xPB4_metRO', ...
     'EXRX_pb1_metRO','WLIS_pb4_metSens', ...
     ... Wave data
     'clis_cr1xPB4_waveDat','EXRX_pb3_svs603hr','WLIS_pb3_svs603hr', ...
     ... ADCP data
     'clis_cr1xPB4_adcpDat','EXRX_pb1_adcpDat','WLIS_pb1_adcpDat', ...
-    ... Nutrient data
+    ... Nutr data
     'ARTG_pb1_PARdenDat','ARTG_pb1_sbeECOFL','ARTG_pb1_sbeECONTU','CLIS_pb4_SunaNO3'};
 
 % Connect to PostgreSQL
@@ -33,10 +33,10 @@ connQ = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
 % Append new data to the "buoyQAQC" database
 for i = 1:length(tblNames)
     if i <= 10
-        % Save new climatology data
+        % Save new clim data
         [dbname, d] = SaveNewClimData(conn, connQ, tblNames{i});
     elseif i > 10 && i <= 15
-        % Save new meteorology data
+        % Save new met data
         [dbname, d] = SaveNewMetData(conn, connQ, tblNames{i});
     elseif i > 15 && i <= 18
         % Save new wave data
@@ -45,7 +45,7 @@ for i = 1:length(tblNames)
         % Save new ADCP data
         [dbname, d] = SaveNewADCPData(conn, connQ, tblNames{i});
     else
-        % Save new nutrient data
+        % Save new nutr data
         [dbname, d] = SaveNewNutData(conn, connQ, tblNames{i});
     end
     % Append new data to PostgreSQL
@@ -59,7 +59,7 @@ close(connQ);
 
 %%
 % 
-% Function: Save new climatology data
+% Function: Save new clim data
 % 
 function [dbname, BuoyQAQC] = SaveNewClimData(conn, connQ, tbl)
 % Fixed parameters
@@ -129,14 +129,14 @@ end
 
 
 % 
-% Function: Save new meteorology data
+% Function: Save new met data
 % 
 function [dbname, MetQAQC] = SaveNewMetData(conn, connQ, tbl)
 % Fixed parameters
 metVars = {'windSpd_Kts','windSpd_Max','fiveSecAvg_Max','windDir_M', ...
            'airTemp_Avg','relHumid_Avg','baroPress_Avg','dewPT_Avg'};
 
-% Read meteorology QAQC parameters
+% Read met QAQC parameters
 QAQC = readtable('QAQC_Para_Met.csv', ReadRowNames=true);
 
 % Extract a table from PostgreSQL
@@ -163,7 +163,7 @@ if height(dT) > 1
     dT = sortrows(dT, 'TmStamp');
     MetQAQC.TmStamp = dT.TmStamp;
     for av = metVars
-        % Clean meteorology data
+        % Clean met data
         dT.(av{1})(dT.(av{1}) < -1000) = NaN;
         % Run QAQC tests
         [dQ, dC] = CheckMetWaveQAQC(dT, QAQC, av{1});
@@ -296,7 +296,7 @@ end
 
 
 % 
-% Function: Save new nutrient data
+% Function: Save new nutr data
 % 
 function [dbname, NutQAQC] = SaveNewNutData(conn, connQ, tbl)
 % Fixed parameters

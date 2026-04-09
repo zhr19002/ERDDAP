@@ -24,27 +24,27 @@ for i = 1:length(uZT)
     c(iu) = ImplementThresholdTest(d.(av)(iu), d.TmStamp(iu), QAQC, dpth, av);
 end
 d.('QAQCTests') = 10000*c;
-d.('FailedTestsCount') = (c~=1);
+d.('FailedTestsCount') = (c==4);
 
 % Run the jump limit test
 c = ImplementJumpLimTest(d.(av));
 d.('QAQCTests') = 1000*c + d.('QAQCTests');
-d.('FailedTestsCount') = (c~=1) + d.('FailedTestsCount');
+d.('FailedTestsCount') = (c==4) + d.('FailedTestsCount');
 
 % Run the gap test
 c = ImplementGapTest(d.TmStamp);
 d.('QAQCTests') = 100*c + d.('QAQCTests');
-d.('FailedTestsCount') = (c~=1) + d.('FailedTestsCount');
+d.('FailedTestsCount') = (c==4) + d.('FailedTestsCount');
 
 % Run the pressure range test
 c = ImplementPresRngTest(d.P, loc);
 d.('QAQCTests') = 10*c + d.('QAQCTests');
-d.('FailedTestsCount') = (c~=1) + d.('FailedTestsCount');
+d.('FailedTestsCount') = (c==4) + d.('FailedTestsCount');
 
 % Run the spike test
 c = ImplementSpikeTest(d.(av));
 d.('QAQCTests') = c + d.('QAQCTests');
-d.('FailedTestsCount') = (c~=1) + d.('FailedTestsCount');
+d.('FailedTestsCount') = (c==4) + d.('FailedTestsCount');
 
 % Output the QAQC results
 QAQCTests = d.QAQCTests;

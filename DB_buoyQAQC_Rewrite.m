@@ -8,7 +8,7 @@
 clc; clear;
 
 % Change the table name
-tblName = '"WLIS_sfc_QAQC"';
+tblName = '"CLIS_btm_QAQC"';
 
 % Fixed parameters
 avars = {'T','S','DO','P','C','pH','rho','DOsat'};
@@ -98,7 +98,7 @@ password = 'vncq489';
 connQ = postgresql(username,password,'Server','merlin.dms.uconn.edu', ...
      'DatabaseName','buoyQAQC','PortNumber',5432);
 
-% tbldata = sqlfind(connQ, "");
+% tbldata = sqlfind(connQ, "")
 
 tblNames = {'ARTG_btm1_QAQC','ARTG_btm2_QAQC','ARTG_sfc_QAQC', ...
             'CLIS_btm_QAQC','CLIS_sfc_QAQC', ...

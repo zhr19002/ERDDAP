@@ -15,7 +15,7 @@ tblNames = { ...
     'EXRX_pb2_sbe37mid_arch1', 'EXRX_pb2_sbe37sfc_arch1', ...
     'WLIS_pb2_sbe37btm1','WLIS_pb2_sbe37mid','WLIS_pb2_sbe37sfc', ...
     ... Met data
-    'ARTG_pb1_metSens','CLIS_pb1_metSens','EXRX_pb1_metSens','WLIS_pb1_metSens', ...
+    'ARTG_pb1_metSens','CLIS_pb1_metSens','EXRX_pb1_metSens','WLIS_pb4_metSens', ...
     ... Wave data
     'CLIS_pb3_svs603hr','EXRX_pb3_svs603hr','WLIS_pb3_svs603HR', ...
     ... ADCP data
@@ -68,21 +68,22 @@ avars = {'T','S','DO','P','C','pH','rho','DOsat'};
 
 % Read station group QAQC parameters
 if contains(tbl, 'ARTG')
-    loc = tbl(15:end);
     QAQC = load('QAQC_E1_WQ.mat');
 elseif contains(tbl, 'EXRX')
-    loc = tbl(15:end);
     QAQC = load('QAQC_A4_WQ.mat');
 elseif contains(tbl, 'WLIS')
-    loc = tbl(15:end);
     QAQC = load('QAQC_C1_WQ.mat');
 else
-    loc = lower(tbl(end-2:end));
     QAQC = load('QAQC_I2_WQ.mat');
 end
 QAQC = QAQC.QAQC;
 
 % Extract a table from PostgreSQL
+if contains(tbl, 'CLIS')
+    loc = regexp(tbl,'(?<=sbe37)(btm|mid|sfc)','match','once');
+else
+    loc = regexp(tbl,'(?<=sbe37)[^_]+','match','once');
+end
 dbname = [upper(tbl(1:4)) '_' loc '_QAQC'];
 dT = sqlread(conn, strcat('"',tbl,'"'));
 dT = renamevars(dT, {'degC','psu','mgL','dBars','Sm'}, avars(1:5));
@@ -142,19 +143,14 @@ QAQC = readtable('QAQC_Para_Met.csv', ReadRowNames=true);
 
 % Extract a table from PostgreSQL
 dT = sqlread(conn, strcat('"',tbl,'"'));
-if contains(tbl, 'clis')
-    dT = renamevars(dT,'windSpd_kts','windSpd_Kts');
-    if contains(tbl, 'Dat')
-        dbname = 'CLIS1_Met_QAQC';
-    else
-        dbname = 'CLIS2_Met_QAQC';
-    end
+if contains(tbl, 'CLIS')
+    dbname = 'CLIS1_Met_QAQC';
 else
-    dT = renamevars(dT,'dewPt_Avg','dewPT_Avg');
-    dbname = [tbl(1:4) '_Met_QAQC'];
+    dbname = [upper(tbl(1:4)) '_Met_QAQC'];
 end
 
 % Filter new data in the table
+dT = renamevars(dT,'dewPt_Avg','dewPT_Avg');
 dTQ = sqlread(connQ, strcat('"',dbname,'"'));
 dT = dT(dT.TmStamp >= max(dTQ.TmStamp), :);
 
@@ -201,12 +197,12 @@ QAQC = readtable('QAQC_Para_Wave.csv', ReadRowNames=true);
 
 % Extract a table from PostgreSQL
 dT = sqlread(conn, strcat('"',tbl,'"'));
-if contains(tbl, 'clis')
-    % Covert string values to numeric values
-    for av = waveVars
-        dT.(av{1}) = str2double(dT.(av{1}));
-    end
-end
+% if contains(tbl, 'clis')
+%     % Covert string values to numeric values
+%     for av = waveVars
+%         dT.(av{1}) = str2double(dT.(av{1}));
+%     end
+% end
 
 % Filter new data in the table
 dbname = [upper(tbl(1:4)) '_Wave_QAQC'];
